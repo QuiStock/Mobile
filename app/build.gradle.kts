@@ -5,6 +5,12 @@ plugins {
     jacoco
 }
 
+kotlin {
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}
+
 spotless {
     kotlin {
         target("**/*.kt")
@@ -23,7 +29,16 @@ spotless {
 }
 
 detekt {
+    buildUponDefaultConfig = true
+    allRules = false
     autoCorrect = true
+}
+
+tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        sarif.required.set(true)
+    }
 }
 
 tasks.register<JacocoReport>("jacocoTestReport") {
