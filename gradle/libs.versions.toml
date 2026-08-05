@@ -13,6 +13,10 @@ mockk = "1.14.11"
 activityKtx = "1.13.0"
 constraintlayout = "2.2.2"
 archCore = "2.2.0"
+google-service = "4.5.0"
+firebaseBom = "34.17.0"
+firebaseCrashlytics = "20.1.0"
+googleFirebaseCrashlytics = "3.0.7"
 
 
 [libraries]
@@ -27,6 +31,9 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCore" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 
 
 [plugins]
@@ -34,4 +41,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-service" }
+google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "googleFirebaseCrashlytics" }
 

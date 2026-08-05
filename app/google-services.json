@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "577174264822",
+    "project_id": "quistock-app",
+    "storage_bucket": "quistock-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:577174264822:android:95583e65b7e88e7c3e85d7",
+        "android_client_info": {
+          "package_name": "com.quistock.quistock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9AiXOCua03sUGenqAvnOOP-L28l2T-XQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
