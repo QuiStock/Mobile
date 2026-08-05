@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - qa
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Build App APK
+        uses: ./gradlew assembleDebug
+
+  lint-and-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Lint and Check Formatting
+        uses: ./gradlew spotlessCheck
+
+  code-smell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Analyse Code Smells
+        uses: ./gradlew detekt
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Run Unit Tests
+        uses: ./gradlew testDebugUnitTest
+
+  instrumented-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Run Instrumented Tests
+        uses: reactivecircus/android-emmulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          profile: pixel_6
+          script: ./gradlew connectedDebugAndroidTest
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          version: 26
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v4
+
+      - name: Check Test Coverage
+        uses: ./gradlew jacocoTestCoverageVerification
