@@ -94,6 +94,8 @@ jobs:
 
   instrumented-tests-and-coverage:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -110,21 +112,86 @@ jobs:
       - name: Grant execution permission to Gradle Wrapper
         run: chmod +x ./gradlew
 
-      - name: Run Instrumented Tests
-        uses: reactivecircus/android-emulator-runner@v2.34.0
-        with:
-          api-level: 33
-          target: google_apis
-          arch: x86_64
-          profile: pixel
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect
-          disable-animations: true
-          script: |
-            adb devices -l
-            adb wait-for-device
-            adb devices -l
-            
-            adb shell getprop ro.build.version.sdk || true
-            adb shell getprop sys.boot_completed || true
-            
-            ./gradlew jacocoTestCoverageVerification
+      - name: Install Android SDK components
+        run: |
+          set -e
+          echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses || true
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "emulator" "platforms;android-33" "system-images;android-33;google_apis;x86_64"
+
+      - name: Create Android AVD
+        run: |
+          set -e
+          echo "no" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager create avd --force -n testAVD -k "system-images;android-33;google_apis;x86_64" --device "pixel_6"
+
+      - name: Start emulator (background)
+        run: |
+          set -e
+          EMU_ARGS="-no-window -no-boot-anim -no-snapshot -wipe-data -gpu swiftshader_indirect -no-audio"
+          ${ANDROID_SDK_ROOT}/emulator/emulator -avd testAVD $EMU_ARGS > emulator.log 2>&1 &
+          echo "$!" > emulator.pid
+
+      - name: Wait for emulator to be ready
+        run: |
+          set -e
+          export PATH=${ANDROID_SDK_ROOT}/platform-tools:$PATH
+
+          adb kill-server || true
+          adb start-server
+
+          BOOT_TIMEOUT=300
+          START=$(date +%s)
+
+          while true; do
+            adb devices -l || true
+            STATE=$(adb -s emulator-5554 get-state 2>/dev/null || true)
+            if [ "$STATE" = "device" ]; then
+              BOOTED=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+              if [ "$BOOTED" = "1" ]; then
+                echo "Emulator booted"
+                break
+              fi
+            else
+              echo "adb state: $STATE"
+              adb kill-server || true
+              adb start-server || true
+            fi
+
+            NOW=$(date +%s)
+            ELAPSED=$((NOW-START))
+            if [ $ELAPSED -gt $BOOT_TIMEOUT ]; then
+              echo "ERROR: emulator did not boot after ${BOOT_TIMEOUT}s"
+              echo "adb devices:"
+              adb devices -l || true
+              echo "---- emulator log (tail) ----"
+              tail -n +1 emulator.log || true
+              echo "---- adb logcat (last 500 lines) ----"
+              adb -s emulator-5554 logcat -d | tail -n 500 || true
+              if [ -f emulator.pid ]; then
+                kill $(cat emulator.pid) || true
+              fi
+              exit 1
+            fi
+
+            echo "Waiting for emulator to boot... (${ELAPSED}s)"
+            sleep 5
+          done
+
+      - name: Disable animations on emulator
+        run: |
+          adb -s emulator-5554 shell settings put global window_animation_scale 0
+          adb -s emulator-5554 shell settings put global transition_animation_scale 0
+          adb -s emulator-5554 shell settings put global animator_duration_scale 0
+
+      - name: Run instrumented tests and coverage verification
+        run: |
+          ./gradlew connectedDebugAndroidTest jacocoTestCoverageVerification --no-daemon --stacktrace
+
+      - name: Collect emulator log
+        if: failure()
+        run: |
+          echo "---- emulator.log ----"
+          tail -n 500 emulator.log || true
+          echo "---- adb devices ----"
+          adb devices -l || true
+          echo "---- adb logcat ----"
+          adb -s emulator-5554 logcat -d | tail -n 500 || true
