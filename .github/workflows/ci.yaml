@@ -137,4 +137,9 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check Test Coverage
-        run: ./gradlew jacocoTestCoverageVerification
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          profile: pixel_6
+          script: ./gradlew jacocoTestCoverageVerification
