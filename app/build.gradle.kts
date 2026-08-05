@@ -65,6 +65,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "**/*Directions*",
             "**/*Binding*",
             "**/*MapperImpl*",
+            "**/presentation/activity/**",
         )
 
     val kotlinClasses =
