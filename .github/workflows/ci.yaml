@@ -111,7 +111,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Instrumented Tests
-        uses: reactivecircus/android-emmulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
           arch: x86_64
