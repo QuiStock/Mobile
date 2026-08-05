@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
     jacoco
 }
 
@@ -169,4 +171,7 @@ dependencies {
 
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.arch.core.testing)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
 }
