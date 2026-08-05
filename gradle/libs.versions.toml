@@ -8,7 +8,7 @@ appcompat = "1.7.1"
 material = "1.14.0"
 
 spotless = "8.9.0"
-detekt = "1.23.8"
+detekt = "2.0.0-alpha.5"
 mockk = "1.14.11"
 
 
@@ -27,5 +27,5 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 

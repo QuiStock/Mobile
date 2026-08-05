@@ -7,8 +7,23 @@ plugins {
 
 spotless {
     kotlin {
+        target("**/*.kt")
+        targetExclude("**/build/**/*.kt", "**/generated/**/*.kt")
+
+        ktlint()
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        target("**/*.gradle.kts")
         ktlint()
     }
+}
+
+detekt {
+    autoCorrect = true
 }
 
 android {
