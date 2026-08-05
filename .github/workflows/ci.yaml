@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -80,7 +80,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -101,7 +101,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -113,9 +113,11 @@ jobs:
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: 33
           arch: x86_64
           profile: pixel_6
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect
+          disable-animations: true
           script: ./gradlew connectedDebugAndroidTest
 
   test-coverage:
@@ -127,7 +129,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 26
+          java-version: 21
           cache: gradle
 
       - name: Setup Gradle
@@ -139,7 +141,9 @@ jobs:
       - name: Check Test Coverage
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: 33
           arch: x86_64
           profile: pixel_6
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect
+          disable-animations: true
           script: ./gradlew jacocoTestCoverageVerification
