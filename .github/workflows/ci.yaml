@@ -21,7 +21,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build App APK
         uses: ./gradlew assembleDebug
@@ -39,7 +39,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Lint and Check Formatting
         uses: ./gradlew spotlessCheck
@@ -57,7 +57,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Analyse Code Smells
         uses: ./gradlew detekt
@@ -75,7 +75,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Run Unit Tests
         uses: ./gradlew testDebugUnitTest
@@ -93,7 +93,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emmulator-runner@v2
@@ -116,7 +116,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Check Test Coverage
         uses: ./gradlew jacocoTestCoverageVerification
