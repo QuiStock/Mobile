@@ -10,6 +10,9 @@ material = "1.14.0"
 spotless = "8.9.0"
 detekt = "2.0.0-alpha.5"
 mockk = "1.14.11"
+activityKtx = "1.13.0"
+constraintlayout = "2.2.2"
+archCore = "2.2.0"
 
 
 [libraries]
@@ -21,6 +24,9 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCore" }
 
 
 [plugins]
