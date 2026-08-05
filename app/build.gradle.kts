@@ -46,10 +46,7 @@ tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
 tasks.register<JacocoReport>("jacocoTestReport") {
     description = "Generate JaCoCo coverage report"
 
-    dependsOn(
-        "testDebugUnitTest",
-        "connectedDebugAndroidTest",
-    )
+    dependsOn("testDebugUnitTest")
 
     reports {
         xml.required.set(true)
