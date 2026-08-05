@@ -24,7 +24,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build App APK
-        uses: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug
 
   lint-and-formatting:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Lint and Check Formatting
-        uses: ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck
 
   code-smell:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Analyse Code Smells
-        uses: ./gradlew detekt
+        run: ./gradlew detekt
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -78,7 +78,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run Unit Tests
-        uses: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest
 
   instrumented-tests:
     runs-on: ubuntu-latest
@@ -119,4 +119,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Check Test Coverage
-        uses: ./gradlew jacocoTestCoverageVerification
+        run: ./gradlew jacocoTestCoverageVerification
