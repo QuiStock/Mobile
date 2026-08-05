@@ -92,7 +92,7 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
-  instrumented-tests:
+  instrumented-tests-and-coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -111,39 +111,20 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Instrumented Tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.34.0
         with:
           api-level: 33
+          target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
-
-  test-coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 21
-          cache: gradle
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execution permission to Gradle Wrapper
-        run: chmod +x ./gradlew
-
-      - name: Check Test Coverage
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          arch: x86_64
-          profile: pixel_6
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect
-          disable-animations: true
-          script: ./gradlew jacocoTestCoverageVerification
+          script: |
+            adb devices -l
+            adb wait-for-device
+            adb devices -l
+            
+            adb shell getprop ro.build.version.sdk || true
+            adb shell getprop sys.boot_completed || true
+            
+            ./gradlew jacocoTestCoverageVerification
