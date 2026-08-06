@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - uses: ./.github/setup-gradle-environment
 
       - name: Build App APK
@@ -25,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - uses: ./.github/setup-gradle-environment
 
       - name: Lint and Check Formatting
@@ -34,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - uses: ./.github/setup-gradle-environment
 
       - name: Analyse Code Smells
@@ -43,6 +49,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - uses: ./.github/setup-gradle-environment
 
       - name: Run Unit Tests

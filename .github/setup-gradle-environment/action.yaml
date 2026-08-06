@@ -3,8 +3,6 @@ description: Execute all steps to have a complete Gradle Environment, including 
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v5
-
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
