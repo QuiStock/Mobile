@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  instrumented-tests:
+  instrumentation-tests:
     name: Instrumentation tests - API 37
     runs-on: ubuntu-24.04
     timeout-minutes: 35
