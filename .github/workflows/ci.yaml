@@ -44,13 +44,122 @@ jobs:
       - name: Analyse Code Smells
         run: ./gradlew detekt
 
-  unit-tests-and-coverage:
+  unit-tests:
+    name: Unit tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v5
-
       - uses: ./.github/setup-gradle-environment
 
-      - name: Run Unit Tests
-        run: ./gradlew jacocoTestCoverageVerification
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Upload unit coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-unit
+          path: app/build/jacoco/testDebugUnitTest.exec
+          if-no-files-found: error
+          retention-days: 1
+
+  instrumented-tests:
+    name: Instrumentation tests - API 37
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/setup-gradle-environment
+
+      - name: Enable and verify KVM
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          
+          test -e /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+          ls -la /dev/kvm
+
+      # Necessário para o formato das imagens android-37.0/37.1.
+      # Pode ser removido quando o runner/action já trouxer cmdline-tools 22+.
+      - name: Update Android SKD command-line tools
+        shell: bash
+        run: |
+          SKD="${ANDROID_HOME:-/usr/local/lib/android/skd}"
+          
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" \
+            --install "cmdline-tools;latest" >/dev/null
+          
+          if [[ -d "$SDK/cmdline-tools/latest-2" ]]; then
+            sudo rm -rf "$SDK/cmdline-tools/latest"
+            sudo mv "$SDK/cmdline-tools/latest-2" \
+              "$SDK/cmdline-tools/latest"
+          fi
+          
+          "$SDK/cmdline-tools/latest/sdkmanager" --version
+
+      - name: Run instrumented tests on API 37
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+
+          # Impede fallback silencioso para emulação sem KVM
+          disable-linux-hw-accel: false
+
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: >-
+            -no-window
+            -gpu swiftshader_indirect
+            -no-snapshot
+            -noaudio
+            -no-boot-anim
+            -camera-back none
+
+          script: ./gradlew connectedDebugAndroidTest --stacktrace
+
+      - name: Upload instrumentation coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-instrumentation
+          path: app/build/outputs/code_coverage/debugAndroidTest/connecter/**/*.ec
+          if-no-files-found: error
+          retention-days: 1
+
+  test-coverage-validation:
+    name: Test coverage validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    needs:
+      - unit-tests
+      - instrumentation-tests
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/setup-gradle-environment
+
+      - name: Download unit coverage
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-unit
+          path: app/build/coverage-input/unit
+
+      - name: Download instrumentation coverage
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-instrumentation
+          path: app/build/coverage-input/instrumentation
+
+      - name: Validate combined coverage
+        run: ./gradlew jacocoAggregateCoverageVerification --stacktrace

@@ -1,3 +1,5 @@
+import org.gradle.api.file.FileCollection
+import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -44,69 +46,64 @@ tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
     }
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
-    description = "Generate JaCoCo coverage report"
+val coverageExcludes =
+    listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        $$"**/*$Companion.*",
+        "**/*Directions*",
+        "**/*Binding*",
+        "**/*MapperImpl*",
+    )
 
-    dependsOn("testDebugUnitTest")
-    dependsOn("connectedDebugAndroidTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
-
-    val excludes =
-        listOf(
-            "**/R.class",
-            "**/R$*.class",
-            "**/BuildConfig.*",
-            "**/Manifest*.*",
-            "**/*Test*.*",
-            $$"**/*$Companion.*",
-            "**/*Directions*",
-            "**/*Binding*",
-            "**/*MapperImpl*",
-        )
-
-    val kotlinClasses =
+val coverageClassDirectories =
+    files(
         fileTree(
             layout.buildDirectory.dir(
                 "intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
             ),
-        ) { exclude(excludes) }
-
-    val javaClasses =
-        fileTree(layout.buildDirectory.dir("intermediates/javac/debug/classes")) {
-            exclude(excludes)
-        }
-
-    classDirectories.setFrom(
-        files(kotlinClasses, javaClasses),
+        ) { exclude(coverageExcludes) },
+        fileTree(
+            layout.buildDirectory.dir(
+                "intermediates/javac/debug/classes",
+            ),
+        ) { exclude(coverageExcludes) },
     )
 
-    sourceDirectories.setFrom(
-        files(
-            "src/main/java",
-            "src/main/kotlin",
-        ),
+val coverageSourceDirectories =
+    files(
+        "src/main/java",
+        "src/main/kotlin",
     )
 
-    executionData.setFrom(
-        fileTree(layout.buildDirectory) {
-            include(
-                "jacoco/testDebugUnitTest.exec",
-                "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
-            )
-        },
-    )
+val generatedCoverageData =
+    fileTree(layout.buildDirectory) {
+        include(
+            "jacoco/testDebugUnitTest.exec",
+            "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+        )
+    }
+
+val downloadedCoverageData =
+    fileTree(
+        layout.buildDirectory.dir("coverage-input"),
+    ) {
+        include(
+            "**/*.exec",
+            "**/*.ec",
+        )
+    }
+
+fun JacocoReportBase.configureCoverageInputs(coverageData: FileCollection) {
+    classDirectories.setFrom(coverageClassDirectories)
+    sourceDirectories.setFrom(coverageSourceDirectories)
+    executionData.setFrom(coverageData)
 }
 
-tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    description = "Require at least 80% test coverage."
-
-    dependsOn("jacocoTestReport")
-
+fun JacocoCoverageVerification.configureCoverageRules() {
     violationRules {
         rule {
             limit {
@@ -116,12 +113,52 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             }
         }
     }
+}
 
-    val report = tasks.named<JacocoReport>("jacocoTestReport")
+tasks.register<JacocoReport>("jacocoTestReport") {
+    description = "Generate JaCoCo coverage report"
 
-    classDirectories.setFrom(report.map { it.classDirectories })
-    sourceDirectories.setFrom(report.map { it.sourceDirectories })
-    executionData.setFrom(report.map { it.executionData })
+    dependsOn("testDebugUnitTest")
+    dependsOn("connectedDebugAndroidTest")
+
+    configureCoverageInputs(generatedCoverageData)
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    description = "Require at least 80% test coverage."
+
+    dependsOn("jacocoTestReport")
+
+    configureCoverageInputs(generatedCoverageData)
+    configureCoverageRules()
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification") {
+    description = "Validate previously generated unit and instrumentation coverage."
+
+    dependsOn("assembleDebug")
+
+    configureCoverageInputs(generatedCoverageData)
+    configureCoverageRules()
+
+    doFirst {
+        val existingCoverageFiles = executionData.files.filter(File::exists)
+
+        require(existingCoverageFiles.isNotEmpty()) {
+            "No JaCoCo execution data found in build/coverage-input"
+        }
+
+        logger.lifecycle(
+            "Validating coverage using:\n{}",
+            existingCoverageFiles.joinToString("\n"),
+        )
+    }
 }
 
 android {
