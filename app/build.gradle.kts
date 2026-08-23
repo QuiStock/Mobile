@@ -48,6 +48,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     description = "Generate JaCoCo coverage report"
 
     dependsOn("testDebugUnitTest")
+    dependsOn("connectedDebugAndroidTest")
 
     reports {
         xml.required.set(true)
@@ -92,9 +93,12 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     )
 
     executionData.setFrom(
-        layout.buildDirectory.file(
-            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-        ),
+        fileTree(layout.buildDirectory) {
+            include(
+                "jacoco/testDebugUnitTest.exec",
+                "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+            )
+        },
     )
 }
 
