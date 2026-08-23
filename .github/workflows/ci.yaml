@@ -6,10 +6,9 @@ on:
   push:
     branches:
       - main
-      - qa
 
 env:
-  JAVA_VERSION: "21"
+  JAVA_VERSION: "17"
 
 jobs:
   build:

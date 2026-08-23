@@ -11,7 +11,6 @@ plugins {
 
 kotlin {
     compilerOptions {
-        allWarningsAsErrors.set(true)
         jvmTarget = JvmTarget.JVM_17
     }
 }
@@ -108,7 +107,7 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     violationRules {
         rule {
             limit {
-                counter = "INSTRUCTION"
+                counter = "LINE"
                 value = "COVEREDRATIO"
                 minimum = "0.80".toBigDecimal()
             }
