@@ -25,11 +25,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="43dp"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="60dp"
-                android:text="Cadastro"
+                android:text="@string/Cadastro"
                 android:textAlignment="center"
                 android:textSize="28sp"
-                android:layout_gravity="center_horizontal"
                 android:textStyle="bold" />
 
             <EditText
@@ -37,14 +37,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="16dp"
-                android:hint="Nome completo" />
+                android:hint="@string/hint_nome_cadastro" />
 
             <EditText
                 android:id="@+id/email_cadastro"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="16dp"
-                android:hint="E-mail"
+                android:hint="@string/hint_email"
                 android:inputType="textEmailAddress" />
 
             <EditText
@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="16dp"
-                android:hint="Senha"
+                android:hint="@string/hint_senha"
                 android:inputType="textPassword" />
 
             <EditText
@@ -60,14 +60,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="32dp"
-                android:hint="Confirmar senha"
+                android:hint="@string/hint_Csenha"
                 android:inputType="textPassword" />
 
             <Button
                 android:id="@+id/bt_prox_cadastro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Próximo" />
+                android:text="@string/bt_proximi" />
 
             <TextView
                 android:id="@+id/bt_ir_login"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Já tem uma conta? Login"
+                android:text="@string/bt_ir_login"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
