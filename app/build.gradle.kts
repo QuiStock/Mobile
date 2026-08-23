@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.spotless)
@@ -10,6 +12,7 @@ plugins {
 kotlin {
     compilerOptions {
         allWarningsAsErrors.set(true)
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 
@@ -91,12 +94,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     )
 
     executionData.setFrom(
-        fileTree(layout.buildDirectory) {
-            include(
-                "**/*.exec",
-                "**/*.ec",
-            )
-        },
+        layout.buildDirectory.file(
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+        ),
     )
 }
 
@@ -151,8 +151,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
