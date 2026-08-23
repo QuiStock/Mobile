@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
@@ -23,7 +23,7 @@ jobs:
         run: ./gradlew assembleDebug
 
   lint-and-formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
   code-smell:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
@@ -45,7 +45,7 @@ jobs:
         run: ./gradlew detekt
 
   unit-tests-and-coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
