@@ -33,7 +33,6 @@ spotless {
 detekt {
     buildUponDefaultConfig = true
     allRules = false
-    autoCorrect = true
 }
 
 tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
