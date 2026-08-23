@@ -1,4 +1,8 @@
-pre-commit:
+pre-push:
+  fail_on_changes: always
+  fail_on_changes_diff: true
   commands:
     spotless:
-      run: ./gradlew spotlessCheck --quiet
+      run: ./gradlew spotlessApply --quiet
+    detekt:
+      run: ./gradlew detekt --auto-correct --quiet
