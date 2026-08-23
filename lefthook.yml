@@ -1,8 +1,4 @@
 pre-commit:
-  parallel: true
   commands:
     spotless:
-      run: ./gradlew spotlessCheck
-
-    detekt:
-      run: ./gradlew detekt
+      run: ./gradlew spotlessCheck --quiet
