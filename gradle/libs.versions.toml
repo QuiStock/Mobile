@@ -17,6 +17,7 @@ navigation = "2.9.0"
 google-service = "4.5.0"
 firebaseBom = "34.18.0"
 googleFirebaseCrashlytics = "3.0.8"
+kotest = "6.2.4"
 
 
 [libraries]
@@ -36,6 +37,7 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+kotest-assertion-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 
 
 [plugins]

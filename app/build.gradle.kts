@@ -229,4 +229,5 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.crashlytics)
+    testImplementation(libs.kotest.assertion.core)
 }
