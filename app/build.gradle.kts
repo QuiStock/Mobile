@@ -103,6 +103,14 @@ fun JacocoReportBase.configureCoverageInputs(coverageData: FileCollection) {
     executionData.setFrom(coverageData)
 }
 
+fun JacocoReport.configureCoverageReports() {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
 fun JacocoCoverageVerification.configureCoverageRules() {
     violationRules {
         rule {
@@ -122,12 +130,16 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("connectedDebugAndroidTest")
 
     configureCoverageInputs(generatedCoverageData)
+    configureCoverageReports()
+}
 
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
+tasks.register<JacocoReport>("jacocoAggregateReport") {
+    description = "Generate combine coverage report from downloaded CI data."
+
+    dependsOn("assembleDebug")
+
+    configureCoverageInputs(downloadedCoverageData)
+    configureCoverageReports()
 }
 
 tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {

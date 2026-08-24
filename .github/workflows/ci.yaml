@@ -43,6 +43,15 @@ jobs:
       - name: Android Lint
         run: ./gradlew lintDebug
 
+      - name: Upload Android Lint Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-lint-reports
+          path: app/build/reports/lint-debug-results.*
+          if-no-files-found: warn
+          retention-days: 7
+
   code-smell:
     name: Code smell analysis
     runs-on: ubuntu-24.04
@@ -56,6 +65,15 @@ jobs:
       - name: Analyse Code Smells
         run: ./gradlew detekt
 
+      - name: Upload Detekt reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: detekt-reports
+          path: app/build/reports/detekt/
+          if-no-files-found: warn
+          retention-days: 7
+
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-24.04
@@ -67,6 +85,17 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-reports
+          path: |
+            app/build/reports/tests/testDebugUnitTest
+            app/build/test-results/testDebugUnitTest/*.xml
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload unit coverage
         uses: actions/upload-artifact@v7
@@ -141,6 +170,18 @@ jobs:
 
           script: ./gradlew connectedDebugAndroidTest --stacktrace
 
+      - name: Upload instrumentation test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumentation-test-reports
+          path: |
+            app/build/reports/androidTests/connected/debug/
+            app/build/outputs/androidTest-results/connected/debug/
+            app/build/reports/coverage/androidTest/debug/connected/
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Upload instrumentation coverage
         uses: actions/upload-artifact@v7
         with:
@@ -174,5 +215,17 @@ jobs:
           name: coverage-instrumentation
           path: app/build/coverage-input/instrumentation
 
+      - name: Generate combined coverage report
+        run: ./gradlew jacocoAggregateReport --stacktrace
+
       - name: Validate combined coverage
         run: ./gradlew jacocoAggregateCoverageVerification --stacktrace
+
+      - name: Upload combined JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-combined-report
+          path: app/build/reports/jacoco/jacocoAggregateReport/
+          if-no-files-found: warn
+          retention-days: 7
