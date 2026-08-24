@@ -38,7 +38,7 @@ jobs:
       - uses: ./.github/setup-gradle-environment
 
       - name: Check Formatting
-        run: ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck --refresh-dependencies --no-configuration-cache
 
       - name: Android Lint
         run: ./gradlew lintDebug
