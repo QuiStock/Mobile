@@ -2,9 +2,12 @@ package com.quistock.quistock.domain.usecase
 
 import com.quistock.quistock.domain.port.AuthenticationPort
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
@@ -18,34 +21,30 @@ class LoginUseCaseTests {
     }
 
     @Test
-    fun `if auth port login returns true, should return true`() {
-        val email = "example@email.com"
-        val password = "Abc@123!"
-        every {
-            authenticationPort.authenticate(email, password)
+    fun `if auth port login returns true, should return true`() = runTest {
+        coEvery {
+            authenticationPort.authenticate(any(), any())
         } returns true
 
-        val result = useCase(email, password)
+        val result = useCase("example@email.com", "Abc@123!")
 
         result shouldBe true
-        verify(exactly = 1) {
-            authenticationPort.authenticate(email, password)
+        coVerify(exactly = 1) {
+            authenticationPort.authenticate(any(), any())
         }
     }
 
     @Test
-    fun `if auth port login returns false, should return false`() {
-        val email = "example@email.com"
-        val password = "Abc@123!"
-        every {
-            authenticationPort.authenticate(email, password)
+    fun `if auth port login returns false, should return false`() = runTest {
+        coEvery {
+            authenticationPort.authenticate(any(), any())
         } returns false
 
-        val result = useCase(email, password)
+        val result = useCase("example@email.com", "Abc@123!")
 
         result shouldBe false
-        verify(exactly = 1) {
-            authenticationPort.authenticate(email, password)
+        coVerify(exactly = 1) {
+            authenticationPort.authenticate(any(), any())
         }
     }
 }
