@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.QuiStock">
+        android:theme="@style/Theme.QuiStock"
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".presentation.activity.MainActivity"
             android:exported="true"
