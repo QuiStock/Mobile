@@ -23,6 +23,14 @@ spotless {
         targetExclude("**/build/**/*.kt", "**/generated/**/*.kt")
 
         ktlint()
+            .setEditorConfigPath(rootProject.file(".editorconfig"))
+            .editorConfigOverride(
+                mapOf(
+                    "ktlint_standard_multiline-expression-wrapping" to "disabled",
+                    "ktlint_function_signature_body_expression_wrapping" to "default",
+                    "max_line_length" to "120",
+                ),
+            )
 
         trimTrailingWhitespace()
         endWithNewline()
@@ -30,7 +38,7 @@ spotless {
 
     kotlinGradle {
         target("**/*.gradle.kts")
-        ktlint()
+        ktlint().setEditorConfigPath(rootProject.file(".editorconfig"))
     }
 }
 
