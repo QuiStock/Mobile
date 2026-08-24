@@ -82,13 +82,14 @@ jobs:
       - name: Enable and verify KVM
         shell: bash
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          
-          test -e /dev/kvm
+          if [[ ! -e /dev/kvm ]]; then
+            echo "::error::/dev/kvm is not available on this runner. Use a GitHub-hosted Linux runner with Android hardware acceleration enabled."
+            lscpu
+            exit 1
+          fi
+
+          sudo chmod 0666 /dev/kvm
+
           test -r /dev/kvm
           test -w /dev/kvm
           ls -la /dev/kvm
