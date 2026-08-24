@@ -68,6 +68,8 @@ Os itens abaixo não devem ser implementados apenas porque aparecem nesta lista.
 
 ## 3. Adicionar cobertura de branches
 
+**Status:** Concluído.
+
 ### Critério para iniciar
 
 - Existirem regras de negócio reais com decisões relevantes, como validações, estados de estoque, permissões ou tratamento de resultados de rede.
