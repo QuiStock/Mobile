@@ -1,28 +1,28 @@
-## Descrição
+## Description
 
-Explique brevemente o problema resolvido ou a nova funcionalidade implementada.
+Briefly explain the problem solved or the new feature implemented.
 
 
-## Categoria da alteração
+## Change category
 
 - [ ] UI
-- [ ] Comportamento
-- [ ] Configuração do repositório
+- [ ] Behavior
+- [ ] Repository configuration
 
 
-## Tipo de alteração
+## Change type
 
-- [ ] Correção de bug
-- [ ] Nova funcionalidade
-- [ ] Alteração que quebra compatibilidade
-- [ ] Não se aplica
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Not applicable
 
 
-## Qualidade
+## Quality
 
-- [ ] A funcionalidade possui testes comportamentais?
-- [ ] Os testes foram desenvolvidos seguindo Red–Green–Refactor?
-- [ ] Os testes verificam resultados observáveis?
-- [ ] Caminhos de sucesso e erro foram considerados?
-- [ ] Não foram adicionadas exclusões de cobertura sem justificativa?
-- [ ] Não se aplica
+- [ ] Does the feature include behavioral tests?
+- [ ] Were the tests developed following Red–Green–Refactor?
+- [ ] Do the tests verify observable outcomes?
+- [ ] Were both success and error paths considered?
+- [ ] No coverage exclusions were added without justification?
+- [ ] Not applicable
