@@ -13,6 +13,7 @@ Briefly explain the problem solved or the new feature implemented.
 - [ ] UI
 - [ ] Behavior
 - [ ] Repository configuration
+- [ ] Documentation
 
 
 ## Change type
