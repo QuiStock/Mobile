@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-unit
-          path: app/build/jacoco/testDebugUnitTest.exec
+          path: app/build/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec
           if-no-files-found: error
           retention-days: 1
 
@@ -89,12 +89,12 @@ jobs:
 
       # Necessário para o formato das imagens android-37.0/37.1.
       # Pode ser removido quando o runner/action já trouxer cmdline-tools 22+.
-      - name: Update Android SKD command-line tools
+      - name: Update Android SDK command-line tools
         shell: bash
         run: |
-          SKD="${ANDROID_HOME:-/usr/local/lib/android/skd}"
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           
-          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" \
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" \
             --install "cmdline-tools;latest" >/dev/null
           
           if [[ -d "$SDK/cmdline-tools/latest-2" ]]; then
@@ -103,13 +103,13 @@ jobs:
               "$SDK/cmdline-tools/latest"
           fi
           
-          "$SDK/cmdline-tools/latest/sdkmanager" --version
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" --version
 
       - name: Run instrumented tests on API 37
         uses: reactivecircus/android-emulator-runner@v2
         timeout-minutes: 30
         with:
-          api-level: 37
+          api-level: "37.0"
           target: google_apis
           arch: x86_64
 
@@ -132,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-instrumentation
-          path: app/build/outputs/code_coverage/debugAndroidTest/connecter/**/*.ec
+          path: app/build/outputs/code_coverage/debugAndroidTest/connected/**/*.ec
           if-no-files-found: error
           retention-days: 1
 

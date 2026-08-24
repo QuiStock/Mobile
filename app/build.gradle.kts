@@ -82,7 +82,7 @@ val coverageSourceDirectories =
 val generatedCoverageData =
     fileTree(layout.buildDirectory) {
         include(
-            "jacoco/testDebugUnitTest.exec",
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
             "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
         )
     }
@@ -144,7 +144,7 @@ tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification"
 
     dependsOn("assembleDebug")
 
-    configureCoverageInputs(generatedCoverageData)
+    configureCoverageInputs(downloadedCoverageData)
     configureCoverageRules()
 
     doFirst {
