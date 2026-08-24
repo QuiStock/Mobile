@@ -21,8 +21,11 @@ jobs:
 
       - uses: ./.github/setup-gradle-environment
 
-      - name: Build App APK
+      - name: Build App APK (Debug)
         run: ./gradlew assembleDebug
+
+      - name: Build App APK (Release)
+        run: ./gradlew assembleRelease
 
   lint-and-formatting:
     name: Lint and formatting
@@ -34,8 +37,11 @@ jobs:
 
       - uses: ./.github/setup-gradle-environment
 
-      - name: Lint and Check Formatting
+      - name: Check Formatting
         run: ./gradlew spotlessCheck
+
+      - name: Android Lint
+        run: ./gradlew lintDebug
 
   code-smell:
     name: Code smell analysis
