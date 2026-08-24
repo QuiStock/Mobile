@@ -12,7 +12,9 @@ env:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6
@@ -23,7 +25,9 @@ jobs:
         run: ./gradlew assembleDebug
 
   lint-and-formatting:
+    name: Lint and formatting
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6
@@ -34,7 +38,9 @@ jobs:
         run: ./gradlew spotlessCheck
 
   code-smell:
+    name: Code smell analysis
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6
