@@ -1,10 +1,16 @@
 package com.quistock.quistock.data.remote.firebase.auth
 
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
+import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.domain.model.LoginResult
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -24,12 +30,7 @@ class FirebaseAuthenticationPortTests {
     @Test
     fun `when authenticating, should trim the email`() = runTest {
         val email = "  example@email.com  "
-        val authResult = mockk<AuthResult>()
-        val firebaseUser = mockk<FirebaseUser>()
-        every { authResult.user } returns firebaseUser
-        every {
-            firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forResult(authResult)
+        mockSuccessfulAuthentication(email.trim())
 
         authenticationPort.authenticate(email, "Abc@123!")
 
@@ -39,24 +40,20 @@ class FirebaseAuthenticationPortTests {
     }
 
     @Test
-    fun `if Firebase returns an user, should return true`() = runTest {
-        val authResult = mockk<AuthResult>()
-        val firebaseUser = mockk<FirebaseUser>()
-        every { authResult.user } returns firebaseUser
-        every {
-            firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forResult(authResult)
+    fun `if Firebase returns a user with email, should return success`() = runTest {
+        val email = "example@email.com"
+        mockSuccessfulAuthentication(email)
 
-        val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
+        val result = authenticationPort.authenticate(email, "Abc@123!")
 
-        result shouldBe true
+        result shouldBe LoginResult.Success(email)
         verify(exactly = 1) {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
         }
     }
 
     @Test
-    fun `if Firebase returns null, should return false`() = runTest {
+    fun `if Firebase returns no user, should return unexpected error`() = runTest {
         val authResult = mockk<AuthResult>()
         every { authResult.user } returns null
         every {
@@ -65,23 +62,81 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe false
-        verify(exactly = 1) {
-            firebaseAuth.signInWithEmailAndPassword(any(), any())
-        }
+        result.shouldBeInstanceOf<LoginError.UnexpectedError>()
+        result.exception.shouldBeInstanceOf<IllegalStateException>()
     }
 
     @Test
-    fun `if Firebase throws exception, should return false`() = runTest {
+    fun `if Firebase returns a user without email, should return unexpected error`() = runTest {
+        val authResult = mockk<AuthResult>()
+        val firebaseUser = mockk<FirebaseUser>()
+        every { authResult.user } returns firebaseUser
+        every { firebaseUser.email } returns null
         every {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forException(Exception())
+        } returns Tasks.forResult(authResult)
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe false
-        verify(exactly = 1) {
+        result.shouldBeInstanceOf<LoginError.UnexpectedError>()
+        result.exception.shouldBeInstanceOf<IllegalStateException>()
+    }
+
+    @Test
+    fun `if Firebase rejects the credentials, should return invalid credentials`() = runTest {
+        val exception = mockk<FirebaseAuthInvalidCredentialsException>()
+        every {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
-        }
+        } returns Tasks.forException(exception)
+
+        val result = authenticationPort.authenticate("example@email.com", "wrong-password")
+
+        result shouldBe LoginError.InvalidCredentials
+    }
+
+    @Test
+    fun `if Firebase rejects the user, should return user disabled`() = runTest {
+        val exception = mockk<FirebaseAuthInvalidUserException>()
+        every {
+            firebaseAuth.signInWithEmailAndPassword(any(), any())
+        } returns Tasks.forException(exception)
+
+        val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
+
+        result shouldBe LoginError.UserDisabled
+    }
+
+    @Test
+    fun `if Firebase has a network failure, should return network error`() = runTest {
+        val exception = mockk<FirebaseNetworkException>()
+        every {
+            firebaseAuth.signInWithEmailAndPassword(any(), any())
+        } returns Tasks.forException(exception)
+
+        val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
+
+        result shouldBe LoginError.NetworkError
+    }
+
+    @Test
+    fun `if Firebase throws an unknown exception, should preserve it as unexpected error`() = runTest {
+        val exception = Exception("Unexpected exception")
+        every {
+            firebaseAuth.signInWithEmailAndPassword(any(), any())
+        } returns Tasks.forException(exception)
+
+        val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
+
+        result shouldBe LoginError.UnexpectedError(exception)
+    }
+
+    private fun mockSuccessfulAuthentication(email: String) {
+        val authResult = mockk<AuthResult>()
+        val firebaseUser = mockk<FirebaseUser>()
+        every { authResult.user } returns firebaseUser
+        every { firebaseUser.email } returns email
+        every {
+            firebaseAuth.signInWithEmailAndPassword(any(), any())
+        } returns Tasks.forResult(authResult)
     }
 }

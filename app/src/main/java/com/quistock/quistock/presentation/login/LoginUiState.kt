@@ -1,6 +1,6 @@
 package com.quistock.quistock.presentation.login
 
-enum class LoginError { InvalidCredentials, Unexpected }
+import com.quistock.quistock.domain.model.LoginError
 
 sealed interface LoginUiState {
     data object Idle : LoginUiState
