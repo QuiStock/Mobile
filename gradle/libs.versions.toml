@@ -13,6 +13,7 @@ mockk = "1.14.11"
 activityKtx = "1.13.0"
 constraintlayout = "2.2.2"
 archCore = "2.2.0"
+navigation = "2.9.0"
 google-service = "4.5.0"
 firebaseBom = "34.18.0"
 googleFirebaseCrashlytics = "3.0.8"
@@ -30,6 +31,8 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCore" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
