@@ -238,7 +238,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -247,4 +246,7 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     testImplementation(libs.kotest.assertion.core)
     implementation(libs.firebase.auth)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+    testImplementation(libs.koin.test)
 }

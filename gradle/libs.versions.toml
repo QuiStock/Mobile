@@ -6,7 +6,7 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.8.0"
 material = "1.14.0"
-
+koinBom = "4.1.1"
 spotless = "8.10.0"
 detekt = "2.0.0-alpha.6"
 mockk = "1.14.11"
@@ -21,7 +21,6 @@ firebaseBom = "34.18.0"
 googleFirebaseCrashlytics = "3.0.8"
 kotest = "6.2.4"
 
-
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -29,7 +28,6 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
@@ -44,7 +42,9 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 kotest-assertion-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
-
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koinBom" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-test = { module = "io.insert-koin:koin-test" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
