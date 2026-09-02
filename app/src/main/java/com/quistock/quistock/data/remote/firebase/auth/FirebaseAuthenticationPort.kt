@@ -8,10 +8,12 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
 import com.quistock.quistock.domain.port.AuthenticationPort
+import com.quistock.quistock.domain.port.ErrorReporter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
-class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth) : AuthenticationPort {
+class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth, val errorReporter: ErrorReporter) :
+    AuthenticationPort {
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun authenticate(email: String, password: String): LoginResult = try {
@@ -30,7 +32,15 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth) : Authenticatio
         LoginError.NetworkError
     } catch (exception: CancellationException) {
         throw exception
-    } catch (_: Exception) {
+    } catch (exception: Exception) {
+        errorReporter.record(
+            exception = exception,
+            context = mapOf(
+                "operation" to "login",
+                "provider" to "firebase_auth",
+            ),
+        )
+
         LoginError.UnexpectedError
     }
 }

@@ -11,6 +11,7 @@ val appInternalModule = module {
         firebaseModule,
         domainModule,
         presentationModule,
+        observabilityModule,
     )
 }
 
