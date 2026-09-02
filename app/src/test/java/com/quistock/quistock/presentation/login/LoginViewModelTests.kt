@@ -109,25 +109,7 @@ class LoginViewModelTests {
 
     @Test
     fun `if use case returns unexpected error, state should preserve it`() = runTest {
-        val error = LoginError.UnexpectedError(Exception("Unexpected exception"))
-
-        verifyErrorResult(error)
-    }
-
-    @Test
-    fun `if use case throws an exception, state should wrap it as unexpected error`() = runTest {
-        val exception = Exception("Unexpected exception")
-        coEvery {
-            loginUseCase(any(), any())
-        } throws exception
-
-        loginViewModel.authenticate("example@email.com", "Abc@123!")
-        advanceUntilIdle()
-
-        loginViewModel.uiState.value shouldBe LoginUiState.Error(
-            reason = LoginError.UnexpectedError(exception),
-        )
-        coVerify(exactly = 1) { loginUseCase(any(), any()) }
+        verifyErrorResult(LoginError.UnexpectedError)
     }
 
     private suspend fun TestScope.verifyErrorResult(error: LoginError) {

@@ -91,19 +91,9 @@ class LoginFragment : Fragment() {
     fun notifyError(error: LoginError) {
         val message = when (error) {
             LoginError.NetworkError -> R.string.erro_login_internet
-
             LoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
-
             LoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
-
-            is LoginError.UnexpectedError -> {
-                Log.e(
-                    this::class.simpleName ?: "",
-                    error.exception.message ?: "Unknown error",
-                    error.exception,
-                )
-                R.string.erro_login_erro_inesperado
-            }
+            LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 
         // TODO: set text view to the error message
