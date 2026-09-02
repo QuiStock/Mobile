@@ -12,4 +12,8 @@
     <string name="bt_ir_cadastro">Não tem uma conta? Cadastre-se</string>
     <string name="Cadastro">Cadastro</string>
     <string name="home">Home</string>
+    <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
+    <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
+    <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
+    <string name="erro_login_erro_inesperado">Algo deu errado! Tente novamente mais tarde.</string>
 </resources>
