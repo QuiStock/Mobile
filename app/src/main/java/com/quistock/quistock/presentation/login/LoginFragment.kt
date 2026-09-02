@@ -55,20 +55,25 @@ class LoginFragment : Fragment() {
     fun observeState() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                LoginUiState.Idle -> enableLogin(true)
+                LoginUiState.Idle -> {
+                    enableLogin(true)
+                    showSpinner(false)
+                }
 
                 LoginUiState.Loading -> {
                     enableLogin(false)
-                    // TODO: set loading text
+                    showSpinner(true)
                 }
 
                 LoginUiState.Authenticated -> {
                     enableLogin(true)
+                    showSpinner(false)
                     redirectToMainPage()
                 }
 
                 is LoginUiState.Error -> {
                     enableLogin(true)
+                    showSpinner(false)
                     notifyError(state.reason)
                 }
             }
@@ -77,6 +82,10 @@ class LoginFragment : Fragment() {
 
     fun enableLogin(enabled: Boolean) {
         binding.btEntrarLogin.isEnabled = enabled
+    }
+
+    fun showSpinner(show: Boolean) {
+        binding.loadingLogin.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     fun redirectToMainPage() {
@@ -96,11 +105,9 @@ class LoginFragment : Fragment() {
             LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 
-        // TODO: set text view to the error message
-        Toast.makeText(
-            context,
-            message,
-            Toast.LENGTH_LONG,
-        ).show()
+        binding.txtErroLogin.apply {
+            text = getString(message)
+            visibility = View.VISIBLE
+        }
     }
 }
