@@ -11,4 +11,5 @@
     <string name="bt_ir_login">Já tem uma conta? Login</string>
     <string name="bt_ir_cadastro">Não tem uma conta? Cadastre-se</string>
     <string name="Cadastro">Cadastro</string>
+    <string name="home">Home</string>
 </resources>
