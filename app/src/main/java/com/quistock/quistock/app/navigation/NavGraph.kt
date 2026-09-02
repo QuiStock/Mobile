@@ -8,10 +8,12 @@ object NavGraph {
     object Destinations {
         const val LOGIN = R.id.loginFragment
         const val REGISTER = R.id.cadastroPessoalFragment
+        const val HOME = R.id.homeFragment
     }
 
     object Actions {
         const val LOGIN_TO_REGISTER = R.id.action_loginFragment_to_cadastroPessoalFragment
         const val REGISTER_TO_LOGIN = R.id.action_cadastroPessoalFragment_to_loginFragment
+        const val LOGIN_TO_HOME = R.id.action_loginFragment_to_homeFragment
     }
 }
