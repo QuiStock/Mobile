@@ -46,12 +46,18 @@
                 android:layout_marginBottom="32dp"
                 android:hint="@string/hint_senha"
                 android:inputType="textPassword" />
-
             <Button
                 android:id="@+id/bt_entrar_login"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/bt_entrar" />
+
+            <ProgressBar
+                android:id="@+id/loading_login"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/bt_ir_cadastro"
@@ -62,6 +68,12 @@
                 android:text="@string/bt_ir_cadastro"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TextView" />
 
         </LinearLayout>
 
