@@ -9,8 +9,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.port.ErrorReporter
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -20,11 +20,15 @@ import org.junit.Test
 
 class FirebaseAuthenticationPortTests {
     private val firebaseAuth = mockk<FirebaseAuth>()
+    private val errorReporter = mockk<ErrorReporter>(relaxUnitFun = true)
     private lateinit var authenticationPort: FirebaseAuthenticationPort
 
     @Before
     fun setup() {
-        authenticationPort = FirebaseAuthenticationPort(firebaseAuth)
+        authenticationPort = FirebaseAuthenticationPort(
+            firebaseAuth = firebaseAuth,
+            errorReporter = errorReporter,
+        )
     }
 
     @Test
@@ -53,7 +57,7 @@ class FirebaseAuthenticationPortTests {
     }
 
     @Test
-    fun `if Firebase returns no user, should return unexpected error`() = runTest {
+    fun `if Firebase returns no user, should return unexpected error and register it`() = runTest {
         val authResult = mockk<AuthResult>()
         every { authResult.user } returns null
         every {
@@ -63,10 +67,11 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
+        verify(exactly = 1) { errorReporter.record(any(), any()) }
     }
 
     @Test
-    fun `if Firebase returns a user without email, should return unexpected error`() = runTest {
+    fun `if Firebase returns a user without email, should return unexpected error and register it`() = runTest {
         val authResult = mockk<AuthResult>()
         val firebaseUser = mockk<FirebaseUser>()
         every { authResult.user } returns firebaseUser
@@ -78,6 +83,7 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
+        verify(exactly = 1) { errorReporter.record(any(), any()) }
     }
 
     @Test
@@ -117,14 +123,16 @@ class FirebaseAuthenticationPortTests {
     }
 
     @Test
-    fun `if Firebase throws an unknown exception, should preserve it as unexpected error`() = runTest {
+    fun `if Firebase throws an unknown exception, should preserve it as unexpected error and register it`() = runTest {
+        val exception = Exception("Unexpected exception")
         every {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forException(Exception("Unexpected exception"))
+        } returns Tasks.forException(exception)
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
+        verify(exactly = 1) { errorReporter.record(exception, any()) }
     }
 
     private fun mockSuccessfulAuthentication(email: String) {
