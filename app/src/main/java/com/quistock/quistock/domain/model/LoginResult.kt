@@ -5,7 +5,7 @@ sealed interface LoginResult {
 }
 
 sealed interface LoginError : LoginResult {
-    data class UnexpectedError(val exception: Exception) : LoginError
+    data object UnexpectedError : LoginError
     data object InvalidCredentials : LoginError
     data object UserDisabled : LoginError
     data object NetworkError : LoginError

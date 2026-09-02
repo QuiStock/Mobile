@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.firebase.auth
 
+import android.util.Log
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -29,7 +30,7 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth) : Authenticatio
         LoginError.NetworkError
     } catch (exception: CancellationException) {
         throw exception
-    } catch (exception: Exception) {
-        LoginError.UnexpectedError(exception)
+    } catch (_: Exception) {
+        LoginError.UnexpectedError
     }
 }

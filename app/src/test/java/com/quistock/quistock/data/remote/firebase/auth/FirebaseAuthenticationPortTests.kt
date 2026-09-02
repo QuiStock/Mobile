@@ -62,8 +62,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result.shouldBeInstanceOf<LoginError.UnexpectedError>()
-        result.exception.shouldBeInstanceOf<IllegalStateException>()
+        result shouldBe LoginError.UnexpectedError
     }
 
     @Test
@@ -78,8 +77,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result.shouldBeInstanceOf<LoginError.UnexpectedError>()
-        result.exception.shouldBeInstanceOf<IllegalStateException>()
+        result shouldBe LoginError.UnexpectedError
     }
 
     @Test
@@ -120,14 +118,13 @@ class FirebaseAuthenticationPortTests {
 
     @Test
     fun `if Firebase throws an unknown exception, should preserve it as unexpected error`() = runTest {
-        val exception = Exception("Unexpected exception")
         every {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forException(exception)
+        } returns Tasks.forException(Exception("Unexpected exception"))
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.UnexpectedError(exception)
+        result shouldBe LoginError.UnexpectedError
     }
 
     private fun mockSuccessfulAuthentication(email: String) {
