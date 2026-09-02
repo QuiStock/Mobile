@@ -249,4 +249,5 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     testImplementation(libs.koin.test)
+    androidTestImplementation(libs.mockk.android)
 }

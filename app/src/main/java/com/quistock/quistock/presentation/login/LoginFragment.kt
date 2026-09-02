@@ -40,7 +40,7 @@ class LoginFragment : Fragment() {
         _binding = null
     }
 
-    fun login() {
+    private fun login() {
         val email = binding.emailLogin.text.toString()
         val password = binding.senhaLogin.text.toString()
         if (email.isBlank() || password.isBlank()) return
@@ -48,11 +48,11 @@ class LoginFragment : Fragment() {
         viewModel.authenticate(email = email, password = password)
     }
 
-    fun setupListeners() {
+    private fun setupListeners() {
         binding.btEntrarLogin.setOnClickListener { login() }
     }
 
-    fun observeState() {
+    private fun observeState() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 LoginUiState.Idle -> {
@@ -63,6 +63,7 @@ class LoginFragment : Fragment() {
                 LoginUiState.Loading -> {
                     enableLogin(false)
                     showSpinner(true)
+                    hideError()
                 }
 
                 LoginUiState.Authenticated -> {
@@ -109,5 +110,9 @@ class LoginFragment : Fragment() {
             text = getString(message)
             visibility = View.VISIBLE
         }
+    }
+
+    fun hideError() {
+        binding.txtErroLogin.visibility = View.GONE
     }
 }
