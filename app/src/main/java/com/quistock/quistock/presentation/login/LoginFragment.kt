@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
+import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.databinding.FragmentLoginBinding
 import com.quistock.quistock.domain.model.LoginError
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -90,12 +92,7 @@ class LoginFragment : Fragment() {
     }
 
     fun redirectToMainPage() {
-        // TODO: redirect to main page
-        Toast.makeText(
-            context,
-            "Login funcionou!",
-            Toast.LENGTH_LONG,
-        ).show()
+        findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
     }
 
     fun notifyError(error: LoginError) {

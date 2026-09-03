@@ -46,6 +46,7 @@ koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koinBom" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-test = { module = "io.insert-koin:koin-test" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+navigation-test = { module = "androidx.navigation:navigation-testing", version.ref = "navigation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
