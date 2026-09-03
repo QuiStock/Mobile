@@ -2,14 +2,13 @@ package com.quistock.quistock.login
 
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
-import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -54,10 +53,10 @@ class LoginFragmentTests {
 
     @Test
     fun submit_withBlankForm_shouldNotCallAuthenticate() = runInstrumented {
-        onEmailFormField().perform(typeText("    "))
-        onPasswordFormField().perform(typeText("    "))
+        onEmailFormField().perform(typeText("    "), closeSoftKeyboard())
+        onPasswordFormField().perform(typeText("    "), closeSoftKeyboard())
 
-        onSubmitButtonView().perform(click())
+        onSubmitButtonView().perform(scrollTo(), click())
 
         verify(exactly = 0) { viewModel.authenticate(any(), any()) }
     }
@@ -66,10 +65,10 @@ class LoginFragmentTests {
     fun submit_withFormFilledIn_shouldCallAuthenticateWithCorrectCredentials() = runInstrumented {
         val email = "example@email.com"
         val password = "Abcd123!"
-        onEmailFormField().perform(typeText(email))
-        onPasswordFormField().perform(typeText(password))
+        onEmailFormField().perform(typeText(email), closeSoftKeyboard())
+        onPasswordFormField().perform(typeText(password), closeSoftKeyboard())
 
-        onSubmitButtonView().perform(click())
+        onSubmitButtonView().perform(scrollTo(), click())
 
         verify(exactly = 1) { viewModel.authenticate(email, password) }
     }
