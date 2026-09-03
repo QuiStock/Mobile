@@ -1,7 +1,12 @@
 package com.quistock.quistock.login
 
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
@@ -15,6 +20,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.R
+import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.login.LoginUiState
@@ -22,6 +28,8 @@ import com.quistock.quistock.presentation.login.LoginViewModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Test
@@ -82,10 +90,13 @@ class LoginFragmentTests {
     }
 
     @Test
-    fun authenticated_shouldNavigateToHomePage() = runInstrumented {
+    fun authenticated_shouldNavigateToHomePage() = runInstrumented { navController ->
         emitUiState(LoginUiState.Authenticated)
 
-        // TODO: implement tests
+        assertThat(
+            navController.currentDestination?.id,
+            `is`(NavGraph.Destinations.HOME),
+        )
     }
 
     @Test
@@ -129,9 +140,16 @@ class LoginFragmentTests {
         onErrorMessageView().check(matches(isDisplayed()))
     }
 
-    private fun runInstrumented(test: () -> Unit) {
-        ActivityScenario.launch(MainActivity::class.java).use {
-            test()
+    private fun runInstrumented(test: (NavController) -> Unit) {
+        lateinit var navController: NavController
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val navHost = activity.binding.navHostFragment
+                navController = navHost.findNavController()
+            }
+
+            test(navController)
         }
     }
 

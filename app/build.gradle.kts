@@ -250,4 +250,5 @@ dependencies {
     implementation(libs.koin.android)
     testImplementation(libs.koin.test)
     androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.navigation.test)
 }
