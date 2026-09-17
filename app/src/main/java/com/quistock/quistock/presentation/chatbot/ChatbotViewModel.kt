@@ -6,10 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quistock.quistock.domain.model.ChatbotRequest
 import com.quistock.quistock.domain.model.ChatbotResponse
+import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import kotlinx.coroutines.launch
 
-class ChatbotViewModel(private val sendMessageToChatbot: SendMessageToChatbotUseCase) : ViewModel() {
+class ChatbotViewModel(
+    private val sendMessageToChatbot: SendMessageToChatbotUseCase,
+    private val userPreferences: UserPreferences,
+) : ViewModel() {
     private val _answer = MutableLiveData<ChatbotResponse?>(null)
     val answer: LiveData<ChatbotResponse?> = _answer
 
@@ -20,8 +24,13 @@ class ChatbotViewModel(private val sendMessageToChatbot: SendMessageToChatbotUse
     fun sendMessage(message: String) {
         if (_uiState.value == ChatbotUiState.Loading) return
 
+        val userId = userPreferences.getUserId() ?: run {
+            _uiState.value = ChatbotUiState.Error.NOT_LOGGED_IN
+            return
+        }
+
         val request = ChatbotRequest(
-            userId = "", // TODO: recover from shared preferences
+            userId = userId,
             message = message,
         )
 
