@@ -3,7 +3,10 @@ package com.quistock.quistock.app.di
 import org.koin.dsl.module
 
 val externalSdksModule = module {
-    includes(firebaseSdkModule)
+    includes(
+        firebaseSdkModule,
+        retrofitSdkModule,
+    )
 }
 
 val appInternalModule = module {
@@ -13,6 +16,7 @@ val appInternalModule = module {
         presentationModule,
         observabilityModule,
         preferencesModule,
+        retrofitModule,
     )
 }
 
