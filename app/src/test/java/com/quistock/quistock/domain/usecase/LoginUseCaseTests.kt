@@ -2,6 +2,7 @@ package com.quistock.quistock.domain.usecase
 
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.AuthenticationPort
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
@@ -22,7 +23,7 @@ class LoginUseCaseTests {
 
     @Test
     fun `should return success from authentication port`() = runTest {
-        val expected = LoginResult.Success("example@email.com")
+        val expected = LoginResult.Success(User(id = "user-123", email = "example@email.com"))
         coEvery {
             authenticationPort.authenticate(any(), any())
         } returns expected

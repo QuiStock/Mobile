@@ -12,6 +12,7 @@ val appInternalModule = module {
         domainModule,
         presentationModule,
         observabilityModule,
+        preferencesModule,
     )
 }
 

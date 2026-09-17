@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-class LoginViewModel(val loginUseCase: LoginUseCase) : ViewModel() {
+class LoginViewModel(val loginUseCase: LoginUseCase, val userPreferences: UserPreferences) : ViewModel() {
     private val _uiState = MutableLiveData<LoginUiState>(LoginUiState.Idle)
     val uiState: LiveData<LoginUiState> = _uiState
 
@@ -26,8 +27,10 @@ class LoginViewModel(val loginUseCase: LoginUseCase) : ViewModel() {
             try {
                 when (val result = loginUseCase(email, password)) {
                     is LoginResult.Success -> {
-                        _userEmail.value = result.email
+                        val user = result.user
+                        _userEmail.value = user.email
                         _uiState.value = LoginUiState.Authenticated
+                        userPreferences.saveUserId(user.id)
                     }
 
                     is LoginError -> _uiState.value = LoginUiState.Error(result)
