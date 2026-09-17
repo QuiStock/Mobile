@@ -1,3 +1,3 @@
 package com.quistock.quistock.domain.model
 
-data class ChatbotRequest(val userId: Int, val message: String)
+data class ChatbotRequest(val userId: String, val message: String)
