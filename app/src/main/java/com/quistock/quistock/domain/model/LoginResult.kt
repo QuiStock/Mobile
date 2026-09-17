@@ -1,7 +1,7 @@
 package com.quistock.quistock.domain.model
 
 sealed interface LoginResult {
-    data class Success(val email: String) : LoginResult
+    data class Success(val user: User) : LoginResult
 }
 
 sealed interface LoginError : LoginResult {

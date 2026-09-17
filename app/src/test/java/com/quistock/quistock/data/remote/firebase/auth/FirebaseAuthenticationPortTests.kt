@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.ErrorReporter
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -46,11 +47,12 @@ class FirebaseAuthenticationPortTests {
     @Test
     fun `if Firebase returns a user with email, should return success`() = runTest {
         val email = "example@email.com"
-        mockSuccessfulAuthentication(email)
+        val userId = "user-123"
+        mockSuccessfulAuthentication(email, userId)
 
         val result = authenticationPort.authenticate(email, "Abc@123!")
 
-        result shouldBe LoginResult.Success(email)
+        result shouldBe LoginResult.Success(User(id = userId, email = email))
         verify(exactly = 1) {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
         }
@@ -135,11 +137,12 @@ class FirebaseAuthenticationPortTests {
         verify(exactly = 1) { errorReporter.record(exception, any()) }
     }
 
-    private fun mockSuccessfulAuthentication(email: String) {
+    private fun mockSuccessfulAuthentication(email: String, userId: String = "user-123") {
         val authResult = mockk<AuthResult>()
         val firebaseUser = mockk<FirebaseUser>()
         every { authResult.user } returns firebaseUser
         every { firebaseUser.email } returns email
+        every { firebaseUser.uid } returns userId
         every {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
         } returns Tasks.forResult(authResult)

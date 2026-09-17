@@ -1,5 +1,6 @@
 package com.quistock.quistock.app.di
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.junit.Test
@@ -12,6 +13,7 @@ class AppModulesTest {
     fun `internal dependency graph should be valid`() {
         appInternalModule.verify(
             extraTypes = listOf(
+                Context::class,
                 FirebaseAuth::class,
                 FirebaseCrashlytics::class,
             ),
