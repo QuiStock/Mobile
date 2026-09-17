@@ -7,4 +7,8 @@
     <string name="shared_preferences_user_id_key" translatable="false">
         user_id
     </string>
+
+    <string name="backend_base_url" translatable="false">
+        https://backend-base-url.invalid/api/
+    </string>
 </resources>

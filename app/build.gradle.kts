@@ -2,12 +2,29 @@ import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+val backendBaseUrlDummy = "https://backend-base-url.invalid/api/"
+
+val backendBaseUrl =
+    providers
+        .environmentVariable("BACKEND_BASE_URL")
+        .orElse(backendBaseUrlDummy)
+        .get()
+
+require(backendBaseUrl.endsWith("/")) {
+    "BACKEND_BASE_URL must end with '/': $backendBaseUrl"
+}
+
+require(backendBaseUrl.startsWith("http://") || backendBaseUrl.startsWith("https://")) {
+    "BACKEND_BASE_URL must use http:// or https://: $backendBaseUrl"
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
     alias(libs.plugins.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
+    alias(libs.plugins.kotlin.serialization)
     jacoco
 }
 
@@ -200,6 +217,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "backend_base_url", backendBaseUrl)
     }
 
     buildTypes {
@@ -221,6 +239,7 @@ android {
     }
 
     buildFeatures {
+        resValues = true
         viewBinding = true
     }
 }
@@ -241,6 +260,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.crashlytics)
@@ -248,6 +268,9 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.koin.test)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.navigation.test)
