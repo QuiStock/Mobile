@@ -62,6 +62,8 @@ spotless {
 detekt {
     buildUponDefaultConfig = true
     allRules = false
+    config.setFrom(files("detekt.yml"))
+    ignoreFailures = false
 }
 
 tasks.withType<dev.detekt.gradle.Detekt>().configureEach {

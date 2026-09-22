@@ -19,6 +19,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.net.HttpURLConnection
 
 class RetrofitChatbotRepositoryIntegrationTests {
     private lateinit var server: MockWebServer
@@ -136,7 +137,7 @@ class RetrofitChatbotRepositoryIntegrationTests {
     }
 
     private fun jsonResponse(body: String): MockResponse = MockResponse()
-        .setResponseCode(200)
+        .setResponseCode(HttpURLConnection.HTTP_OK)
         .setHeader("Content-Type", "application/json")
         .setBody(body)
 }

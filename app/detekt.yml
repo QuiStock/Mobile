@@ -1,0 +1,5 @@
+style:
+  MagicNumber:
+    active: true
+    ignoreNamedArgument: false
+    ignoreLocalVariableDeclaration: false
