@@ -15,7 +15,9 @@
 
         <action
             android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -30,6 +32,8 @@
 
         <action
             android:id="@+id/action_cadastroPessoalFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
+            app:destination="@id/loginFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/loginFragment" />
     </fragment>
 </navigation>
