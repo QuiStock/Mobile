@@ -37,7 +37,7 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth, val errorReport
         throw exception
     } catch (exception: Exception) {
         errorReporter.record(
-            exception = exception,
+            throwable = exception,
             context = mapOf(
                 "operation" to "login",
                 "provider" to "firebase_auth",

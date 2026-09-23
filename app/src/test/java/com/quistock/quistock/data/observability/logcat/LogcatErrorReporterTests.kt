@@ -16,7 +16,7 @@ class LogcatErrorReporterTests {
     fun setup() {
         mockkStatic(Log::class)
         every { Log.e(any(), any(), any()) } returns 0
-        errorReporter = LogcatErrorReporter()
+        errorReporter = LogcatErrorReporter(LogcatLogger())
     }
 
     @After
@@ -32,12 +32,12 @@ class LogcatErrorReporterTests {
             "provider" to "firebase_auth",
         )
 
-        errorReporter.record(exception, context)
+        errorReporter.record("Authentication failed", exception, context)
 
         verify(exactly = 1) {
             Log.e(
-                "QuiStockError",
-                "operation=login, provider=firebase_auth",
+                "QuiStock",
+                "Authentication failed [operation=login, provider=firebase_auth]",
                 exception,
             )
         }

@@ -16,16 +16,17 @@ class CompositeErrorReporterTests {
     @Test
     fun `when recording an error, should forward it to every reporter`() {
         val exception = IllegalStateException("Unexpected authentication state")
+        val message = "Authentication failed"
         val context = mapOf(
             "operation" to "login",
             "provider" to "firebase_auth",
         )
 
-        compositeErrorReporter.record(exception, context)
+        compositeErrorReporter.record(message, exception, context)
 
         verify(exactly = 1) {
-            firstReporter.record(exception, context)
-            secondReporter.record(exception, context)
+            firstReporter.record(message, exception, context)
+            secondReporter.record(message, exception, context)
         }
     }
 }

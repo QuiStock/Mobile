@@ -1,14 +1,13 @@
 package com.quistock.quistock.data.observability.logcat
 
-import android.util.Log
 import com.quistock.quistock.domain.port.ErrorReporter
 
-class LogcatErrorReporter : ErrorReporter {
-    override fun record(exception: Throwable, context: Map<String, String>) {
-        Log.e(
-            "QuiStockError",
-            context.entries.joinToString { "${it.key}=${it.value}" },
-            exception,
+class LogcatErrorReporter(private val logger: LogcatLogger) : ErrorReporter {
+    override fun record(msg: String?, throwable: Throwable, context: Map<String, String>) {
+        logger.error(
+            msg = msg ?: "",
+            context = context,
+            throwable = throwable,
         )
     }
 }
