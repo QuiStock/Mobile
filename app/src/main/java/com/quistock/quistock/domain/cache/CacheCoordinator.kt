@@ -1,7 +1,7 @@
 package com.quistock.quistock.domain.cache
 
+import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.port.Logger
-import com.quistock.quistock.domain.time.Clock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okio.IOException
@@ -30,13 +30,14 @@ abstract class CacheCoordinator<T>(
             if (cached == null) {
                 emit(CacheLoadState.Unavailable)
             } else {
-                val isExpired = cached.expiresAt?.let { it <= now } ?: false
+                val isExpired = cached.expiresAt <= now
                 emit(CacheLoadState.Data(value = cached.value, staleWarning = isExpired))
             }
             return@flow
         }
 
-        local.save(value = fresh, savedAt = now, expiresAt = resolveExpiration())
+        val freshCache = CachedValue(value = fresh, savedAt = now, expiresAt = resolveExpiration())
+        local.save(freshCache)
         emit(CacheLoadState.Data(value = fresh))
     }
 }

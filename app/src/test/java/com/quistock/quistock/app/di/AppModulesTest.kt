@@ -3,6 +3,7 @@ package com.quistock.quistock.app.di
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.quistock.quistock.data.local.dao.BigNumbersDao
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -18,6 +19,7 @@ class AppModulesTest {
                 FirebaseAuth::class,
                 FirebaseCrashlytics::class,
                 ChatbotApi::class,
+                BigNumbersDao::class,
             ),
         )
     }

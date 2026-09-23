@@ -3,7 +3,6 @@ package com.quistock.quistock.domain.port
 import com.quistock.quistock.domain.cache.CacheLoadState
 import com.quistock.quistock.domain.cache.CachedValue
 import com.quistock.quistock.domain.model.BigNumbers
-import com.quistock.quistock.domain.time.Clock
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
