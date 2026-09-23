@@ -34,11 +34,13 @@ class BigNumbersRepositoryTests {
         every { clock.nextMidnight() } returns nextMidnight
         coEvery { local.read() } returns null
         coEvery { remote.fetch() } returns numbers
-        coEvery { local.save(any(), any(), any()) } just Runs
+        coEvery { local.save(any()) } just Runs
 
         repository.load().first() shouldBe CacheLoadState.Data(numbers)
 
-        coVerify(exactly = 1) { local.save(numbers, now, nextMidnight) }
+        coVerify(exactly = 1) {
+            local.save(match { it.value == numbers && it.savedAt == now && it.expiresAt == nextMidnight })
+        }
     }
 
     @Test
@@ -51,7 +53,7 @@ class BigNumbersRepositoryTests {
         repository.load().first() shouldBe CacheLoadState.Unavailable
 
         verify(exactly = 1) { logger.warn("Failed to fetch remote", failure) }
-        coVerify(exactly = 0) { local.save(any(), any(), any()) }
+        coVerify(exactly = 0) { local.save(any()) }
     }
 
     @Test
