@@ -69,7 +69,7 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(any(), any()) }
+        verify(exactly = 1) { errorReporter.record(null, any(), any()) }
     }
 
     @Test
@@ -85,7 +85,7 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(any(), any()) }
+        verify(exactly = 1) { errorReporter.record(null, any(), any()) }
     }
 
     @Test
@@ -134,7 +134,7 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(exception, any()) }
+        verify(exactly = 1) { errorReporter.record(null, exception, any()) }
     }
 
     private fun mockSuccessfulAuthentication(email: String, userId: String = "user-123") {
