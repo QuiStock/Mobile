@@ -274,4 +274,5 @@ dependencies {
     testImplementation(libs.koin.test)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.navigation.test)
+    implementation(libs.kotlinx.datetime)
 }
