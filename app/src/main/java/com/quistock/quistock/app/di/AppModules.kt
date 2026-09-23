@@ -6,6 +6,7 @@ val externalSdksModule = module {
     includes(
         firebaseSdkModule,
         retrofitSdkModule,
+        roomSdkModule,
     )
 }
 
@@ -17,6 +18,7 @@ val appInternalModule = module {
         observabilityModule,
         preferencesModule,
         retrofitModule,
+        roomModule,
     )
 }
 
