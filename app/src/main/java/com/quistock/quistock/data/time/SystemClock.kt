@@ -1,6 +1,6 @@
 package com.quistock.quistock.data.time
 
-import com.quistock.quistock.domain.time.Clock
+import com.quistock.quistock.domain.port.Clock
 import kotlinx.datetime.TimeZone
 
 class SystemClock :
