@@ -5,11 +5,10 @@ import com.quistock.quistock.domain.time.Clock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okio.IOException
-import kotlin.collections.mapOf
 import kotlin.time.Duration
 import kotlin.time.Instant
 
-class CacheCoordinator<T>(
+abstract class CacheCoordinator<T>(
     private val remote: RemoteSource<T>,
     private val local: LocalSource<T>,
     private val clock: Clock,
