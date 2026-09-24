@@ -11,9 +11,8 @@ import kotlin.time.Instant
 abstract class Clock(val clock: Clock, val timeZone: TimeZone) {
     fun now(): Instant = clock.now()
 
-    fun nextMidnight(): Instant = clock.now()
+    fun midnightOfDay(day: Instant): Instant = day
         .toLocalDateTime(timeZone)
         .date
-        .plus(value = 1, unit = DateTimeUnit.DAY)
         .atStartOfDayIn(timeZone)
 }
