@@ -8,7 +8,6 @@ import com.quistock.quistock.app.di.roomSdkModule
 import com.quistock.quistock.data.local.dao.BigNumbersDao
 import com.quistock.quistock.data.local.entity.BigNumbersEntity
 import com.quistock.quistock.data.local.repository.RoomBigNumbersRepository
-import com.quistock.quistock.domain.cache.CachedValue
 import com.quistock.quistock.domain.model.BigNumbers
 import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import kotlinx.coroutines.runBlocking
@@ -44,25 +43,33 @@ class RoomBigNumbersIntegrationTests {
         val earlier = Instant.parse("2026-09-22T12:00:00Z")
         val later = Instant.parse("2026-09-23T12:00:00Z")
         val dao = database.bigNumbersDao()
-        dao.insert(entity(savedAt = later, count = 2))
-        dao.insert(entity(savedAt = earlier, count = 1))
+        dao.insert(entity(createdAt = later, count = 2))
+        dao.insert(entity(createdAt = earlier, count = 1))
 
         assertEquals(2, dao.getLatest()?.nearExpirationProductCount)
     }
 
     @Test
-    fun repositoryPersistsAndReadsCachedValueThroughRoom() = runBlocking {
+    fun repositoryPersistsAndReadsBigNumbersThroughRoom() = runBlocking {
         val repository = RoomBigNumbersRepository(database.bigNumbersDao())
-        val savedAt = Instant.parse("2026-09-23T12:34:56.789Z")
-        val expiresAt = Instant.parse("2026-09-24T00:00:00Z")
-        val numbers = BigNumbers(12, 3, 7)
+        val createdAt = Instant.parse("2026-09-23T12:34:56.789Z")
+        val numbers = BigNumbers(12, 3, 7, createdAt)
 
-        repository.save(CachedValue(numbers, savedAt, expiresAt))
+        repository.save(numbers)
 
         val result = repository.read()
-        assertEquals(numbers, result?.value)
-        assertEquals(savedAt, result?.savedAt)
-        assertEquals(expiresAt, result?.expiresAt)
+        assertEquals(numbers, result)
+    }
+
+    @Test
+    fun repositoryReplacesCachedValue() = runBlocking {
+        val repository = RoomBigNumbersRepository(database.bigNumbersDao())
+        val createdAt = Instant.parse("2026-09-23T12:34:56Z")
+
+        repository.save(BigNumbers(1, 2, 3, createdAt))
+        repository.save(BigNumbers(4, 5, 6, createdAt))
+
+        assertEquals(BigNumbers(4, 5, 6, createdAt), repository.read())
     }
 
     @Test
@@ -82,9 +89,8 @@ class RoomBigNumbersIntegrationTests {
         }
     }
 
-    private fun entity(savedAt: Instant, count: Int) = BigNumbersEntity(
-        savedAt = savedAt,
-        expiresAt = Instant.parse("2026-09-24T00:00:00Z"),
+    private fun entity(createdAt: Instant, count: Int) = BigNumbersEntity(
+        createdAt = createdAt,
         nearExpirationProductCount = count,
         criticalAnalyzedFlowCount = 3,
         activeActionCount = 7,

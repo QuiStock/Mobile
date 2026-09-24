@@ -7,7 +7,7 @@ import com.quistock.quistock.data.local.converter.InstantConverters
 import com.quistock.quistock.data.local.dao.BigNumbersDao
 import com.quistock.quistock.data.local.entity.BigNumbersEntity
 
-@Database(entities = [BigNumbersEntity::class], version = 1)
+@Database(entities = [BigNumbersEntity::class], version = 2)
 @TypeConverters(InstantConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bigNumbersDao(): BigNumbersDao
