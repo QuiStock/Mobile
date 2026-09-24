@@ -43,7 +43,7 @@ class CrashlyticsErrorReporterTests {
             crashlytics.recordException(exception, capture(customKeys))
         } just runs
 
-        errorReporter.record("Authentication failed", exception, context)
+        errorReporter.record(exception, context)
 
         verify(exactly = 1) {
             crashlytics.recordException(exception, any<KeyValueBuilder.() -> Unit>())

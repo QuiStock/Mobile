@@ -11,6 +11,7 @@ import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
 import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.ErrorReporter
+import com.quistock.quistock.domain.port.Logger
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -22,6 +23,7 @@ import org.junit.Test
 class FirebaseAuthenticationPortTests {
     private val firebaseAuth = mockk<FirebaseAuth>()
     private val errorReporter = mockk<ErrorReporter>(relaxUnitFun = true)
+    private val logger = mockk<Logger>(relaxUnitFun = true)
     private lateinit var authenticationPort: FirebaseAuthenticationPort
 
     @Before
@@ -29,6 +31,7 @@ class FirebaseAuthenticationPortTests {
         authenticationPort = FirebaseAuthenticationPort(
             firebaseAuth = firebaseAuth,
             errorReporter = errorReporter,
+            logger = logger,
         )
     }
 
@@ -69,7 +72,12 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(null, any(), any()) }
+        verify(exactly = 1) {
+            errorReporter.record(
+                match { it is IllegalStateException && it.message == "Login succeeded without an user" },
+                mapOf("operation" to "login", "provider" to "firebase_auth"),
+            )
+        }
     }
 
     @Test
@@ -85,7 +93,12 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(null, any(), any()) }
+        verify(exactly = 1) {
+            errorReporter.record(
+                match { it is IllegalStateException && it.message == "Login succeeded without an email" },
+                mapOf("operation" to "login", "provider" to "firebase_auth"),
+            )
+        }
     }
 
     @Test
@@ -134,7 +147,9 @@ class FirebaseAuthenticationPortTests {
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
         result shouldBe LoginError.UnexpectedError
-        verify(exactly = 1) { errorReporter.record(null, exception, any()) }
+        verify(exactly = 1) {
+            errorReporter.record(exception, mapOf("operation" to "login", "provider" to "firebase_auth"))
+        }
     }
 
     private fun mockSuccessfulAuthentication(email: String, userId: String = "user-123") {

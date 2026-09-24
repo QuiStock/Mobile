@@ -8,9 +8,8 @@ import kotlin.time.Instant
 @Entity(tableName = "big_numbers")
 data class BigNumbersEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    @ColumnInfo(name = "saved_at") val savedAt: Instant,
-    @ColumnInfo(name = "expires_at") val expiresAt: Instant,
     @ColumnInfo(name = "near_expiration_product_count") val nearExpirationProductCount: Int,
     @ColumnInfo(name = "critical_analyzed_flow_count") val criticalAnalyzedFlowCount: Int,
     @ColumnInfo(name = "active_action_count") val activeActionCount: Int,
+    @ColumnInfo(name = "created_at") val createdAt: Instant,
 )
