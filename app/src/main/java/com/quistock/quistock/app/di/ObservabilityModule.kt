@@ -1,8 +1,6 @@
 package com.quistock.quistock.app.di
 
-import com.quistock.quistock.data.observability.CompositeErrorReporter
 import com.quistock.quistock.data.observability.crashlytics.CrashlyticsErrorReporter
-import com.quistock.quistock.data.observability.logcat.LogcatErrorReporter
 import com.quistock.quistock.data.observability.logcat.LogcatLogger
 import com.quistock.quistock.domain.port.ErrorReporter
 import com.quistock.quistock.domain.port.Logger
@@ -12,13 +10,5 @@ import org.koin.dsl.module
 val observabilityModule = module {
     singleOf(::LogcatLogger)
     single<Logger> { get<LogcatLogger>() }
-
-    single<ErrorReporter> {
-        CompositeErrorReporter(
-            reporters = listOf(
-                LogcatErrorReporter(get()),
-                CrashlyticsErrorReporter(get()),
-            ),
-        )
-    }
+    single<ErrorReporter> { CrashlyticsErrorReporter(get()) }
 }
