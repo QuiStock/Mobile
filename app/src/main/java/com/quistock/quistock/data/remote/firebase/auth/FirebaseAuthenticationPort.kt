@@ -4,8 +4,8 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.quistock.quistock.domain.model.LoginError
-import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LegacyLoginResult
 import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.AuthenticationPort
 import com.quistock.quistock.domain.port.ErrorReporter
@@ -16,7 +16,7 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth, val errorReport
     AuthenticationPort {
 
     @Suppress("TooGenericExceptionCaught")
-    override suspend fun authenticate(email: String, password: String): LoginResult = try {
+    override suspend fun authenticate(email: String, password: String): LegacyLoginResult = try {
         val result = firebaseAuth
             .signInWithEmailAndPassword(email.trim(), password)
             .await()
@@ -26,13 +26,13 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth, val errorReport
         val userId = firebaseUser.uid
 
         val user = User(id = userId, email = email)
-        LoginResult.Success(user = user)
+        LegacyLoginResult.Success(user = user)
     } catch (_: FirebaseAuthInvalidCredentialsException) {
-        LoginError.InvalidCredentials
+        LegacyLoginError.InvalidCredentials
     } catch (_: FirebaseAuthInvalidUserException) {
-        LoginError.UserDisabled
+        LegacyLoginError.UserDisabled
     } catch (_: FirebaseNetworkException) {
-        LoginError.NetworkError
+        LegacyLoginError.NetworkError
     } catch (exception: CancellationException) {
         throw exception
     } catch (exception: Exception) {
@@ -44,6 +44,6 @@ class FirebaseAuthenticationPort(val firebaseAuth: FirebaseAuth, val errorReport
             ),
         )
 
-        LoginError.UnexpectedError
+        LegacyLoginError.UnexpectedError
     }
 }

@@ -1,7 +1,7 @@
 package com.quistock.quistock.domain.usecase
 
-import com.quistock.quistock.domain.model.LoginError
-import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LegacyLoginResult
 import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.AuthenticationPort
 import io.kotest.matchers.shouldBe
@@ -12,18 +12,18 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-class LoginUseCaseTests {
+class LegacyLoginUseCaseTests {
     private val authenticationPort = mockk<AuthenticationPort>()
-    private lateinit var useCase: LoginUseCase
+    private lateinit var useCase: LegacyLoginUseCase
 
     @Before
     fun setup() {
-        useCase = LoginUseCase(authenticationPort)
+        useCase = LegacyLoginUseCase(authenticationPort)
     }
 
     @Test
     fun `should return success from authentication port`() = runTest {
-        val expected = LoginResult.Success(User(id = "user-123", email = "example@email.com"))
+        val expected = LegacyLoginResult.Success(User(id = "user-123", email = "example@email.com"))
         coEvery {
             authenticationPort.authenticate(any(), any())
         } returns expected
@@ -38,7 +38,7 @@ class LoginUseCaseTests {
 
     @Test
     fun `should return error from authentication port`() = runTest {
-        val expected = LoginError.InvalidCredentials
+        val expected = LegacyLoginError.InvalidCredentials
         coEvery {
             authenticationPort.authenticate(any(), any())
         } returns expected
