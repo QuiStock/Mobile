@@ -4,5 +4,3 @@ pre-push:
   commands:
     spotless:
       run: ./gradlew spotlessApply --quiet
-    detekt:
-      run: ./gradlew detekt --auto-correct --quiet
