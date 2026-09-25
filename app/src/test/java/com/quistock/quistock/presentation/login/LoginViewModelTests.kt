@@ -2,11 +2,11 @@ package com.quistock.quistock.presentation.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
-import com.quistock.quistock.domain.model.LoginError
-import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LegacyLoginResult
 import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.UserPreferences
-import com.quistock.quistock.domain.usecase.LoginUseCase
+import com.quistock.quistock.domain.usecase.LegacyLoginUseCase
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -30,7 +30,7 @@ class LoginViewModelTests {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val loginUseCase = mockk<LoginUseCase>()
+    private val loginUseCase = mockk<LegacyLoginUseCase>()
     private val userPreferences = mockk<UserPreferences>(relaxUnitFun = true)
     private lateinit var loginViewModel: LoginViewModel
 
@@ -47,7 +47,7 @@ class LoginViewModelTests {
 
     @Test
     fun `if auth has not answered yet, state should be loading`() = runTest {
-        val authResult = CompletableDeferred<LoginResult>()
+        val authResult = CompletableDeferred<LegacyLoginResult>()
         coEvery {
             loginUseCase(any(), any())
         } coAnswers { authResult.await() }
@@ -64,7 +64,7 @@ class LoginViewModelTests {
 
     @Test
     fun `if state is loading, login use case should not be called again`() = runTest {
-        val authResult = CompletableDeferred<LoginResult>()
+        val authResult = CompletableDeferred<LegacyLoginResult>()
         coEvery {
             loginUseCase(any(), any())
         } coAnswers { authResult.await() }
@@ -87,7 +87,7 @@ class LoginViewModelTests {
         val userId = "user-123"
         coEvery {
             loginUseCase(any(), any())
-        } returns LoginResult.Success(User(id = userId, email = email))
+        } returns LegacyLoginResult.Success(User(id = userId, email = email))
 
         loginViewModel.authenticate(email, "Abc@123!")
         advanceUntilIdle()
@@ -100,25 +100,25 @@ class LoginViewModelTests {
 
     @Test
     fun `if credentials are invalid, state should contain invalid credentials error`() = runTest {
-        verifyErrorResult(LoginError.InvalidCredentials)
+        verifyErrorResult(LegacyLoginError.InvalidCredentials)
     }
 
     @Test
     fun `if user is disabled, state should contain user disabled error`() = runTest {
-        verifyErrorResult(LoginError.UserDisabled)
+        verifyErrorResult(LegacyLoginError.UserDisabled)
     }
 
     @Test
     fun `if network fails, state should contain network error`() = runTest {
-        verifyErrorResult(LoginError.NetworkError)
+        verifyErrorResult(LegacyLoginError.NetworkError)
     }
 
     @Test
     fun `if use case returns unexpected error, state should preserve it`() = runTest {
-        verifyErrorResult(LoginError.UnexpectedError)
+        verifyErrorResult(LegacyLoginError.UnexpectedError)
     }
 
-    private suspend fun TestScope.verifyErrorResult(error: LoginError) {
+    private suspend fun TestScope.verifyErrorResult(error: LegacyLoginError) {
         coEvery {
             loginUseCase(any(), any())
         } returns error
@@ -132,5 +132,5 @@ class LoginViewModelTests {
         verify(exactly = 0) { userPreferences.saveUserId(any()) }
     }
 
-    private fun successfulLoginResult() = LoginResult.Success(User(id = "user-123", email = "example@email.com"))
+    private fun successfulLoginResult() = LegacyLoginResult.Success(User(id = "user-123", email = "example@email.com"))
 }

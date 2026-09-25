@@ -7,8 +7,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
-import com.quistock.quistock.domain.model.LoginError
-import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LegacyLoginResult
 import com.quistock.quistock.domain.model.User
 import com.quistock.quistock.domain.port.ErrorReporter
 import com.quistock.quistock.domain.port.Logger
@@ -55,7 +55,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate(email, "Abc@123!")
 
-        result shouldBe LoginResult.Success(User(id = userId, email = email))
+        result shouldBe LegacyLoginResult.Success(User(id = userId, email = email))
         verify(exactly = 1) {
             firebaseAuth.signInWithEmailAndPassword(any(), any())
         }
@@ -71,7 +71,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.UnexpectedError
+        result shouldBe LegacyLoginError.UnexpectedError
         verify(exactly = 1) {
             errorReporter.record(
                 match { it is IllegalStateException && it.message == "Login succeeded without an user" },
@@ -92,7 +92,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.UnexpectedError
+        result shouldBe LegacyLoginError.UnexpectedError
         verify(exactly = 1) {
             errorReporter.record(
                 match { it is IllegalStateException && it.message == "Login succeeded without an email" },
@@ -110,7 +110,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "wrong-password")
 
-        result shouldBe LoginError.InvalidCredentials
+        result shouldBe LegacyLoginError.InvalidCredentials
     }
 
     @Test
@@ -122,7 +122,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.UserDisabled
+        result shouldBe LegacyLoginError.UserDisabled
     }
 
     @Test
@@ -134,7 +134,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.NetworkError
+        result shouldBe LegacyLoginError.NetworkError
     }
 
     @Test
@@ -146,7 +146,7 @@ class FirebaseAuthenticationPortTests {
 
         val result = authenticationPort.authenticate("example@email.com", "Abc@123!")
 
-        result shouldBe LoginError.UnexpectedError
+        result shouldBe LegacyLoginError.UnexpectedError
         verify(exactly = 1) {
             errorReporter.record(exception, mapOf("operation" to "login", "provider" to "firebase_auth"))
         }

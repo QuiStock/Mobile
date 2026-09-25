@@ -20,7 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
-import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.domain.model.LegacyLoginError
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.login.LoginUiState
 import com.quistock.quistock.presentation.login.LoginViewModel
@@ -100,7 +100,7 @@ class LoginFragmentTests {
 
     @Test
     fun networkError_shouldEnableSubmitButtonAndHideSpinnerAndShowNetworkErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LoginError.NetworkError))
+        emitUiState(LoginUiState.Error(LegacyLoginError.NetworkError))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -110,7 +110,7 @@ class LoginFragmentTests {
 
     @Test
     fun userDisabledError_shouldEnableSubmitButtonAndHideSpinnerAndShowUserDisabledErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LoginError.UserDisabled))
+        emitUiState(LoginUiState.Error(LegacyLoginError.UserDisabled))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -121,7 +121,7 @@ class LoginFragmentTests {
     @Test
     fun invalidCredentialsError_shouldEnableSubmitButtonAndHideSpinnerAndShowInvalidCredentialsErrorMessage() =
         runInstrumented {
-            emitUiState(LoginUiState.Error(LoginError.InvalidCredentials))
+            emitUiState(LoginUiState.Error(LegacyLoginError.InvalidCredentials))
 
             onSubmitButtonView().check(matches(isEnabled()))
             onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -131,7 +131,7 @@ class LoginFragmentTests {
 
     @Test
     fun unexpectedError_shouldEnableSubmitButtonAndHideSpinnerAndShowUnexpectedErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LoginError.UnexpectedError))
+        emitUiState(LoginUiState.Error(LegacyLoginError.UnexpectedError))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))

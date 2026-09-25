@@ -1,17 +1,15 @@
 package com.quistock.quistock.presentation.login
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.databinding.FragmentLoginBinding
-import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.domain.model.LegacyLoginError
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginFragment : Fragment() {
@@ -95,12 +93,12 @@ class LoginFragment : Fragment() {
         findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
     }
 
-    fun notifyError(error: LoginError) {
+    fun notifyError(error: LegacyLoginError) {
         val message = when (error) {
-            LoginError.NetworkError -> R.string.erro_login_internet
-            LoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
-            LoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
-            LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
+            LegacyLoginError.NetworkError -> R.string.erro_login_internet
+            LegacyLoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
+            LegacyLoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
+            LegacyLoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 
         binding.txtErroLogin.apply {

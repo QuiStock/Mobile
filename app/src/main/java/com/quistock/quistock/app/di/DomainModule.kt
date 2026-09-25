@@ -4,7 +4,7 @@ import com.quistock.quistock.data.remote.mock.MockRemoteBigNumbersRepository
 import com.quistock.quistock.data.time.SystemClock
 import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.port.RemoteBigNumbersRepository
-import com.quistock.quistock.domain.usecase.LoginUseCase
+import com.quistock.quistock.domain.usecase.LegacyLoginUseCase
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import org.koin.core.module.dsl.bind
@@ -17,7 +17,7 @@ val domainModule = module {
 
     singleOf(::MockRemoteBigNumbersRepository) { bind<RemoteBigNumbersRepository>() }
 
-    factoryOf(::LoginUseCase)
+    factoryOf(::LegacyLoginUseCase)
     factoryOf(::SendMessageToChatbotUseCase)
     factoryOf(::RefreshBigNumbersUseCase)
 }
