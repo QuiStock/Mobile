@@ -5,7 +5,7 @@ import com.google.firebase.crashlytics.recordException
 import com.quistock.quistock.domain.port.ErrorReporter
 
 class CrashlyticsErrorReporter(val crashlytics: FirebaseCrashlytics) : ErrorReporter {
-    override fun record(exception: Throwable, context: Map<String, String>) = crashlytics.recordException(exception) {
+    override fun record(throwable: Throwable, context: Map<String, String>) = crashlytics.recordException(throwable) {
         context.forEach { (name, value) -> key(name, value) }
     }
 }
