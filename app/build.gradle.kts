@@ -204,6 +204,10 @@ tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification"
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.quistock.quistock"
     compileSdk {
@@ -287,4 +291,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
 
     ksp(libs.androidx.room.compiler)
+    ksp(project(":secret-processor"))
 }
