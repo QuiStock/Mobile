@@ -1,12 +1,12 @@
 package com.quistock.quistock.domain.model
 
-sealed interface LoginResult {
-    data class Success(val user: User) : LoginResult
+sealed interface LegacyLoginResult {
+    data class Success(val user: User) : LegacyLoginResult
 }
 
-sealed interface LoginError : LoginResult {
-    data object UnexpectedError : LoginError
-    data object InvalidCredentials : LoginError
-    data object UserDisabled : LoginError
-    data object NetworkError : LoginError
+sealed interface LegacyLoginError : LegacyLoginResult {
+    data object UnexpectedError : LegacyLoginError
+    data object InvalidCredentials : LegacyLoginError
+    data object UserDisabled : LegacyLoginError
+    data object NetworkError : LegacyLoginError
 }
