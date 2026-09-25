@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "QuiStock"
 include(":app")
+include(":secret-processor")
