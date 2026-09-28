@@ -8,6 +8,11 @@ Briefly explain the problem solved or the new feature implemented.
 - [QUIS-XXX](https://quistock.atlassian.net/browse/QUIS-XXX)
 
 
+## Spec (SDD)
+
+Link to `docs/sdd/specs/...` or explain why this change does not need a spec. List any acceptance criteria that remain open.
+
+
 ## Change category
 
 - [ ] UI
