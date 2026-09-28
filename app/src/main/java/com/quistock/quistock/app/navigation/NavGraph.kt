@@ -10,6 +10,8 @@ object NavGraph {
         val HOME = R.id.homeFragment
         val REGISTER = R.id.cadastroPessoalFragment
         val INTERFERENCES = R.id.interferencesFragment
+        val ORDER = R.id.orderFragment
+        val PROMOTION = R.id.promotionFragment
     }
 
     object Actions {
@@ -17,5 +19,7 @@ object NavGraph {
         val LOGIN_TO_HOME = R.id.action_loginFragment_to_homeFragment
         val REGISTER_TO_LOGIN = R.id.action_cadastroPessoalFragment_to_loginFragment
         val HOME_TO_INTERFERENCES = R.id.action_homeFragment_to_interferencesFragment
+        val HOME_TO_ORDER = R.id.action_homeFragment_to_orderFragment
+        val HOME_TO_PROMOTION = R.id.action_homeFragment_to_promotionFragment
     }
 }
