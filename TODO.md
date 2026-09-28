@@ -1,306 +1,135 @@
-# Próximos passos do projeto Mobile
+# QuiStock Mobile roadmap
 
-Este documento começa a valer depois da conclusão das três PRs de preparação:
+This roadmap follows the initial build, production-defaults, and CI/TDD preparation work. It is not an instruction to implement every item. Start an item only when its entry criterion is met, and deliver it in its own PR or with the feature that needs it. Check the current code and CI before treating an item as unfinished.
 
-1. baseline de build e qualidade;
-2. defaults de produção;
-3. CI e processo de TDD.
+## General rule for new features
 
-Os itens abaixo não devem ser implementados apenas porque aparecem nesta lista. Cada um possui um critério explícito de entrada para evitar complexidade prematura. Quando o critério for atendido, a implementação deve entrar em uma PR própria ou junto da primeira funcionalidade que realmente a exigir.
+**Start when:** There is a real story, requirement, or bug to address.
 
-## Regra geral para novas funcionalidades
+**Do:** Follow Red–Green–Refactor; test observable success, failure, and relevant boundaries; update documentation when setup, architecture, or operation changes. Do not add coverage exclusions to make a gate pass. Use a spec for behavior changes as described in [docs/sdd/README.md](docs/sdd/README.md).
 
-### Critério para iniciar
+**Done when:** Behavioral tests detect a deliberately broken implementation; the relevant CI checks pass; the PR explains the behavior and evidence. CI runs `spotlessCheck`, `lintDebug`, `detekt`, debug/release builds, unit tests, and instrumented tests. Its `jacocoAggregateCoverageVerification` gate combines unit and instrumented coverage and requires at least 80% line and 70% branch coverage. Local `jacocoTestCoverageVerification` requires a connected device or emulator.
 
-- Existe uma história, requisito ou correção de bug real a ser implementada.
+## 1. Keep feature architecture aligned with real needs
 
-### Implementar
+**Status:** In use. Login and chatbot already cross presentation, domain, and data boundaries; Koin is configured. This is an ongoing rule, not a request to introduce another architecture.
 
-- Desenvolver seguindo o ciclo Red-Green-Refactor.
-- Testar resultados observáveis, caminhos de sucesso e erros relevantes.
-- Manter pelo menos 80% de cobertura de linhas no código considerado pelo JaCoCo.
-- Não criar exclusões de cobertura para fazer o gate passar.
-- Atualizar documentação quando a mudança afetar setup, arquitetura ou operação.
+**Start when:** A feature needs network access, persistence, authentication, or a reusable business rule.
 
-### Concluído quando
+**Do:** Separate UI, state, use cases, and data access. Add interfaces at external boundaries or where multiple implementations are useful. Record significant decisions in the README or a short decision record.
 
-- Os testes falham sem a implementação ou com o comportamento deliberadamente quebrado.
-- `spotlessCheck`, `lintDebug`, `jacocoTestCoverageVerification` e `assembleRelease` passam.
-- A PR explica o comportamento entregue e os testes adicionados.
+**Done when:** Business rules can be tested without real Android UI, network, or database dependencies; the UI does not contain business rules or direct infrastructure access; the structure is justified by existing features.
 
-## 1. Definir a arquitetura das funcionalidades reais
+## 2. Add instrumented tests for critical user flows
 
-### Critério para iniciar
+**Status:** In use. An instrumented login test exists and runs in CI. Assess coverage for each new complete flow.
 
-- A primeira funcionalidade real exigir mais do que uma tela com estado local, por exemplo acesso a rede, persistência, autenticação ou uma regra de negócio reutilizável.
+**Start when:** A real end-to-end user flow can be exercised, such as adding a product, viewing stock, or recording a movement.
 
-### Implementar
+**Do:** Test navigation, interaction, and visible results for the main path. Use controlled data and avoid unstable external services. Keep tests repeatable and independent of run order.
 
-- Separar responsabilidades de UI, estado, casos de uso e acesso a dados.
-- Definir interfaces apenas nos pontos em que exista uma dependência externa ou mais de uma implementação útil.
-- Adotar injeção de dependências somente quando a criação manual dos objetos começar a dificultar testes ou composição.
-- Registrar as decisões relevantes em uma seção de arquitetura no README ou em um ADR curto.
+**Done when:** The test fails if the main flow breaks and the team has a documented local command: `./gradlew connectedDebugAndroidTest` with a device or emulator.
 
-### Concluído quando
+## 3. Maintain branch coverage
 
-- Regras de negócio podem ser testadas sem Activity, Fragment, rede ou banco reais.
-- A UI não contém regras de negócio ou acesso direto à infraestrutura.
-- A estrutura possui uma justificativa baseada em funcionalidades existentes, e não em possíveis necessidades futuras.
+**Status:** Coverage thresholds are configured: 80% of lines and 70% of branches in the combined JaCoCo gate.
 
-## 2. Adicionar testes instrumentados dos fluxos críticos
+**Start when:** A change introduces meaningful decisions, such as validation, permissions, stock states, or network-result handling.
 
-### Critério para iniciar
+**Do:** Test relevant success, failure, and boundary paths. Avoid tests that merely execute irrelevant or unreachable branches.
 
-- O primeiro fluxo real completo puder ser executado por um usuário, como cadastrar produto, consultar estoque ou registrar uma movimentação.
+**Done when:** Critical decisions have understandable behavioral tests and any deliberate gaps are explained in the PR without broad package exclusions.
 
-### Implementar
+## 4. Review persistence and backup policy
 
-- Criar pelo menos um teste instrumentado para o caminho principal do fluxo.
-- Cobrir navegação, interação e resultado visível para o usuário.
-- Usar dados controlados e evitar dependência de serviços externos instáveis.
-- Executar os testes instrumentados na `main`, manualmente antes das entregas ou em job agendado, caso o emulador seja caro para toda PR.
+**Status:** Local user preferences exist and Android backup is disabled. Review the data inventory before enabling backup or adding user-created data.
 
-### Concluído quando
+**Start when:** Persistence grows to include session, database, files, or other user-created data, or backup becomes a product requirement.
 
-- O teste falha se o fluxo principal for quebrado.
-- O teste pode ser repetido sem depender da ordem dos testes ou de dados deixados por uma execução anterior.
-- A equipe possui um comando documentado para executá-lo localmente.
+**Do:** Classify data as restorable, temporary, sensitive, or device-specific. Keep tokens, credentials, caches, and device identifiers out of backup. If restoration has value, define explicit inclusion and exclusion rules and test reinstall and device transfer before release.
 
-## 3. Adicionar cobertura de branches
+**Done when:** Included and excluded data are documented; no secret or device-specific identifier is restored; restoration behavior is predictable and tested.
 
-**Status:** Concluído.
+## 5. Separate Firebase environments
 
-### Critério para iniciar
+**Start when:** External users test the app; real customer, order, stock, or credential data is stored; development activity could affect a demo or retained data; experimental rules or indexes could affect production; or debug and release metrics must be separated.
 
-- Existirem regras de negócio reais com decisões relevantes, como validações, estados de estoque, permissões ou tratamento de resultados de rede.
+**Do:** Create at least `dev` and `prod` environments. Add product flavors only then. Place `google-services.json` in the appropriate source sets, prevent development builds from writing to production, and document how authorized team members obtain configuration.
 
-### Implementar
+**Done when:** Development builds cannot accidentally write to production, environments can be identified in data and metrics, and both variants build in CI.
 
-- Adicionar ao JaCoCo uma meta inicial de 70% de cobertura de branches.
-- Manter 80% de cobertura de linhas.
-- Testar caminhos de sucesso, falha e limites relevantes, sem criar testes apenas para executar branches impossíveis ou sem valor.
+## 6. Harden backend access rules
 
-### Concluído quando
+**Status:** Firebase Auth and an internal backend client are present. Review rules for the specific backend resources a feature uses; client-side validation alone is insufficient.
 
-- A meta passa com testes comportamentais compreensíveis.
-- Cada decisão crítica possui testes para os resultados relevantes.
-- Casos deliberadamente não cobertos estão justificados na PR, sem exclusões genéricas de pacotes.
+**Start when:** A feature exposes protected data through Firebase or another network backend.
 
-## 4. Revisar persistência e política de backup
+**Do:** Apply least privilege; test allowed and denied access; define ownership and roles only when required.
 
-### Critério para iniciar
+**Done when:** Unauthenticated or unauthorized users cannot access protected data, rules have automated tests or a reproducible validation procedure, and broad temporary public access is removed.
 
-- O aplicativo começar a persistir preferências, banco local, arquivos, sessão ou qualquer dado criado pelo usuário.
+## 7. Prepare signing, AAB, and distribution
 
-### Implementar
+**Start when:** The team decides to distribute the app beyond its own devices, including to testers or reviewers.
 
-- Classificar os dados em restauráveis, temporários, sensíveis e específicos do dispositivo.
-- Manter tokens, credenciais, caches e identificadores de dispositivo fora do backup.
-- Continuar com backup desativado se nenhum dado precisar ser restaurado.
-- Caso o backup tenha valor real, trocar a proibição total por regras explícitas de inclusão e exclusão.
-- Testar restauração e troca de dispositivo antes de habilitar backup em um release.
+**Do:** Produce an Android App Bundle, protect the upload key outside Git, make `versionCode` monotonic, relate `versionName` to tags, retain R8 mappings, and write a manual release checklist before automating publication.
 
-### Concluído quando
+**Done when:** An authorized team member can reproduce a signed build and relate the artifact, source, version, and mapping without changing the app identity.
 
-- Existe uma lista documentada dos dados incluídos e excluídos.
-- Nenhum segredo, sessão ou identificador específico do dispositivo é restaurado.
-- O comportamento após reinstalação ou restauração é previsível e testado.
+## 8. Expand the Android test matrix
 
-## 5. Separar ambientes Firebase
+**Start when:** Behavior varies by Android version, uses version-sensitive APIs, or a device-specific failure appears.
 
-### Critério para iniciar
+**Do:** Test at least the supported `minSdk` and current `targetSdk`. Add intermediate versions only for relevant behavior. Keep critical flows in CI and run a wider matrix before releases or on a schedule if needed.
 
-Implementar um segundo ambiente Firebase quando pelo menos uma destas condições ocorrer:
+**Done when:** Affected flows pass at the supported extremes, differences are tested or documented, and CI remains practical.
 
-- usuários externos começarem a testar o aplicativo;
-- pedidos, clientes, estoque ou credenciais reais forem armazenados;
-- dados de desenvolvimento puderem atrapalhar uma demonstração ou avaliação;
-- regras, índices ou configurações experimentais puderem afetar dados que precisam ser preservados;
-- métricas de debug e release precisarem ser analisadas separadamente.
+## 9. Automate dependency updates and verification
 
-### Implementar
+**Start when:** Direct dependencies become numerous, manual updates are missed, or transitive changes cause hard-to-diagnose failures.
 
-- Criar no mínimo os ambientes `dev` e `prod`.
-- Adicionar product flavors somente nesse momento.
-- Manter arquivos `google-services.json` nos respectivos source sets.
-- Garantir que builds de desenvolvimento não escrevam no ambiente de produção.
-- Documentar como cada integrante obtém as configurações permitidas.
+**Do:** Configure weekly Dependabot or Renovate PRs. Keep major AGP, Gradle, and Kotlin updates separate. Add dependency verification or locking if resolution varies between machines. Run the full pipeline before accepting updates.
 
-### Concluído quando
+**Done when:** Updates arrive as reviewable PRs, version choices are explainable, and local and CI builds resolve the expected dependencies.
 
-- É impossível instalar um build de desenvolvimento configurado acidentalmente para gravar em produção.
-- Dados e métricas dos ambientes podem ser identificados separadamente.
-- Ambos os variants compilam no CI.
+## 10. Establish production observability
 
-## 6. Endurecer regras do backend
+**Status:** Analytics, Crashlytics, and error reporters are configured. Confirm collection behavior and operational practices before external distribution.
 
-### Critério para iniciar
+**Start when:** The app is used outside the team and failures cannot reliably be reproduced locally.
 
-- O aplicativo usar Firebase Authentication, Firestore, Realtime Database, Storage, Functions ou outro backend com dados acessíveis pela rede.
+**Do:** Confirm Crashlytics collection policy for distribution builds, keep personal data and secrets out of logs and events, define Analytics events around useful product questions, and review crashes, ANRs, and regressions before releases.
 
-### Implementar
+**Done when:** Release failures can be tied to a version and deobfuscated; event purpose and allowed data are documented; ownership and release-blocking rules are clear.
 
-- Aplicar princípio de menor privilégio nas regras de acesso.
-- Não confiar em validações feitas apenas no aplicativo.
-- Criar testes das regras para acessos permitidos e negados.
-- Definir propriedade dos dados e papéis necessários, como funcionário e administrador, somente se o requisito existir.
+## 11. Review accessibility and internationalization
 
-### Concluído quando
+**Status:** User-facing screens exist, so apply these checks to current screens and each new UI change.
 
-- Usuários não autenticados e usuários sem permissão não conseguem ler ou alterar dados protegidos.
-- As regras possuem testes automatizados ou um roteiro reproduzível de validação.
-- Nenhuma regra ampla temporária, como acesso público total, permanece ativa.
+**Do:** Keep visible text in resources, format numbers/currencies/dates for the locale, check contrast, dark mode, touch targets and font scaling, and add content descriptions where native text or semantics are insufficient. Check a critical flow with a screen reader before delivery.
 
-## 7. Preparar assinatura, AAB e distribuição
+**Done when:** Android Lint has no new relevant findings, flows remain usable with larger fonts and both themes, and displayed values follow the selected locale.
 
-### Critério para iniciar
+## 12. Consider modularization
 
-- Houver decisão de distribuir o aplicativo fora dos dispositivos da equipe, inclusive para professores, clientes simulados ou testadores externos.
+**Start when:** At least three relatively independent feature areas exist and coupling, build times, or repeated build-file conflicts cause measurable problems.
 
-### Implementar
+**Do:** Measure the problem first, extract one clear boundary at a time, and preserve directed dependencies and tests.
 
-- Gerar Android App Bundle para distribuição.
-- Criar e proteger uma upload key.
-- Manter keystore e senhas fora do Git e armazená-los em local seguro.
-- Definir `versionCode` monotônico e `versionName` relacionado a tags.
-- Preservar mapping do R8 e símbolos necessários para diagnosticar falhas.
-- Criar um checklist manual de release antes de automatizar publicação.
+**Done when:** Extraction measurably reduces coupling, conflicts, or build time without disproportionate navigation and configuration complexity.
 
-### Concluído quando
+## 13. Consider Baseline Profiles and performance tests
 
-- Um integrante autorizado consegue reproduzir um build assinado seguindo a documentação.
-- O artefato pode ser atualizado sem trocar a identidade ou a chave esperada do aplicativo.
-- A equipe consegue relacionar artefato, código-fonte, versão e mapping do R8.
+**Start when:** Stable real flows exist and there is measurable startup delay, jank, slow interaction, or an upcoming wider distribution.
 
-## 8. Ampliar a matriz de testes Android
+**Do:** Measure before optimizing, benchmark startup and critical interactions, generate profiles only for stable real journeys, and compare on a consistent device or test environment.
 
-### Critério para iniciar
+**Done when:** The improvement is measurable and the profile can be regenerated with a documented process.
 
-- O código começar a variar por versão do Android, usar permissões, notificações, tarefas em segundo plano, câmera, arquivos ou outra API com diferenças relevantes entre versões; ou surgirem falhas específicas de dispositivo.
+## 14. Review quality policy periodically
 
-### Implementar
+**Start when:** A delivery milestone arrives or quality gates repeatedly fail without indicating actionable defects.
 
-- Testar ao menos no `minSdk` suportado e no `targetSdk` atual.
-- Adicionar versões intermediárias somente quando houver comportamento específico a validar.
-- Priorizar no CI os fluxos críticos, deixando uma matriz maior para execução agendada ou antes da entrega.
+**Do:** Review coverage, exclusions, CI duration, flaky tests, and test usefulness. Fix fragile tests; record any reduction in rigor with a reason, owner, and review date.
 
-### Concluído quando
-
-- O fluxo afetado passa no `minSdk` e no `targetSdk`.
-- Diferenças de comportamento entre versões possuem testes ou documentação explícita.
-- A duração da matriz continua aceitável para a equipe.
-
-## 9. Automatizar atualização e verificação de dependências
-
-### Critério para iniciar
-
-- O projeto possuir várias dependências diretas, atualizações manuais começarem a ser esquecidas ou uma atualização causar incompatibilidade difícil de diagnosticar.
-
-### Implementar
-
-- Configurar Dependabot ou Renovate com frequência semanal.
-- Manter atualizações grandes e mudanças de AGP, Gradle ou Kotlin em PRs separadas.
-- Adicionar dependency verification ou locking se versões transitivas começarem a variar entre máquinas ou builds.
-- Nunca aceitar atualizações automaticamente sem executar o pipeline completo.
-
-### Concluído quando
-
-- Atualizações chegam por PRs revisáveis com testes e release build passando.
-- A equipe consegue identificar por que uma versão foi atualizada ou mantida.
-- Builds locais e do CI resolvem o mesmo conjunto esperado de dependências.
-
-## 10. Introduzir observabilidade real
-
-### Critério para iniciar
-
-- O aplicativo for usado fora da equipe e falhas não puderem mais ser reproduzidas apenas com testes locais.
-
-### Implementar
-
-- Confirmar Crashlytics somente nos builds de distribuição.
-- Evitar dados pessoais, credenciais ou conteúdo sensível em logs e eventos.
-- Definir eventos de Analytics apenas para perguntas relevantes sobre uso do aplicativo.
-- Criar uma rotina simples de revisão de crashes, ANRs e regressões antes de cada entrega.
-
-### Concluído quando
-
-- Uma falha de release pode ser relacionada à versão e deofuscada.
-- Os eventos possuem nome, finalidade e dados permitidos documentados.
-- A equipe sabe quem verifica os relatórios e quando uma falha bloqueia uma entrega.
-
-## 11. Revisar acessibilidade e internacionalização
-
-### Critério para iniciar
-
-- A primeira tela real destinada ao usuário for implementada.
-
-### Implementar
-
-- Manter textos visíveis em recursos, sem strings hardcoded.
-- Usar formatação de números, moedas e datas conforme locale.
-- Verificar contraste, modo escuro, áreas de toque e aumento de fonte.
-- Adicionar descrições acessíveis somente onde o componente não possuir texto ou semântica suficiente.
-- Testar navegação básica com leitor de tela antes da entrega final.
-
-### Concluído quando
-
-- Android Lint não aponta novos problemas relevantes de internacionalização ou acessibilidade.
-- O fluxo continua utilizável com fonte ampliada e tema claro/escuro.
-- Valores de loja, como moeda e quantidade, são apresentados de forma consistente com o locale escolhido.
-
-## 12. Avaliar modularização
-
-### Critério para iniciar
-
-- Existirem pelo menos três áreas funcionais relativamente independentes, conflitos frequentes nos mesmos arquivos de build ou tempos de build que prejudiquem o trabalho da equipe.
-
-### Implementar
-
-- Medir primeiro o problema de build ou acoplamento.
-- Extrair um módulo por vez, começando por uma área com fronteira clara.
-- Evitar módulos criados apenas para reproduzir uma estrutura de projeto empresarial.
-- Preservar testes e dependências direcionadas durante a extração.
-
-### Concluído quando
-
-- A extração reduz acoplamento, conflitos ou tempo de build de forma observável.
-- O novo módulo possui responsabilidade clara e API pequena.
-- A complexidade de navegação e configuração não supera o benefício obtido.
-
-## 13. Avaliar Baseline Profiles e testes de desempenho
-
-### Critério para iniciar
-
-- Existirem fluxos reais estáveis e houver lentidão perceptível, jank, inicialização demorada ou preparação para uma distribuição mais ampla.
-
-### Implementar
-
-- Medir antes de otimizar.
-- Criar benchmarks para inicialização e interações críticas.
-- Gerar Baseline Profile somente para jornadas reais e estáveis.
-- Comparar resultados antes e depois em dispositivo ou ambiente de teste consistente.
-
-### Concluído quando
-
-- Existe uma métrica anterior que justifica a otimização.
-- O ganho é mensurável e o profile representa fluxos realmente usados.
-- O processo de regeneração está documentado e pode ser repetido antes de releases relevantes.
-
-## 14. Revisar a política de qualidade periodicamente
-
-### Critério para iniciar
-
-- A cada marco de entrega ou quando o gate de qualidade começar a falhar repetidamente sem indicar defeitos reais.
-
-### Implementar
-
-- Revisar cobertura, exclusões, duração do CI, falhas instáveis e utilidade dos testes.
-- Aumentar rigor quando houver valor demonstrável, especialmente em regras críticas.
-- Corrigir testes frágeis em vez de ignorá-los.
-- Registrar qualquer redução de rigor com motivo, prazo e responsável pela revisão.
-
-### Concluído quando
-
-- Os gates continuam rápidos o suficiente para serem executados em toda PR.
-- Falhas do pipeline indicam problemas acionáveis.
-- As exceções permanecem poucas, explícitas e justificadas.
+**Done when:** Gates remain practical for each PR, failures are actionable, and exceptions are few and explicit.
