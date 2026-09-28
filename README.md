@@ -1,10 +1,10 @@
-# Mobile
+# QuiStock Mobile
 
 ## Architecture guide
 
 The project follows a variation of **Clean Architecture with MVVM**, adapted for Android Views
-(`Activity`, `Fragment`, XML, and ViewBinding). The code is initially organized into packages
-inside the `app` module.
+(`Activity`, `Fragment`, XML, and ViewBinding). The code is organized into packages inside the
+`app` module. The tree below shows current package boundaries; add subpackages as needed.
 
 Dependencies must flow in the following direction:
 
@@ -24,31 +24,25 @@ All Kotlin code should be placed under the `com.quistock.quistock` package:
 ```text
 com.quistock.quistock/
 ├── app/
-│   ├── QuistockApplication.kt
+│   ├── QuiStockApplication.kt
 │   ├── di/
 │   └── navigation/
 ├── domain/
 │   ├── model/
-│   ├── repository/
+│   ├── port/
 │   └── usecase/
 ├── data/
-│   ├── repository/
 │   ├── remote/
-│   │   ├── <api>/
+│   │   ├── internal/
 │   │   └── firebase/
-│   └── local/
-├── presentation/
-│   ├── common/
-│   └── <feature>/
-└── core/
-    ├── error/
-    ├── dispatcher/
-    └── result/
+│   ├── preferences/
+│   └── observability/
+└── presentation/
+    └── <feature>/
 ```
 
-Replace `<api>` and `<feature>` with the actual integration and feature names. For
-example: `remote/brapi`, `remote/alphavantage`, `presentation/market`, and
-`presentation/portfolio`.
+Replace `<feature>` with an actual feature name, such as `login` or `chatbot`. This tree is a
+guide to existing boundaries, not a request to create every possible package in advance.
 
 ### Where to place each file
 
@@ -60,22 +54,20 @@ example: `remote/brapi`, `remote/alphavantage`, `presentation/market`, and
 | `RecyclerView.Adapter` and `ViewHolder` | `presentation/<feature>/adapter/` | Render lists and forward View interactions |
 | Reusable UI components | `presentation/common/` | Share behavior used exclusively by the UI |
 | Domain model | `domain/model/` | Represent concepts used by application business rules |
-| Repository interface | `domain/repository/` | Define operations required by the domain without exposing where data comes from |
-| Use case | `domain/usecase/<feature>/` | Execute a business action or rule, preferably with one responsibility per class |
-| Repository implementation | `data/repository/` | Combine data sources and convert their results into domain models |
+| Port or repository interface | `domain/port/` | Define operations required by the domain without exposing where data comes from |
+| Use case | `domain/usecase/` | Execute a business action or rule, preferably with one responsibility per class |
+| Port or repository implementation | `data/` under the relevant integration | Convert external results into domain models |
 | Retrofit interface | `data/remote/<api>/` | Declare endpoints for an external API |
 | Request/response DTO | `data/remote/<api>/dto/` | Represent only the API transport contract |
 | DTO mapper | `data/remote/<api>/mapper/` | Convert DTOs into domain models and vice versa |
-| Remote Data Source | `data/remote/<api>/` | Encapsulate API access and communication details |
-| Firebase integration | `data/remote/firebase/<service>/` | Encapsulate Auth, Firestore, Storage, or Remote Config |
-| Entity, DAO, and database | `data/local/` | Implement local persistence and caching |
+| Firebase integration | `data/remote/firebase/<service>/` | Encapsulate the Firebase service in use |
+| Local preferences | `data/preferences/` | Implement local preference storage |
 | Dependency injection module | `app/di/` | Build external clients and bind interfaces to their implementations |
 | Global navigation | `app/navigation/` | Define routes and coordinate navigation between features |
-| Shared errors and results | `core/error/` and `core/result/` | Represent technical results shared by more than one layer or feature |
+| Error reporting | `data/observability/` | Send technical errors to configured reporters |
 
 Layouts, drawables, strings, and other Android resources remain in `app/src/main/res`. Use names
-that identify their feature, such as `fragment_market.xml`, `item_asset.xml`, and
-`market_empty_state`.
+that identify their feature, such as `fragment_login.xml` and `fragment_home.xml`.
 
 ### Dependency rules
 
@@ -89,26 +81,24 @@ that identify their feature, such as `fragment_market.xml`, `item_asset.xml`, an
 - `Activity` and `Fragment` classes must not contain business rules. They observe ViewModel state
   and forward user events.
 - A ViewModel must not know a repository implementation. It depends on use cases.
-- Each external API must have its own services, DTOs, mappers, and data sources.
+- Keep transport DTOs and mappers inside the relevant integration. Add a separate data source
+  when it helps isolate communication details.
 - Firebase SDK classes must remain in the `data` layer or in technical initialization code under
   `app`. The domain must never expose types such as `FirebaseUser` or `DocumentSnapshot`.
 
 ### Example flow
 
-A quote lookup should pass through the following components in order:
+A login request passes through these existing boundaries:
 
 ```text
-MarketFragment
-    -> MarketViewModel
-        -> GetQuoteUseCase
-            -> MarketRepository (interface in domain)
-                -> MarketRepositoryImpl (data)
-                    -> MarketRemoteDataSource
-                        -> MarketApi (Retrofit)
+LoginFragment
+    -> LoginViewModel
+        -> LoginUseCase
+            -> AuthenticationPort (domain)
+                -> FirebaseAuthenticationPort (data)
 ```
 
-On the return path, the repository converts `QuoteDto` into `Quote`. When necessary, the
-presentation layer converts `Quote` into `QuoteUiModel`.
+The implementation converts Firebase results into domain types before they reach the ViewModel.
 
 ### Tests
 
@@ -124,4 +114,5 @@ presentation layer converts `Quote` into `QuoteUiModel`.
 - Automatically fix code smells: `./gradlew detekt --auto-correct`
 - Run unit tests: `./gradlew testDebugUnitTest`
 - Run instrumentation tests (requires a connected device): `./gradlew connectedDebugAndroidTest`
-- Validate test coverage (requires a connected device): `./gradlew jacocoTestCoverageVerification`
+- Validate local combined coverage (requires a connected device): `./gradlew jacocoTestCoverageVerification`
+- CI validates downloaded unit and instrumented coverage with `jacocoAggregateCoverageVerification`.
