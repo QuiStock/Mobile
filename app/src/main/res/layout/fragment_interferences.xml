@@ -101,7 +101,7 @@
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:contentDescription="Promoção"
-                        android:src="@drawable/promoção" />
+                        android:src="@drawable/promo" />
 
                     <TextView
                         android:layout_width="wrap_content"
