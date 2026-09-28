@@ -330,16 +330,17 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Início"
-            android:src="@drawable/ic_home_active" />
+            android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/btnMovimentacoes"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="35dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Interferências"
-            android:src="@drawable/ic_interferences" />
+            android:padding="0dp"
+            android:src="@drawable/ic_interferences_active" />
 
         <ImageButton
             android:id="@+id/btnProdutos"
