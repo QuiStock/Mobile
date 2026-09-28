@@ -23,7 +23,16 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.quistock.quistock.presentation.home.HomeFragment"
-        android:label="@string/home" />
+        android:label="@string/home">
+        <action
+            android:id="@+id/action_homeFragment_to_interferencesFragment"
+            app:destination="@id/interferencesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/interferencesFragment"
+        android:name="com.quistock.quistock.presentation.interferences.InterferencesFragment"
+        android:label="Interferências" />
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
