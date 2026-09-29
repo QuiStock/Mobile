@@ -3,6 +3,7 @@ package com.quistock.quistock.presentation.control;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,5 +63,26 @@ public class ProductControlFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_product_control, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        int[] productCardIds = {
+                R.id.cardProdutoFluxoAlto,
+                R.id.cardProdutoFluxoMedio,
+                R.id.cardProdutoFluxoBaixo,
+                R.id.cardProdutoFluxoAlto2,
+                R.id.cardProdutoFluxoMedio2,
+                R.id.cardProdutoFluxoBaixo2
+        };
+
+        for (int cardId : productCardIds) {
+            view.findViewById(cardId).setOnClickListener(
+                    clickedView -> Navigation.findNavController(clickedView)
+                            .navigate(R.id.action_productControlFragment_to_productDetailFragment)
+            );
+        }
     }
 }
