@@ -33,6 +33,9 @@
         <action
             android:id="@+id/action_homeFragment_to_promotionFragment"
             app:destination="@id/promotionFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_productControlFragment"
+            app:destination="@id/productControlFragment" />
     </fragment>
 
     <fragment
@@ -79,6 +82,11 @@
         android:id="@+id/interferencesFragment"
         android:name="com.quistock.quistock.presentation.interferences.InterferencesFragment"
         android:label="Interferências" />
+
+    <fragment
+        android:id="@+id/productControlFragment"
+        android:name="com.quistock.quistock.presentation.control.ProductControlFragment"
+        android:label="Controle de produtos" />
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
