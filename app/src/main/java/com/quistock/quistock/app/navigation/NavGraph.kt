@@ -15,6 +15,7 @@ object NavGraph {
         val ORDER_SENT = R.id.orderSentFragment
         val PROMO_SENT = R.id.promoSentFragment
         val PRODUCT_CONTROL = R.id.productControlFragment
+        val PRODUCT_DETAIL = R.id.productDetailFragment
     }
 
     object Actions {
@@ -29,5 +30,6 @@ object NavGraph {
         val ORDER_SENT_TO_INTERFERENCES = R.id.action_orderSentFragment_to_interferencesFragment
         val PROMO_SENT_TO_INTERFERENCES = R.id.action_promoSentFragment_to_interferencesFragment
         val HOME_TO_PRODUCT_CONTROL = R.id.action_homeFragment_to_productControlFragment
+        val PRODUCT_CONTROL_TO_PRODUCT_DETAIL = R.id.action_productControlFragment_to_productDetailFragment
     }
 }

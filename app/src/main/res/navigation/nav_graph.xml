@@ -58,7 +58,7 @@
 
     <fragment
         android:id="@+id/orderSentFragment"
-        android:name="com.quistock.quistock.OrderSentFragment"
+        android:name="com.quistock.quistock.presentation.order.OrderSentFragment"
         android:label="Pedido enviado">
         <action
             android:id="@+id/action_orderSentFragment_to_interferencesFragment"
@@ -69,7 +69,7 @@
 
     <fragment
         android:id="@+id/promoSentFragment"
-        android:name="com.quistock.quistock.PromoSentFragment"
+        android:name="com.quistock.quistock.presentation.promotion.PromoSentFragment"
         android:label="Promoção enviada">
         <action
             android:id="@+id/action_promoSentFragment_to_interferencesFragment"
@@ -86,7 +86,16 @@
     <fragment
         android:id="@+id/productControlFragment"
         android:name="com.quistock.quistock.presentation.control.ProductControlFragment"
-        android:label="Controle de produtos" />
+        android:label="Controle de produtos">
+        <action
+            android:id="@+id/action_productControlFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="com.quistock.quistock.presentation.control.ProductDetailFragment"
+        android:label="Detalhes do produto" />
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
