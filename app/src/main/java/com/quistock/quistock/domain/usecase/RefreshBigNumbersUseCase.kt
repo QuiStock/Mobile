@@ -20,7 +20,7 @@ class RefreshBigNumbersUseCase(
 
     suspend operator fun invoke(): RefreshResult<BigNumbers> {
         val cached = local.read()
-        return if (cached != null && cached.createdAt >= clock.midnightOfDay(clock.now())) {
+        return if (cached != null && clock.midnightOfDay(cached.createdAt) == clock.midnightOfDay(clock.now())) {
             logger.info(msg = "Using up-to-date cached Big Numbers", context = logContext)
             RefreshResult.UpToDate(cached)
         } else {

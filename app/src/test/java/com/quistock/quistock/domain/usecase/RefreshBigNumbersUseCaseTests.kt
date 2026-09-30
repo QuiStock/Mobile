@@ -33,10 +33,14 @@ class RefreshBigNumbersUseCaseTests {
     private val yesterday = Instant.parse("2026-09-22T12:00:00Z")
     private val fresh = BigNumbers(12, 3, 7, now)
     private val stale = BigNumbers(1, 2, 3, yesterday)
+    private val future = BigNumbers(4, 5, 6, Instant.parse("2026-09-24T12:00:00Z"))
 
     private fun setClock() {
         every { clock.now() } returns now
         every { clock.midnightOfDay(now) } returns midnight
+        every { clock.midnightOfDay(fresh.createdAt) } returns midnight
+        every { clock.midnightOfDay(yesterday) } returns Instant.parse("2026-09-22T00:00:00Z")
+        every { clock.midnightOfDay(future.createdAt) } returns Instant.parse("2026-09-24T00:00:00Z")
     }
 
     @Test
@@ -54,6 +58,7 @@ class RefreshBigNumbersUseCaseTests {
     fun `midnight is part of the current cache day`() = runTest {
         setClock()
         val atMidnight = fresh.copy(createdAt = midnight)
+        every { clock.midnightOfDay(atMidnight.createdAt) } returns midnight
         coEvery { local.read() } returns atMidnight
 
         useCase() shouldBe RefreshResult.UpToDate(atMidnight)
@@ -79,6 +84,29 @@ class RefreshBigNumbersUseCaseTests {
 
         useCase() shouldBe RefreshResult.UpToDate(fresh)
         coVerify(exactly = 1) { local.save(fresh) }
+    }
+
+    @Test
+    fun `future dated cache triggers fetch and is replaced on success`() = runTest {
+        setClock()
+        coEvery { local.read() } returns future
+        coEvery { remote.fetch() } returns fresh
+        coEvery { local.save(fresh) } just Runs
+
+        useCase() shouldBe RefreshResult.UpToDate(fresh)
+        coVerify(exactly = 1) { remote.fetch() }
+        coVerify(exactly = 1) { local.save(fresh) }
+    }
+
+    @Test
+    fun `future dated cache remains available when fetch fails`() = runTest {
+        setClock()
+        coEvery { local.read() } returns future
+        coEvery { remote.fetch() } throws IOException("offline")
+
+        useCase() shouldBe RefreshResult.Stale(future)
+        coVerify(exactly = 1) { remote.fetch() }
+        coVerify(exactly = 0) { local.save(any()) }
     }
 
     @Test
