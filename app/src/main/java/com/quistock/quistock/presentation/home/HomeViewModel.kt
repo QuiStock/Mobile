@@ -8,14 +8,11 @@ import com.quistock.quistock.domain.model.BigNumbers
 import com.quistock.quistock.domain.model.RefreshResult
 import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.datetime.toLocalDateTime
 
-class HomeViewModel(
-    private val refreshBigNumbers: RefreshBigNumbersUseCase,
-    private val clock: Clock,
-) : ViewModel() {
+class HomeViewModel(private val refreshBigNumbers: RefreshBigNumbersUseCase, private val clock: Clock) : ViewModel() {
     private val _uiState = MutableLiveData(HomeUiState())
     val uiState: LiveData<HomeUiState> = _uiState
     private var refreshJob: Job? = null
@@ -52,7 +49,13 @@ class HomeViewModel(
         return HomeUiState(
             numbers = data.toUiNumbers(),
             warning = warning,
-            dataDate = "${date.day.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}",
+            dataDate = buildString {
+                append(date.day.toString().padStart(2, '0'))
+                append('/')
+                append(date.month.toString().padStart(2, '0'))
+                append('/')
+                append(date.year)
+            },
         )
     }
 

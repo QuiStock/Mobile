@@ -24,6 +24,7 @@ import kotlin.time.Instant
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTests {
     @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
+
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
 
     private val useCase = mockk<RefreshBigNumbersUseCase>()

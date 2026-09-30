@@ -12,6 +12,11 @@
     <string name="bt_ir_cadastro">Não tem uma conta? Cadastre-se</string>
     <string name="Cadastro">Cadastro</string>
     <string name="home">Home</string>
+    <string name="home_indicators_loading">Carregando indicadores…</string>
+    <string name="home_indicators_error">Não foi possível carregar os indicadores. Verifique sua conexão e tente novamente.</string>
+    <string name="home_indicators_retry">Tentar novamente</string>
+    <string name="home_indicators_stale_warning">Pode haver um problema com sua conexão. Exibindo dados de %1$s, que podem estar desatualizados.</string>
+    <string name="home_indicators_future_date_warning">A data e a hora do dispositivo podem estar incorretas. Exibindo dados de %1$s, que podem apresentar divergências.</string>
     <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
