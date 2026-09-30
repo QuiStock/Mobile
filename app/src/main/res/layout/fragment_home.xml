@@ -126,7 +126,7 @@
                     android:id="@+id/tvNumeroVencimento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3"
+                    android:text=""
                     android:textColor="#E8D2F0"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -160,7 +160,7 @@
                     android:id="@+id/tvNumeroRuptura"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2"
+                    android:text=""
                     android:textColor="#E8D2F0"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -193,7 +193,7 @@
                     android:id="@+id/tvNumeroAcoes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4"
+                    android:text=""
                     android:textColor="#FFFFFF"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -211,6 +211,33 @@
         </LinearLayout>
 
 
+        <TextView
+            android:id="@+id/tvIndicatorsStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="27dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="27dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#E8D2F0"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/containerResumo" />
+
+        <Button
+            android:id="@+id/btnRetryIndicators"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="27dp"
+            android:layout_marginTop="8dp"
+            android:minHeight="48dp"
+            android:text="@string/home_indicators_retry"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvIndicatorsStatus" />
+
         <!-- ================================================= -->
         <!--  ALERTS TITLES                                   -->
         <!-- ================================================= -->
@@ -226,7 +253,7 @@
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/containerResumo" />
+            app:layout_constraintTop_toBottomOf="@id/btnRetryIndicators" />
 
 
         <!-- ================================================= -->

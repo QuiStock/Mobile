@@ -1,6 +1,6 @@
 # Big numbers na página principal: fluxo interno sem API
 
-**Status:** Ready for implementation
+**Status:** Implemented; verification pending
 
 **Issue:** [QUIS-126 — Visualizar Big Numbers na home page do app](https://quistock.atlassian.net/browse/QUIS-126)
 
@@ -62,4 +62,6 @@ Prováveis alterações em `presentation/home` (`HomeFragment`, novo estado e Vi
 
 ## Implementation outcome
 
-A preencher na implementação: critérios entregues, testes executados, checagens manuais e decisões aprovadas. Esta spec documenta o plano; nenhum comportamento foi implementado nesta alteração.
+- AC-01 a AC-09: lógica de atualização diária, estados da Home, avisos, nova tentativa, ciclo de vida da View e fonte simulada ligados conforme os critérios acima.
+- Foram adicionados testes unitários para cache futuro e estados do ViewModel, e testes instrumentados para renderização e recriação da Home. Os testes existentes do caso de uso e da injeção de dependências continuam relevantes.
+- Testes, build e verificações manuais ainda não foram executados nesta alteração, a pedido do solicitante, enquanto o Gradle do ambiente está indisponível. Os resultados permanecem **não verificados** até essa execução.
