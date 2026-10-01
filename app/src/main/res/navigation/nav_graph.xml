@@ -33,7 +33,15 @@
         <action
             android:id="@+id/action_homeFragment_to_promotionFragment"
             app:destination="@id/promotionFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_chatbotFragment"
+            app:destination="@id/chatbotFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/chatbotFragment"
+        android:name="com.quistock.quistock.presentation.chatbot.ChatbotFragment"
+        android:label="Chatbot" />
 
     <fragment
         android:id="@+id/orderFragment"
