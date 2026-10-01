@@ -33,9 +33,12 @@
         <action
             android:id="@+id/action_homeFragment_to_promotionFragment"
             app:destination="@id/promotionFragment" />
-        <action
+       <action
             android:id="@+id/action_homeFragment_to_chatbotFragment"
             app:destination="@id/chatbotFragment" />
+       <action
+           android:id="@+id/action_homeFragment_to_productControlFragment"
+           app:destination="@id/productControlFragment" />
     </fragment>
 
     <fragment
@@ -87,6 +90,20 @@
         android:id="@+id/interferencesFragment"
         android:name="com.quistock.quistock.presentation.interferences.InterferencesFragment"
         android:label="Interferências" />
+
+    <fragment
+        android:id="@+id/productControlFragment"
+        android:name="com.quistock.quistock.presentation.control.ProductControlFragment"
+        android:label="Controle de produtos">
+        <action
+            android:id="@+id/action_productControlFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="com.quistock.quistock.presentation.control.ProductDetailFragment"
+        android:label="Detalhes do produto" />
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
