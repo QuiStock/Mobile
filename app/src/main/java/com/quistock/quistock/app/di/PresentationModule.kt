@@ -1,5 +1,6 @@
 package com.quistock.quistock.app.di
 
+import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
 import com.quistock.quistock.presentation.login.LoginViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -9,4 +10,5 @@ val presentationModule = module {
     viewModelOf(::ChatbotViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::LoginViewModel)
+    viewModelOf(::SessionViewModel)
 }
