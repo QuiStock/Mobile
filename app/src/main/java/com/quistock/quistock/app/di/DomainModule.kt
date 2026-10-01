@@ -19,10 +19,10 @@ val domainModule = module {
     singleOf(::SystemClock) { bind<Clock>() }
 
     singleOf(::MockRemoteBigNumbersRepository) { bind<RemoteBigNumbersRepository>() }
-
     singleOf(::MockAuthRepository) { bind<AuthRepository>() }
+
     singleOf(::SessionUseCase)
     factoryOf(::LoginUseCase)
     factoryOf(::SendMessageToChatbotUseCase)
-    factory { RefreshBigNumbersUseCase(get(), get(), get(), get(), get(), get()) }
+    factoryOf(::RefreshBigNumbersUseCase)
 }
