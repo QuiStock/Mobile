@@ -17,7 +17,8 @@ import org.junit.Test
 class LoginUseCaseTests {
     private val authRepository = mockk<AuthRepository>()
     private val storage = mockk<SecretStorage>(relaxed = true)
-    private val useCase = LoginUseCase(authRepository, storage)
+    private val cache = mockk<com.quistock.quistock.domain.port.CachedBigNumbersRepository>(relaxed = true)
+    private val useCase = LoginUseCase(authRepository, SessionUseCase(authRepository, storage, cache))
 
     @Test
     fun successfulLoginPersistsRefreshTokenBeforeStoringAccessToken() = runBlocking {
@@ -31,6 +32,16 @@ class LoginUseCaseTests {
             storage.save(tokens.refreshToken, RefreshToken::class)
             storage.save(tokens.accessToken, AccessToken::class)
         }
+    }
+
+    @Test
+    fun tokenStorageFailureDoesNotReturnLoginSuccess() = runBlocking {
+        val tokens = AuthTokens(AccessToken("synthetic-access"), RefreshToken("opaque"))
+        coEvery { authRepository.login(any(), any()) } returns AuthResult.Success(tokens)
+        coEvery { storage.save(any<AccessToken>(), AccessToken::class) } throws IllegalStateException()
+
+        assertEquals(LoginError.UnexpectedError, useCase("synthetic@example.com", "synthetic"))
+        coVerify(exactly = 1) { storage.delete(RefreshToken::class) }
     }
 
     @Test

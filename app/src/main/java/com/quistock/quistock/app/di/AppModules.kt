@@ -11,7 +11,6 @@ val externalSdksModule = module {
 
 val appInternalModule = module {
     includes(
-        firebaseModule,
         domainModule,
         presentationModule,
         observabilityModule,
