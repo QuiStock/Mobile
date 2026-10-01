@@ -4,8 +4,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
 import com.quistock.quistock.domain.model.BigNumbers
 import com.quistock.quistock.domain.model.RefreshResult
+import com.quistock.quistock.domain.model.SessionFailure
+import com.quistock.quistock.domain.model.SessionSnapshot
+import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
+import com.quistock.quistock.domain.usecase.SessionUseCase
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -13,6 +17,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -160,5 +165,54 @@ class HomeViewModelTests {
         advanceUntilIdle()
 
         coVerify(exactly = 2) { useCase() }
+    }
+
+    @Test
+    fun `transient session failures preserve cached numbers and retry only on action`() = runTest {
+        val session = mockk<SessionUseCase>()
+        val state = MutableStateFlow<SessionState>(SessionState.Failure(SessionFailure.NETWORK))
+        val snapshot = SessionSnapshot(1, null)
+        every { session.state } returns state
+        every { session.snapshot() } returns snapshot
+        coEvery { useCase() } returns RefreshResult.UpToDate(BigNumbers(1, 2, 3, now))
+        val home = HomeViewModel(useCase, clock, session)
+        for (reason in listOf(SessionFailure.NETWORK, SessionFailure.TIMEOUT, SessionFailure.SERVER)) {
+            state.value = SessionState.Failure(reason)
+            home.load()
+            advanceUntilIdle()
+            home.uiState.value?.sessionFailure shouldBe reason
+            home.uiState.value?.numbers shouldBe HomeNumbers(1, 2, 3)
+            home.uiState.value?.retryEnabled shouldBe true
+        }
+        coVerify(exactly = 0) { session.refresh(any()) }
+        val pending = CompletableDeferred<SessionSnapshot>()
+        coEvery { session.refresh(snapshot) } coAnswers { pending.await() }
+        home.retry()
+        home.retry()
+        runCurrent()
+        home.uiState.value?.retryEnabled shouldBe false
+        coVerify(exactly = 1) { session.refresh(snapshot) }
+        state.value = SessionState.Active
+        pending.complete(snapshot)
+        advanceUntilIdle()
+        home.uiState.value?.sessionFailure shouldBe null
+        coVerify(exactly = 4) { useCase() }
+    }
+
+    @Test
+    fun `late results cannot display numbers from another session`() = runTest {
+        val session = mockk<SessionUseCase>()
+        val state = MutableStateFlow<SessionState>(SessionState.Active)
+        every { session.state } returns state
+        every { session.snapshot() } returns SessionSnapshot(1, null)
+        val pending = CompletableDeferred<RefreshResult<BigNumbers>>()
+        coEvery { useCase() } coAnswers { pending.await() }
+        val home = HomeViewModel(useCase, clock, session)
+        home.load()
+        runCurrent()
+        every { session.snapshot() } returns SessionSnapshot(2, null)
+        pending.complete(RefreshResult.UpToDate(BigNumbers(99, 99, 99, now)))
+        advanceUntilIdle()
+        home.uiState.value?.numbers shouldBe null
     }
 }

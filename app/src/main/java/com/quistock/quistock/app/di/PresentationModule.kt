@@ -10,7 +10,7 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     viewModelOf(::ChatbotViewModel)
-    viewModel { HomeViewModel(get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get()) }
     viewModelOf(::LoginViewModel)
     viewModelOf(::SessionViewModel)
 }

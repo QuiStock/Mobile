@@ -24,5 +24,5 @@ val domainModule = module {
     singleOf(::SessionUseCase)
     factoryOf(::LoginUseCase)
     factoryOf(::SendMessageToChatbotUseCase)
-    factory { RefreshBigNumbersUseCase(get(), get(), get(), get(), get()) }
+    factory { RefreshBigNumbersUseCase(get(), get(), get(), get(), get(), get()) }
 }
