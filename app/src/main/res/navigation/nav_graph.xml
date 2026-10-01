@@ -63,7 +63,7 @@
 
     <fragment
         android:id="@+id/orderSentFragment"
-        android:name="com.quistock.quistock.OrderSentFragment"
+        android:name="com.quistock.quistock.presentation.order.OrderSentFragment"
         android:label="Pedido enviado">
         <action
             android:id="@+id/action_orderSentFragment_to_interferencesFragment"
@@ -74,7 +74,7 @@
 
     <fragment
         android:id="@+id/promoSentFragment"
-        android:name="com.quistock.quistock.PromoSentFragment"
+        android:name="com.quistock.quistock.presentation.promotion.PromoSentFragment"
         android:label="Promoção enviada">
         <action
             android:id="@+id/action_promoSentFragment_to_interferencesFragment"
