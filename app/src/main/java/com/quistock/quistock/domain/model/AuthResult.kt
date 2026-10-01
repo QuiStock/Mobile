@@ -19,6 +19,8 @@ sealed interface AuthRefreshResult : AuthResult
 
 sealed interface AuthRefreshError : AuthRefreshResult {
     data object NetworkError : AuthRefreshError
+    data object Timeout : AuthRefreshError
+    data object ServerError : AuthRefreshError
     data object InvalidToken : AuthRefreshError
     data object UnexpectedError : AuthRefreshError
 }
