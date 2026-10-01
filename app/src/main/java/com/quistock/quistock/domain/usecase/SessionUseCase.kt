@@ -100,16 +100,25 @@ class SessionUseCase(
         } catch (_: Exception) { /* A later login may repair storage. */ }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     suspend fun restore(): SessionState {
         val entryGeneration = generation
-        val read = readRecoveryToken()
+        val read = try {
+            Result.success(storage.read<RefreshToken>())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
         val expected = mutex.withLock {
             when {
                 entryGeneration != generation -> null
+
                 read.isFailure -> {
                     mutableState.value = SessionState.LocalFailure
                     null
                 }
+
                 else -> {
                     refreshToken = read.getOrNull()
                     generation++
@@ -127,22 +136,15 @@ class SessionUseCase(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun readRecoveryToken(): Result<RefreshToken?> = try {
-        Result.success(storage.read<RefreshToken>())
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-
-    @Suppress("TooGenericExceptionCaught")
     suspend fun refresh(expected: SessionSnapshot): SessionSnapshot {
         var owner = false
         var token: RefreshToken? = null
         val task = mutex.withLock {
             if (expected.generation != generation ||
                 (access != null && current.revision != expected.revision)
-            ) return snapshot()
+            ) {
+                return snapshot()
+            }
             pending?.takeIf { it.first == generation }?.second ?: CompletableDeferred<SessionSnapshot>().also {
                 pending = generation to it
                 token = refreshToken
