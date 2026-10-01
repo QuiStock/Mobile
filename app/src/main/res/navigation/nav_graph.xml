@@ -36,7 +36,16 @@
         <action
             android:id="@+id/action_homeFragment_to_productControlFragment"
             app:destination="@id/productControlFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_chatbotFragment"
+            app:destination="@id/chatbotFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/chatbotFragment"
+        android:name="com.quistock.quistock.presentation.chatbot.ChatbotFragment"
+        android:label="Chatbot" />
 
     <fragment
         android:id="@+id/orderFragment"
