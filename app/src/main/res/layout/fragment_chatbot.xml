@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#11061F"
+    tools:context=".presentation.chatbot.ChatbotFragment">
+
+    <ImageButton
+        android:id="@+id/btnMenuChatbot"
+        android:layout_width="33dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="52dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Menu"
+        android:padding="0dp"
+        android:src="@drawable/ic_menu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvTituloChatbot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:text="Boas-vindas"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btnMenuChatbot"
+        app:layout_constraintStart_toEndOf="@id/btnMenuChatbot"
+        app:layout_constraintTop_toTopOf="@id/btnMenuChatbot" />
+
+    <ImageButton
+        android:id="@+id/btnNotificacoesChatbot"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="42dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Notificações"
+        android:padding="0dp"
+        android:src="@drawable/ic_notification"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnMenuChatbot" />
+
+    <ScrollView
+        android:id="@+id/scrollMensagens"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="24dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="12dp"
+        app:layout_constraintBottom_toTopOf="@id/areaEntrada"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnMenuChatbot">
+
+        <!-- Empty by default; message rows can be added here as the conversation runs. -->
+        <LinearLayout
+            android:id="@+id/containerMensagens"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/areaEntrada"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationChatbot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <EditText
+            android:id="@+id/etPerguntaChatbot"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_input_outline"
+            android:hint="Digite sua pergunta"
+            android:imeOptions="actionSend"
+            android:inputType="textCapSentences|textMultiLine"
+            android:gravity="top|start"
+            android:minHeight="42dp"
+            android:maxHeight="120dp"
+            android:scrollbars="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8F7898"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/btnEnviarPergunta"
+            android:layout_width="40dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Enviar pergunta"
+            android:gravity="center"
+            android:text="➤"
+            android:textColor="#FFFFFF"
+            android:textSize="25sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomNavigationChatbot"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:background="#11061F"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnHomeChatbot"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Início"
+            android:padding="0dp"
+            android:src="@drawable/ic_home" />
+
+        <ImageButton
+            android:id="@+id/btnInterferenciasChatbot"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Interferências"
+            android:padding="0dp"
+            android:src="@drawable/ic_interferences" />
+
+        <ImageButton
+            android:id="@+id/btnProdutosChatbot"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Controle de produtos"
+            android:padding="0dp"
+            android:src="@drawable/ic_product_control" />
+
+        <ImageButton
+            android:id="@+id/btnChatbotAtivo"
+            android:layout_width="0dp"
+            android:layout_height="41dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Chatbot"
+            android:padding="0dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chatbot_active" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
