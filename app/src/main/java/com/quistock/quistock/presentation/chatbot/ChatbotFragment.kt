@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
@@ -18,7 +16,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class ChatbotFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
@@ -44,7 +41,6 @@ class ChatbotFragment : Fragment() {
          * @param param2 Parameter 2.
          * @return A new instance of fragment ChatbotFragment.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) = ChatbotFragment().apply {
             arguments = Bundle().apply {
