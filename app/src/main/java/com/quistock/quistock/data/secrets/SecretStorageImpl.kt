@@ -60,7 +60,7 @@ class SecretStorageImpl(context: Context) : SecretStorage {
     override suspend fun <T : Any> read(type: KClass<T>): T? {
         val definition = resolveDefinition(type)
 
-        when (definition.storageType) {
+        return when (definition.storageType) {
             StorageType.MEMORY -> synchronized(inMemorySecrets) { inMemorySecrets[definition.key] as? T }
 
             StorageType.PERSISTENT -> {
