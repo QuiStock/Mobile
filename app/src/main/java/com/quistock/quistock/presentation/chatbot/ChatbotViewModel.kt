@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+@Deprecated("Legacy chatbot requires Firebase identity; API redesign pending", level = DeprecationLevel.WARNING)
 class ChatbotViewModel(
     private val sendMessageToChatbot: SendMessageToChatbotUseCase,
     private val userPreferences: UserPreferences,
