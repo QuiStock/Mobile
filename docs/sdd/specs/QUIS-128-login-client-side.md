@@ -1,6 +1,6 @@
 # QUIS-128 — Novo fluxo de login: Client-Side
 
-**Status:** Ready for implementation — etapa Client-Side com fontes simuladas
+**Status:** Implemented and validated — etapa Client-Side com fontes simuladas
 **Issue:** [QUIS-128 — Migrar o fluxo de login via Firebase para o novo fluxo via API de autenticação](https://quistock.atlassian.net/browse/QUIS-128)
 **Product decision owner:** Solicitante, nesta conversa
 
@@ -8,7 +8,7 @@
 
 Concluir o comportamento do aplicativo para o novo fluxo de autenticação antes de a API real estar disponível. O QUIS-128 está em desenvolvimento e não possui descrição nem comentários; seu título estabelece a migração. O card pai, [QUIS-49](https://quistock.atlassian.net/browse/QUIS-49), ainda descreve Firebase. Para esta etapa, prevalecem as regras informadas pelo solicitante em 01/10/2026.
 
-A implementação atual contém `AuthRepository.login/refresh`, `AuthTokens`, resultados de autenticação e `LoginUseCase`, que salva os tokens em `SecretStorage`. Entretanto, `LoginViewModel` e `LoginFragment` ainda usam o fluxo legado; o Koin registra `LegacyLoginUseCase`, sem uma implementação do novo `AuthRepository`. Não foi identificado tratamento de Bearer/401/refresh no cliente HTTP.
+No início desta etapa, o código continha `AuthRepository.login/refresh`, `AuthTokens`, resultados de autenticação e `LoginUseCase`, que salvava os tokens em `SecretStorage`. Entretanto, `LoginViewModel` e `LoginFragment` ainda usavam o fluxo legado; o Koin registrava `LegacyLoginUseCase`, sem uma implementação do novo `AuthRepository`. Não havia tratamento de Bearer/401/refresh no cliente HTTP.
 
 ## Scope
 
@@ -116,4 +116,73 @@ Usar uma implementação simulada de `AuthRepository` e respostas HTTP controlad
 
 ## Implementation outcome
 
-Somente a spec foi preparada nesta etapa. Nenhum código de produção foi alterado e nenhum teste de aplicação foi executado. Critérios descrevem evidências planejadas, não resultados obtidos. As regras de produto desta etapa foram refinadas sequencialmente com o solicitante. A spec está pronta para implementação Client-Side com fontes simuladas; o contrato real da API permanece Open para a etapa de integração. A revisão documental com `git diff --check` foi executada sem erros; isso não valida comportamento da aplicação.
+Client-side implementation uses `MockAuthRepository`, the existing encrypted `SecretStorage`,
+and `SessionUseCase`; it does not introduce an authentication endpoint, payload, JWT parsing,
+identity claim, or expiry timer. `CoreHttpClient` is a named Koin binding with an explicit
+`CORE_BASE_URL` origin, independent of the legacy chatbot's `BACKEND_BASE_URL`. Redirects are
+disabled for this client to prevent forwarding an authenticated operation to another origin.
+The mock big numbers source still does not perform HTTP.
+
+A session generation fences token writes, retries, cache writes, and Home rendering. A token
+revision also recognizes a completed refresh when a synthetic source returns the same token
+string. Refresh I/O runs outside the session mutex so a new login can complete while an older
+refresh is pending. Token publication follows both storage writes; partial writes block remote
+access and are cleaned up. Expiration clears all cached big numbers rows. Installing a new login
+also clears this session cache before publishing tokens, preventing reuse across accounts even
+if an earlier cleanup was interrupted. Recovery and transient failures preserve the cache.
+
+The Firebase login adapter, authentication port, legacy login use case, and their superseded
+tests were removed. Firebase SDK initialization for unrelated features remains. Legacy chatbot
+contracts and entry points are deprecated at Warning level. The missing return in the existing
+secret reader was a mechanical compilation fix needed for the token flow; it introduces no
+new product behavior and uses this spec's storage failure checks.
+
+### Acceptance evidence mapping
+
+| Criteria | Automated evidence |
+| --- | --- |
+| AC-01, AC-02, AC-09, AC-19 | `LoginUseCaseTests`, `LoginViewModelTests`, `AppModulesTest`, `LoginFragmentTests`; token-only login and Warning annotations. |
+| AC-03, AC-10, AC-10A, AC-18, AC-21, AC-22 | `SessionUseCaseTests`: opaque tokens, persisted-token recovery, no-token entry, unreadable storage, partial writes, and transient recovery results. |
+| AC-04, AC-05, AC-06, AC-06A, AC-08 | `CoreSessionInterceptorTests`: isolated origin, replacement Bearer header, stored refreshed tokens, bounded retry, second-401 expiration, non-401 responses. |
+| AC-11, AC-12, AC-13, AC-14 | `SessionUseCaseTests` with deferred responses and concurrent operations; `CoreSessionInterceptorTests` with a two-request HTTP barrier. |
+| AC-07, AC-15, AC-16, AC-20 | `SessionNavigationTests`, `LoginFragmentTests`, `RoomBigNumbersIntegrationTests`, session expiration and generation checks. |
+| AC-07A, AC-07B, AC-07C, AC-17 | Session recovery tests, HTTP transient-failure test, `HomeViewModelTests` for retained counts, warnings, action-only retry, and disabled retry during recovery; `HomeFragmentTests` for all three warning messages, visible cache and disabled retry while loading. |
+| AC-20A | `SessionBigNumbersTests` for delayed responses after expiration/new login, plus `HomeViewModelTests` for discarded results from another generation. |
+
+Tests were written before the corresponding implementation where practical. The initial test
+execution was blocked by the preexisting compilation errors, so it does not establish a
+behavioral Red result. During the completion review, the deterministic regression
+`delayedStorageReadFailureCannotReplaceNewLogin` was executed and failed before the fix:
+a delayed storage read failure replaced the state of a newer successful login. Restoration
+now checks the session generation under the mutex before publishing the local failure.
+Final validation results are recorded below.
+
+### Executed validation
+
+Validated on 2026-10-01 on Windows with Java 17 and a connected Android 12 device.
+
+| Check | Result |
+| --- | --- |
+| `testDebugUnitTest` | Passed: 75 tests, no failures, errors or skipped tests. Includes the storage-read race regression after the fix and refactor. |
+| `connectedDebugAndroidTest` | Passed: 26 tests, no failures or skipped tests. Covers login, session navigation, Home warnings/retry, Room cleanup and encrypted storage. |
+| `spotlessCheck` | Passed after formatting. |
+| `detekt` | Passed with zero findings after source refactoring; no quality rules or thresholds were changed. |
+| `lintDebug` | Passed: zero errors and 301 warnings. |
+| `assembleRelease` | Passed with the final session implementation; generated the unsigned release APK. |
+| `jacocoTestCoverageVerification` | Passed using combined local unit and instrumented execution data: 881/1004 lines (87.75%) and 283/364 branches (77.75%). Required thresholds remain 80% and 70%. |
+
+The final debug validation command was `gradlew.bat --max-workers=2 spotlessCheck detekt
+testDebugUnitTest lintDebug connectedDebugAndroidTest jacocoTestCoverageVerification --continue`.
+Release assembly was validated separately in the preceding full check execution. The local
+combined result does not claim a completed CI run or replace the CI aggregate gate.
+
+The Windows wrapper's empty classpath argument was removed so it can launch the wrapper JAR.
+The local Java Unix-domain socket failure required an invocation-only TCP fallback; worker
+concurrency was limited during validation. No persistent project JVM settings were changed.
+
+Implementation was recorded in semantic commits for mechanical build/storage fixes, session
+lifecycle, Core transport, login migration, navigation, Home/cache, chatbot deprecation, the
+final session quality refactor, and documentation. Code and behavioral tests are grouped together.
+
+The real API contract and error mapping remain Open for the integration stage. Authentication
+and big numbers still use synthetic sources; HTTP policy was exercised with controlled transport.

@@ -94,11 +94,19 @@ A login request passes through these existing boundaries:
 LoginFragment
     -> LoginViewModel
         -> LoginUseCase
-            -> AuthenticationPort (domain)
-                -> FirebaseAuthenticationPort (data)
+            -> AuthRepository (domain)
+                -> MockAuthRepository (data)
+            -> SessionUseCase (domain)
+                -> SecretStorage and session cache ports
 ```
 
-The implementation converts Firebase results into domain types before they reach the ViewModel.
+QUIS-128 implements the client-side token flow with a synthetic authentication source while the
+real API contract is pending. `SessionUseCase` stores tokens, restores persisted sessions, shares
+refresh attempts, and invalidates expired sessions and their cache. The named Koin `CoreHttpClient`
+uses the explicit `CORE_BASE_URL` origin and never attaches Core tokens to the legacy chatbot client.
+Core redirects are disabled so an authenticated operation cannot forward a token to another origin.
+Gradle reads this variable from the build environment, with an invalid dummy origin as the fallback;
+it does not load `.env` automatically. Big numbers still use a simulated source without HTTP.
 
 ### Tests
 
