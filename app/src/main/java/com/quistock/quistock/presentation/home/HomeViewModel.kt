@@ -10,6 +10,7 @@ import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 
 class HomeViewModel(private val refreshBigNumbers: RefreshBigNumbersUseCase, private val clock: Clock) : ViewModel() {
@@ -52,7 +53,7 @@ class HomeViewModel(private val refreshBigNumbers: RefreshBigNumbersUseCase, pri
             dataDate = buildString {
                 append(date.day.toString().padStart(2, '0'))
                 append('/')
-                append(date.month.toString().padStart(2, '0'))
+                append(date.month.number.toString().padStart(2, '0'))
                 append('/')
                 append(date.year)
             },

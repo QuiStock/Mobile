@@ -87,8 +87,10 @@ class HomeFragmentTests {
 
     @Test
     fun recreatingTheViewRequestsIndicatorsAgain() = withHome { scenario ->
+        onView(withId(R.id.containerResumo)).check(matches(isDisplayed()))
         verify(exactly = 1) { viewModel.load() }
         scenario.recreate()
+        onView(withId(R.id.containerResumo)).check(matches(isDisplayed()))
         verify(exactly = 2) { viewModel.load() }
     }
 
