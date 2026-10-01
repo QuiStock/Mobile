@@ -9,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.databinding.FragmentLoginBinding
-import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LoginError
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginFragment : Fragment() {
@@ -32,6 +32,10 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupListeners()
+        if (arguments?.getBoolean("expired") == true) viewModel.showExpired()
+        if (arguments?.getBoolean("unexpected") == true) viewModel.showUnexpectedError()
+        arguments?.remove("expired")
+        arguments?.remove("unexpected")
         observeState()
     }
 
@@ -55,6 +59,13 @@ class LoginFragment : Fragment() {
     private fun observeState() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
+                LoginUiState.Expired -> {
+                    enableLogin(true)
+                    showSpinner(false)
+                    binding.txtErroLogin.setText(R.string.session_expired)
+                    binding.txtErroLogin.visibility = View.VISIBLE
+                }
+
                 LoginUiState.Idle -> {
                     enableLogin(true)
                     showSpinner(false)
@@ -90,15 +101,17 @@ class LoginFragment : Fragment() {
     }
 
     fun redirectToMainPage() {
-        findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
+        if (findNavController().currentDestination?.id == R.id.loginFragment) {
+            findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
+        }
     }
 
-    fun notifyError(error: LegacyLoginError) {
+    fun notifyError(error: LoginError) {
         val message = when (error) {
-            LegacyLoginError.NetworkError -> R.string.erro_login_internet
-            LegacyLoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
-            LegacyLoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
-            LegacyLoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
+            LoginError.NetworkError -> R.string.erro_login_internet
+            LoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
+            LoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
+            LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 
         binding.txtErroLogin.apply {

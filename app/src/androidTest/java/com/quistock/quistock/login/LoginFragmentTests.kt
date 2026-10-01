@@ -20,13 +20,18 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
-import com.quistock.quistock.domain.model.LegacyLoginError
+import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.domain.model.SessionSnapshot
+import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.login.LoginUiState
 import com.quistock.quistock.presentation.login.LoginViewModel
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
@@ -42,6 +47,11 @@ class LoginFragmentTests {
 
     @Before
     fun setup() {
+        val session = mockk<SessionUseCase>(relaxed = true)
+        every { session.state } returns MutableStateFlow(SessionState.SignedOut)
+        every { session.snapshot() } returns SessionSnapshot(0, null)
+        coEvery { session.restore() } returns SessionState.SignedOut
+        GlobalContext.get().declare(session, allowOverride = true)
         uiState = MutableLiveData(LoginUiState.Idle)
         viewModel = mockk(relaxed = true)
         every { viewModel.uiState } returns uiState
@@ -100,7 +110,7 @@ class LoginFragmentTests {
 
     @Test
     fun networkError_shouldEnableSubmitButtonAndHideSpinnerAndShowNetworkErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LegacyLoginError.NetworkError))
+        emitUiState(LoginUiState.Error(LoginError.NetworkError))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -110,7 +120,7 @@ class LoginFragmentTests {
 
     @Test
     fun userDisabledError_shouldEnableSubmitButtonAndHideSpinnerAndShowUserDisabledErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LegacyLoginError.UserDisabled))
+        emitUiState(LoginUiState.Error(LoginError.UserDisabled))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -121,7 +131,7 @@ class LoginFragmentTests {
     @Test
     fun invalidCredentialsError_shouldEnableSubmitButtonAndHideSpinnerAndShowInvalidCredentialsErrorMessage() =
         runInstrumented {
-            emitUiState(LoginUiState.Error(LegacyLoginError.InvalidCredentials))
+            emitUiState(LoginUiState.Error(LoginError.InvalidCredentials))
 
             onSubmitButtonView().check(matches(isEnabled()))
             onLoadingSpinner().check(matches(not(isDisplayed())))
@@ -130,8 +140,19 @@ class LoginFragmentTests {
         }
 
     @Test
+    fun expiredNoticeRemainsWhileFieldsAreFilled() = runInstrumented {
+        emitUiState(LoginUiState.Expired)
+        onErrorMessageView().check(matches(withText(R.string.session_expired)))
+        onEmailFormField().perform(typeText("synthetic@example.com"), closeSoftKeyboard())
+        onPasswordFormField().perform(typeText("synthetic"), closeSoftKeyboard())
+        onErrorMessageView().check(matches(withText(R.string.session_expired)))
+        emitUiState(LoginUiState.Loading)
+        onErrorMessageView().check(matches(not(isDisplayed())))
+    }
+
+    @Test
     fun unexpectedError_shouldEnableSubmitButtonAndHideSpinnerAndShowUnexpectedErrorMessage() = runInstrumented {
-        emitUiState(LoginUiState.Error(LegacyLoginError.UnexpectedError))
+        emitUiState(LoginUiState.Error(LoginError.UnexpectedError))
 
         onSubmitButtonView().check(matches(isEnabled()))
         onLoadingSpinner().check(matches(not(isDisplayed())))
