@@ -10,6 +10,7 @@ import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import kotlinx.coroutines.launch
 
+@Deprecated("Legacy chatbot requires Firebase identity; API redesign pending", level = DeprecationLevel.WARNING)
 class ChatbotViewModel(
     private val sendMessageToChatbot: SendMessageToChatbotUseCase,
     private val userPreferences: UserPreferences,

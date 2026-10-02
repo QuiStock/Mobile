@@ -4,11 +4,11 @@ import com.quistock.quistock.data.observability.crashlytics.CrashlyticsErrorRepo
 import com.quistock.quistock.data.observability.logcat.LogcatLogger
 import com.quistock.quistock.domain.port.ErrorReporter
 import com.quistock.quistock.domain.port.Logger
+import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val observabilityModule = module {
-    singleOf(::LogcatLogger)
-    single<Logger> { get<LogcatLogger>() }
-    single<ErrorReporter> { CrashlyticsErrorReporter(get()) }
+    singleOf(::LogcatLogger) { bind<Logger>() }
+    singleOf(::CrashlyticsErrorReporter) { bind<ErrorReporter>() }
 }

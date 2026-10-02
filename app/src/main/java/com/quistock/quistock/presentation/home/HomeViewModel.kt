@@ -6,14 +6,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quistock.quistock.domain.model.BigNumbers
 import com.quistock.quistock.domain.model.RefreshResult
+import com.quistock.quistock.domain.model.SessionException
+import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
+import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 
-class HomeViewModel(private val refreshBigNumbers: RefreshBigNumbersUseCase, private val clock: Clock) : ViewModel() {
+class HomeViewModel(
+    private val refreshBigNumbers: RefreshBigNumbersUseCase,
+    private val clock: Clock,
+    private val session: SessionUseCase? = null,
+) : ViewModel() {
     private val _uiState = MutableLiveData(HomeUiState())
     val uiState: LiveData<HomeUiState> = _uiState
     private var refreshJob: Job? = null
@@ -32,11 +39,22 @@ class HomeViewModel(private val refreshBigNumbers: RefreshBigNumbersUseCase, pri
     private fun refresh(loadingState: HomeUiState) {
         _uiState.value = loadingState
         refreshJob = viewModelScope.launch {
-            _uiState.value = when (val result = refreshBigNumbers()) {
+            val expected = session?.snapshot()
+            if (loadingState.sessionFailure != null && expected != null) session.refresh(expected)
+            if (expected != null && session.snapshot()?.generation != expected.generation) return@launch
+            val result = try {
+                refreshBigNumbers()
+            } catch (_: SessionException) {
+                return@launch
+            }
+            if (expected != null && session.snapshot()?.generation != expected.generation) return@launch
+            val rendered = when (result) {
                 is RefreshResult.UpToDate -> HomeUiState(numbers = result.data.toUiNumbers())
                 is RefreshResult.Stale -> staleState(result.data)
                 RefreshResult.Failed -> HomeUiState(error = true)
             }
+            val failure = (session?.state?.value as? SessionState.Failure)?.reason
+            _uiState.value = rendered.copy(sessionFailure = failure)
         }
     }
 

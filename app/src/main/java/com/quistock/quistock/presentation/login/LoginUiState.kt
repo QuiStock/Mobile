@@ -3,6 +3,8 @@ package com.quistock.quistock.presentation.login
 import com.quistock.quistock.domain.model.LoginError
 
 sealed interface LoginUiState {
+    data object Expired : LoginUiState
+
     data object Idle : LoginUiState
 
     data object Loading : LoginUiState

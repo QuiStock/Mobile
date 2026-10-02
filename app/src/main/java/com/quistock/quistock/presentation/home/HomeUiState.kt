@@ -1,5 +1,7 @@
 package com.quistock.quistock.presentation.home
 
+import com.quistock.quistock.domain.model.SessionFailure
+
 data class HomeNumbers(
     val nearExpirationProductCount: Int,
     val criticalAnalyzedFlowCount: Int,
@@ -14,7 +16,8 @@ data class HomeUiState(
     val warning: HomeWarning? = null,
     val dataDate: String? = null,
     val error: Boolean = false,
+    val sessionFailure: SessionFailure? = null,
 ) {
-    val retryVisible: Boolean get() = error || warning != null
+    val retryVisible: Boolean get() = error || warning != null || sessionFailure != null
     val retryEnabled: Boolean get() = retryVisible && !loading
 }

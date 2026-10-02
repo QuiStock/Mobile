@@ -7,6 +7,8 @@ import com.quistock.quistock.domain.model.BigNumbers
 import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 
 class RoomBigNumbersRepository(private val dao: BigNumbersDao) : CachedBigNumbersRepository {
+    override suspend fun clear() = dao.clear()
+
     override suspend fun read(): BigNumbers? = dao.getLatest()?.toDomain()
 
     override suspend fun save(value: BigNumbers) {

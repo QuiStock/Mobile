@@ -24,6 +24,7 @@ retrofit = "3.0.0"
 kotlin = "2.3.20"
 ksp = "2.3.12"
 room = "2.8.5"
+datastore = "1.2.1"
 kotlinxSerialization = "1.11.0"
 okhttp = "4.12.0"
 kotlinxDatetime = "0.7.1"
@@ -62,6 +63,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
