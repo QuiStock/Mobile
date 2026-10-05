@@ -1,11 +1,9 @@
 package com.quistock.quistock.presentation.login
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
@@ -34,6 +32,10 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupListeners()
+        if (arguments?.getBoolean("expired") == true) viewModel.showExpired()
+        if (arguments?.getBoolean("unexpected") == true) viewModel.showUnexpectedError()
+        arguments?.remove("expired")
+        arguments?.remove("unexpected")
         observeState()
     }
 
@@ -57,6 +59,13 @@ class LoginFragment : Fragment() {
     private fun observeState() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
+                LoginUiState.Expired -> {
+                    enableLogin(true)
+                    showSpinner(false)
+                    binding.txtErroLogin.setText(R.string.session_expired)
+                    binding.txtErroLogin.visibility = View.VISIBLE
+                }
+
                 LoginUiState.Idle -> {
                     enableLogin(true)
                     showSpinner(false)
@@ -92,7 +101,9 @@ class LoginFragment : Fragment() {
     }
 
     fun redirectToMainPage() {
-        findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
+        if (findNavController().currentDestination?.id == R.id.loginFragment) {
+            findNavController().navigate(NavGraph.Actions.LOGIN_TO_HOME)
+        }
     }
 
     fun notifyError(error: LoginError) {

@@ -12,6 +12,9 @@ interface BigNumbersDao {
     @Query("SELECT * FROM big_numbers ORDER BY created_at DESC LIMIT 1")
     suspend fun getLatest(): BigNumbersEntity?
 
+    @Query("DELETE FROM big_numbers")
+    suspend fun clear()
+
     @Insert
     suspend fun insert(bigNumbers: BigNumbersEntity)
 

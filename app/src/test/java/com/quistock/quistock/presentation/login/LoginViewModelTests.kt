@@ -2,9 +2,12 @@ package com.quistock.quistock.presentation.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
+import com.quistock.quistock.domain.model.AccessToken
+import com.quistock.quistock.domain.model.AuthResult
+import com.quistock.quistock.domain.model.AuthTokens
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
-import com.quistock.quistock.domain.model.User
+import com.quistock.quistock.domain.model.RefreshToken
 import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import io.kotest.matchers.shouldBe
@@ -36,13 +39,24 @@ class LoginViewModelTests {
 
     @Before
     fun setup() {
-        loginViewModel = LoginViewModel(loginUseCase, userPreferences)
+        loginViewModel = LoginViewModel(loginUseCase)
+    }
+
+    @Test
+    fun `expiration remains until authentication starts`() = runTest {
+        loginViewModel.showExpired()
+        advanceUntilIdle()
+        loginViewModel.uiState.value shouldBe LoginUiState.Expired
+        coEvery { loginUseCase(any(), any()) } returns LoginError.InvalidCredentials
+        loginViewModel.authenticate("synthetic@example.com", "synthetic")
+        loginViewModel.uiState.value shouldBe LoginUiState.Loading
+        advanceUntilIdle()
+        loginViewModel.uiState.value shouldBe LoginUiState.Error(LoginError.InvalidCredentials)
     }
 
     @Test
     fun `initial state should be idle and user email should be null`() = runTest {
         loginViewModel.uiState.value shouldBe LoginUiState.Idle
-        loginViewModel.userEmail.value shouldBe null
     }
 
     @Test
@@ -82,20 +96,18 @@ class LoginViewModelTests {
     }
 
     @Test
-    fun `if authentication succeeds, should store user data and become authenticated`() = runTest {
+    fun `if authentication succeeds, becomes authenticated without legacy identity`() = runTest {
         val email = "example@email.com"
-        val userId = "user-123"
         coEvery {
             loginUseCase(any(), any())
-        } returns LoginResult.Success(User(id = userId, email = email))
+        } returns successfulLoginResult()
 
         loginViewModel.authenticate(email, "Abc@123!")
         advanceUntilIdle()
 
-        loginViewModel.userEmail.value shouldBe email
         loginViewModel.uiState.value shouldBe LoginUiState.Authenticated
         coVerify(exactly = 1) { loginUseCase(email, "Abc@123!") }
-        verify(exactly = 1) { userPreferences.saveUserId(userId) }
+        verify(exactly = 0) { userPreferences.saveUserId(any()) }
     }
 
     @Test
@@ -127,10 +139,10 @@ class LoginViewModelTests {
         advanceUntilIdle()
 
         loginViewModel.uiState.value shouldBe LoginUiState.Error(reason = error)
-        loginViewModel.userEmail.value shouldBe null
         coVerify(exactly = 1) { loginUseCase(any(), any()) }
         verify(exactly = 0) { userPreferences.saveUserId(any()) }
     }
 
-    private fun successfulLoginResult() = LoginResult.Success(User(id = "user-123", email = "example@email.com"))
+    private fun successfulLoginResult() =
+        AuthResult.Success(AuthTokens(AccessToken("synthetic-access"), RefreshToken("opaque")))
 }

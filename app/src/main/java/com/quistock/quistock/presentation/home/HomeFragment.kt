@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentHomeBinding
+import com.quistock.quistock.domain.model.SessionFailure
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
@@ -39,6 +40,15 @@ class HomeFragment : Fragment() {
 
         val status = when {
             state.loading -> getString(R.string.home_indicators_loading)
+
+            state.sessionFailure != null -> getString(
+                when (state.sessionFailure) {
+                    SessionFailure.NETWORK -> R.string.session_network
+                    SessionFailure.TIMEOUT -> R.string.session_timeout
+                    SessionFailure.SERVER -> R.string.session_server
+                    SessionFailure.UNEXPECTED -> R.string.erro_login_erro_inesperado
+                },
+            )
 
             state.error -> getString(R.string.home_indicators_error)
 

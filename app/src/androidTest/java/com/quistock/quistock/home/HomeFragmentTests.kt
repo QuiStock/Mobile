@@ -16,14 +16,20 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.R
+import com.quistock.quistock.domain.model.SessionFailure
+import com.quistock.quistock.domain.model.SessionSnapshot
+import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.home.HomeNumbers
 import com.quistock.quistock.presentation.home.HomeUiState
 import com.quistock.quistock.presentation.home.HomeViewModel
 import com.quistock.quistock.presentation.home.HomeWarning
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,6 +42,11 @@ class HomeFragmentTests {
 
     @Before
     fun setup() {
+        val session = mockk<SessionUseCase>(relaxed = true)
+        every { session.state } returns MutableStateFlow(SessionState.SignedOut)
+        every { session.snapshot() } returns SessionSnapshot(0, null)
+        coEvery { session.restore() } returns SessionState.SignedOut
+        GlobalContext.get().declare(session, allowOverride = true)
         state = MutableLiveData(HomeUiState())
         viewModel = mockk(relaxed = true)
         every { viewModel.uiState } returns state
@@ -76,6 +87,24 @@ class HomeFragmentTests {
         emit(HomeUiState(numbers = HomeNumbers(1, 2, 3), loading = true, warning = HomeWarning.STALE))
         onView(withId(R.id.tvNumeroVencimento)).check(matches(withText("1")))
         onView(withId(R.id.btnRetryIndicators)).check(matches(isNotEnabled()))
+    }
+
+    @Test
+    fun transientSessionWarningsKeepCacheAndDisableRetryWhileLoading() = withHome {
+        for ((failure, message) in listOf(
+            SessionFailure.NETWORK to R.string.session_network,
+            SessionFailure.TIMEOUT to R.string.session_timeout,
+            SessionFailure.SERVER to R.string.session_server,
+        )) {
+            val cached = HomeUiState(numbers = HomeNumbers(1, 2, 3), sessionFailure = failure)
+            emit(cached)
+            onView(withId(R.id.tvIndicatorsStatus)).check(matches(withText(message)))
+            onView(withId(R.id.tvNumeroVencimento)).check(matches(withText("1")))
+            onView(withId(R.id.btnRetryIndicators)).check(matches(isEnabled()))
+            emit(cached.copy(loading = true))
+            onView(withId(R.id.btnRetryIndicators)).check(matches(isNotEnabled()))
+            onView(withId(R.id.tvNumeroVencimento)).check(matches(withText("1")))
+        }
     }
 
     @Test

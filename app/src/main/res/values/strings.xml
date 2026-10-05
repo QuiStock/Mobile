@@ -20,5 +20,9 @@
     <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
-    <string name="erro_login_erro_inesperado">Algo deu errado! Tente novamente mais tarde.</string>
+    <string name="erro_login_erro_inesperado">Ocorreu um erro inesperado. Tente novamente. Se o erro persistir, entre em contato com o suporte.</string>
+    <string name="session_expired">Sua sessão expirou. Faça login novamente.</string>
+    <string name="session_network">Sem conexão com a internet. Verifique sua conexão e tente novamente.</string>
+    <string name="session_timeout">Sua conexão está lenta. Tente novamente.</string>
+    <string name="session_server">Ocorreu um erro interno. Tente novamente mais tarde.</string>
 </resources>

@@ -73,6 +73,18 @@ class RoomBigNumbersIntegrationTests {
     }
 
     @Test
+    fun clearingSessionCacheRemovesAllRowsBeforeNextAccount() = runBlocking {
+        val repository = RoomBigNumbersRepository(database.bigNumbersDao())
+        val instant = Instant.parse("2026-09-23T12:00:00Z")
+        database.bigNumbersDao().insert(entity(instant, 1))
+        database.bigNumbersDao().insert(entity(instant, 2))
+        repository.clear()
+        assertEquals(null, repository.read())
+        repository.save(BigNumbers(4, 5, 6, instant))
+        assertEquals(BigNumbers(4, 5, 6, instant), repository.read())
+    }
+
+    @Test
     fun roomModulesResolveRepositoryAndDao() {
         val koinApp = koinApplication {
             androidContext(InstrumentationRegistry.getInstrumentation().targetContext)
