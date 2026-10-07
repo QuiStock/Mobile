@@ -17,6 +17,9 @@
     <string name="bt_ir_cadastro">Não tem uma conta? Cadastre-se</string>
     <string name="Cadastro">Cadastro</string>
     <string name="home">Home</string>
+    <string name="onboarding_welcome">Bem-vindo!</string>
+    <string name="onboarding_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="onboarding_continue">Continuar</string>
     <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
