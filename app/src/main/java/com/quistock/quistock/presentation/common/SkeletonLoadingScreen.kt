@@ -1,5 +1,6 @@
 package com.quistock.quistock.presentation.common
 
+import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
@@ -14,6 +15,8 @@ private const val SCREEN_COLOR = 0xFF11061F.toInt()
 private const val PLACEHOLDER_COLOR = 0xFF30243D.toInt()
 private const val PLACEHOLDER_HIGHLIGHT = 0xFF443453.toInt()
 private const val SKELETON_DURATION_MS = 550L
+private const val SKELETON_FADE_DURATION_MS = 160L
+private const val PLACEHOLDER_PULSE_DURATION_MS = 850L
 
 enum class SkeletonScreenType {
     HOME,
@@ -43,13 +46,14 @@ object SkeletonLoadingScreen {
     }
 }
 
-private class SkeletonOverlay(context: Context, private val type: SkeletonScreenType) : FrameLayout(context) {
+private class SkeletonOverlay(context: Context, type: SkeletonScreenType) : FrameLayout(context) {
+    private val placeholderDrawables = mutableListOf<GradientDrawable>()
     private val pulse = ValueAnimator.ofObject(
-        android.animation.ArgbEvaluator(),
+        ArgbEvaluator(),
         PLACEHOLDER_COLOR,
         PLACEHOLDER_HIGHLIGHT,
     ).apply {
-        duration = 850L
+        duration = PLACEHOLDER_PULSE_DURATION_MS
         repeatMode = ValueAnimator.REVERSE
         repeatCount = ValueAnimator.INFINITE
         addUpdateListener { animator ->
@@ -57,14 +61,13 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
             placeholderDrawables.forEach { it.setColor(color) }
         }
     }
-    private val placeholderDrawables = mutableListOf<GradientDrawable>()
 
     init {
         setBackgroundColor(SCREEN_COLOR)
         isClickable = true
         isFocusable = true
         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-        val skeleton = buildSkeleton()
+        val skeleton = SkeletonLayoutFactory(context, placeholderDrawables).create(type)
         skeleton.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         addView(skeleton, LayoutParams(-1, -1))
     }
@@ -73,7 +76,7 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         super.onAttachedToWindow()
         pulse.start()
         postDelayed({
-            animate().alpha(0f).setDuration(160L).withEndAction {
+            animate().alpha(0f).setDuration(SKELETON_FADE_DURATION_MS).withEndAction {
                 (parent as? ViewGroup)?.removeView(this)
             }.start()
         }, SKELETON_DURATION_MS)
@@ -90,19 +93,31 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         info.text = "Carregando tela"
         info.isFocusable = true
     }
+}
 
-    private fun buildSkeleton(): View {
+// All numeric literals here describe screen-specific placeholder geometry.
+@Suppress("MagicNumber")
+private class SkeletonLayoutFactory(
+    private val context: Context,
+    private val placeholderDrawables: MutableList<GradientDrawable>,
+) {
+    fun create(type: SkeletonScreenType): View {
         if (type == SkeletonScreenType.ORDER_SENT || type == SkeletonScreenType.PROMOTION_SENT) {
             return confirmationSkeleton()
         }
-        val page = column(24, 20, 24, 20)
-        page.addView(header())
+
+        val page = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(20), dp(24), dp(20))
+            addView(header())
+        }
+
         when (type) {
             SkeletonScreenType.HOME -> {
                 page.addView(block(190, 30, top = 36))
                 page.addView(row(3, 116, top = 18))
                 page.addView(block(175, 18, top = 32))
-                repeat(3) { page.addView(card(68, top = 14)) }
+                repeat(3) { page.addView(block(-1, 68, top = 14, radius = 14)) }
             }
 
             SkeletonScreenType.CHATBOT -> {
@@ -111,51 +126,44 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
                 page.addView(chatBubble(0.88f, Gravity.START, 34))
                 val spacer = View(context)
                 page.addView(spacer, LinearLayout.LayoutParams(-1, 0, 1f))
-                page.addView(card(48, top = 10))
+                page.addView(block(-1, 48, top = 10, radius = 14))
             }
 
             SkeletonScreenType.ORDER, SkeletonScreenType.PROMOTION -> {
                 page.addView(block(210, 26, top = 28))
                 page.addView(block(140, 15, top = 10))
                 repeat(4) { page.addView(field(top = 22)) }
-                page.addView(card(52, top = 26))
+                page.addView(block(-1, 52, top = 26, radius = 14))
             }
 
             SkeletonScreenType.INTERFERENCES -> {
                 page.addView(block(200, 26, top = 28))
                 page.addView(row(3, 88, top = 16))
-                repeat(4) { page.addView(card(82, top = 14)) }
+                repeat(4) { page.addView(block(-1, 82, top = 14, radius = 14)) }
             }
 
             SkeletonScreenType.PRODUCT_CONTROL -> {
                 page.addView(block(210, 26, top = 28))
-                page.addView(card(42, top = 14))
+                page.addView(block(-1, 42, top = 14, radius = 14))
                 page.addView(row(2, 40, top = 14))
-                repeat(3) { page.addView(card(88, top = 14)) }
+                repeat(3) { page.addView(block(-1, 88, top = 14, radius = 14)) }
             }
 
             SkeletonScreenType.PRODUCT_DETAIL -> {
                 page.addView(block(110, 20, top = 24))
                 page.addView(block(215, 24, top = 18))
                 page.addView(block(165, 16, top = 10))
-                page.addView(card(105, top = 20))
+                page.addView(block(-1, 105, top = 20, radius = 14))
                 repeat(3) { page.addView(field(top = 18)) }
-                page.addView(card(50, top = 24))
+                page.addView(block(-1, 50, top = 24, radius = 14))
             }
 
             SkeletonScreenType.ORDER_SENT, SkeletonScreenType.PROMOTION_SENT -> Unit
         }
+
         val spacer = View(context)
         page.addView(spacer, LinearLayout.LayoutParams(-1, 0, 1f))
-        when (type) {
-            SkeletonScreenType.HOME,
-            SkeletonScreenType.CHATBOT,
-            SkeletonScreenType.INTERFERENCES,
-            SkeletonScreenType.PRODUCT_CONTROL,
-            -> page.addView(bottomBar())
-
-            else -> Unit
-        }
+        if (type.hasBottomNavigation()) page.addView(bottomBar())
         return page
     }
 
@@ -167,7 +175,7 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         addView(block(210, 24, top = 24))
         addView(block(250, 16, top = 12))
         addView(block(170, 16, top = 8))
-        addView(card(52, top = 32))
+        addView(block(-1, 52, top = 32, radius = 14))
     }
 
     private fun header(): View = LinearLayout(context).apply {
@@ -216,8 +224,6 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(top) }
     }
 
-    private fun card(height: Int, top: Int): View = block(-1, height, top = top, radius = 14)
-
     private fun bottomBar(): View = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER
@@ -239,19 +245,21 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         }
     }
 
-    private fun rounded(color: Int, radius: Int) = GradientDrawable().apply {
-        setColor(color)
+    private fun placeholder(radius: Int) = GradientDrawable().apply {
+        setColor(PLACEHOLDER_COLOR)
         cornerRadius = dp(radius).toFloat()
+        placeholderDrawables.add(this)
     }
 
-    private fun placeholder(radius: Int): GradientDrawable = rounded(PLACEHOLDER_COLOR, radius).also {
-        placeholderDrawables.add(it)
-    }
+    private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
+}
 
-    private fun column(start: Int, top: Int, end: Int, bottom: Int) = LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(dp(start), dp(top), dp(end), dp(bottom))
-    }
+private fun SkeletonScreenType.hasBottomNavigation(): Boolean = when (this) {
+    SkeletonScreenType.HOME,
+    SkeletonScreenType.CHATBOT,
+    SkeletonScreenType.INTERFERENCES,
+    SkeletonScreenType.PRODUCT_CONTROL,
+    -> true
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    else -> false
 }
