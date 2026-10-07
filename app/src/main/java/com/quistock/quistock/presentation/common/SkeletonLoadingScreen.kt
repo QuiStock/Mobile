@@ -208,7 +208,7 @@ private class SkeletonLayoutFactory(
             addView(block(128, 12, top = 8))
         }
         val availableWidth = (resources.displayMetrics.widthPixels / resources.displayMetrics.density).toInt() - 48
-        addView(bubble, LayoutParams(dp((availableWidth * widthFraction).toInt()), -2, gravity))
+        addView(bubble, FrameLayout.LayoutParams(dp((availableWidth * widthFraction).toInt()), -2, gravity))
     }
 
     private fun row(count: Int, height: Int, top: Int): View = LinearLayout(context).apply {
