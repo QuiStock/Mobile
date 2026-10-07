@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
+import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
+import com.quistock.quistock.presentation.common.SkeletonScreenType
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -29,7 +31,10 @@ class ChatbotFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chatbot, container, false)
+        return SkeletonLoadingScreen.wrap(
+            inflater.inflate(R.layout.fragment_chatbot, container, false),
+            SkeletonScreenType.CHATBOT,
+        )
     }
 
     companion object {
