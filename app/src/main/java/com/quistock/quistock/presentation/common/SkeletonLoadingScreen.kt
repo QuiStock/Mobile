@@ -104,6 +104,7 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
                 page.addView(block(175, 18, top = 32))
                 repeat(3) { page.addView(card(68, top = 14)) }
             }
+
             SkeletonScreenType.CHATBOT -> {
                 page.addView(chatBubble(0.78f, Gravity.START, 52))
                 page.addView(chatBubble(0.66f, Gravity.END, 34))
@@ -112,23 +113,27 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
                 page.addView(spacer, LinearLayout.LayoutParams(-1, 0, 1f))
                 page.addView(card(48, top = 10))
             }
+
             SkeletonScreenType.ORDER, SkeletonScreenType.PROMOTION -> {
                 page.addView(block(210, 26, top = 28))
                 page.addView(block(140, 15, top = 10))
                 repeat(4) { page.addView(field(top = 22)) }
                 page.addView(card(52, top = 26))
             }
+
             SkeletonScreenType.INTERFERENCES -> {
                 page.addView(block(200, 26, top = 28))
                 page.addView(row(3, 88, top = 16))
                 repeat(4) { page.addView(card(82, top = 14)) }
             }
+
             SkeletonScreenType.PRODUCT_CONTROL -> {
                 page.addView(block(210, 26, top = 28))
                 page.addView(card(42, top = 14))
                 page.addView(row(2, 40, top = 14))
                 repeat(3) { page.addView(card(88, top = 14)) }
             }
+
             SkeletonScreenType.PRODUCT_DETAIL -> {
                 page.addView(block(110, 20, top = 24))
                 page.addView(block(215, 24, top = 18))
@@ -137,6 +142,7 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
                 repeat(3) { page.addView(field(top = 18)) }
                 page.addView(card(50, top = 24))
             }
+
             SkeletonScreenType.ORDER_SENT, SkeletonScreenType.PROMOTION_SENT -> Unit
         }
         val spacer = View(context)
@@ -145,7 +151,9 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
             SkeletonScreenType.HOME,
             SkeletonScreenType.CHATBOT,
             SkeletonScreenType.INTERFERENCES,
-            SkeletonScreenType.PRODUCT_CONTROL -> page.addView(bottomBar())
+            SkeletonScreenType.PRODUCT_CONTROL,
+            -> page.addView(bottomBar())
+
             else -> Unit
         }
         return page
@@ -198,9 +206,12 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
     private fun row(count: Int, height: Int, top: Int): View = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         repeat(count) { index ->
-            addView(block(0, height), LinearLayout.LayoutParams(0, dp(height), 1f).apply {
-                if (index > 0) marginStart = dp(10)
-            })
+            addView(
+                block(0, height),
+                LinearLayout.LayoutParams(0, dp(height), 1f).apply {
+                    if (index > 0) marginStart = dp(10)
+                },
+            )
         }
         layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(top) }
     }
@@ -211,9 +222,12 @@ private class SkeletonOverlay(context: Context, private val type: SkeletonScreen
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER
         repeat(4) { index ->
-            addView(block(28, 26), LinearLayout.LayoutParams(0, dp(26), 1f).apply {
-                if (index > 0) marginStart = dp(12)
-            })
+            addView(
+                block(28, 26),
+                LinearLayout.LayoutParams(0, dp(26), 1f).apply {
+                    if (index > 0) marginStart = dp(12)
+                },
+            )
         }
         layoutParams = LinearLayout.LayoutParams(-1, dp(68))
     }
