@@ -146,6 +146,7 @@ class LoginFragmentTests {
             scenario.onActivity { activity ->
                 val navHost = activity.binding.navHostFragment
                 navController = navHost.findNavController()
+                navController.navigate(NavGraph.Destinations.LOGIN)
             }
 
             test(navController)
