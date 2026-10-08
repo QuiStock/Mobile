@@ -6,6 +6,7 @@ object NavGraph {
     val GRAPH_RES_ID = R.navigation.nav_graph
 
     object Destinations {
+        val SPLASH = R.id.splashFragment
         val ONBOARDING = R.id.onboardingFragment
         val LOGIN = R.id.loginFragment
         val HOME = R.id.homeFragment
@@ -21,6 +22,7 @@ object NavGraph {
     }
 
     object Actions {
+        val SPLASH_TO_ONBOARDING = R.id.action_splashFragment_to_onboardingFragment
         val ONBOARDING_TO_LOGIN = R.id.action_onboardingFragment_to_loginFragment
         val LOGIN_TO_REGISTER = R.id.action_loginFragment_to_cadastroPessoalFragment
         val LOGIN_TO_HOME = R.id.action_loginFragment_to_homeFragment
