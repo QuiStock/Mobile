@@ -19,6 +19,7 @@ object NavGraph {
         val PRODUCT_CONTROL = R.id.productControlFragment
         val PRODUCT_DETAIL = R.id.productDetailFragment
         val CHATBOT = R.id.chatbotFragment
+        val NOTIFICATIONS = R.id.notificationsFragment
     }
 
     object Actions {
@@ -31,6 +32,8 @@ object NavGraph {
         val HOME_TO_ORDER = R.id.action_homeFragment_to_orderFragment
         val HOME_TO_PROMOTION = R.id.action_homeFragment_to_promotionFragment
         val HOME_TO_CHATBOT = R.id.action_homeFragment_to_chatbotFragment
+        val HOME_TO_NOTIFICATIONS = R.id.action_homeFragment_to_notificationsFragment
+        val NOTIFICATIONS_TO_HOME = R.id.action_notificationsFragment_to_homeFragment
         val ORDER_TO_ORDER_SENT = R.id.action_orderFragment_to_orderSentFragment
         val PROMOTION_TO_PROMO_SENT = R.id.action_promotionFragment_to_promoSentFragment
         val ORDER_SENT_TO_INTERFERENCES = R.id.action_orderSentFragment_to_interferencesFragment

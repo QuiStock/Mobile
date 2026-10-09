@@ -20,6 +20,17 @@
     <string name="onboarding_welcome">Bem-vindo!</string>
     <string name="onboarding_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="onboarding_continue">Continuar</string>
+    <string name="notifications_store_name">Loja Av. Paulista</string>
+    <string name="notifications_user_name">Milena Souza</string>
+    <string name="notifications_back">Voltar</string>
+    <string name="notifications_title">Notificações</string>
+    <string name="notifications_stock_risk">7 produtos com risco de perda</string>
+    <string name="notifications_time_13_minutes">Há 13 minutos</string>
+    <string name="notifications_order_in_transit">Pedido #CD-2048 em trânsito</string>
+    <string name="notifications_time_27_minutes">Há 27 minutos</string>
+    <string name="notifications_promotion_success">Promoção criada com sucesso</string>
+    <string name="notifications_time_1_hour_33_minutes">Há 1h 33</string>
+    <string name="notifications_analyze">Analisar</string>
     <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
