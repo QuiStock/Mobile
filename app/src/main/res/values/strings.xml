@@ -43,6 +43,13 @@
     <string name="profile_help_description">Dúvidas sobre o QuiStock</string>
     <string name="profile_edit">Editar perfil</string>
     <string name="profile_sign_out">Sair da conta</string>
+    <string name="profile_change_photo">Alterar foto</string>
+    <string name="profile_full_name_label">Nome Completo</string>
+    <string name="profile_email_label">E-mail</string>
+    <string name="profile_full_name_hint">Milena Souza</string>
+    <string name="profile_email_hint">milena.souza@quistock.com</string>
+    <string name="profile_save_changes">Salvar alterações</string>
+    <string name="profile_cancel">Cancelar</string>
     <string name="erro_login_internet">Não foi possível autenticar. Verifique sua conexão à internet.</string>
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
