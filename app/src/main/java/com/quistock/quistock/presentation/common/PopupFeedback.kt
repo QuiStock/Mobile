@@ -12,6 +12,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.quistock.quistock.R
 
 object PopupFeedback {
+    private const val SNACKBAR_HORIZONTAL_PADDING = 16
+    private const val DIALOG_WIDTH_RATIO = 0.82
+
     @JvmStatic
     fun showStatus(anchor: View, message: String, isError: Boolean) {
         val snackbar = Snackbar.make(anchor, "", Snackbar.LENGTH_LONG)
@@ -23,7 +26,7 @@ object PopupFeedback {
         text.text = message
         val snackbarLayout = snackbar.view as Snackbar.SnackbarLayout
         snackbarLayout.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        snackbarLayout.setPadding(16, 0, 16, 0)
+        snackbarLayout.setPadding(SNACKBAR_HORIZONTAL_PADDING, 0, SNACKBAR_HORIZONTAL_PADDING, 0)
         snackbarLayout.removeAllViews()
         snackbarLayout.addView(
             layout,
@@ -47,7 +50,7 @@ object PopupFeedback {
             android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT),
         )
         dialog.window?.setLayout(
-            (context.resources.displayMetrics.widthPixels * 0.82).toInt(),
+            (context.resources.displayMetrics.widthPixels * DIALOG_WIDTH_RATIO).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     }
@@ -76,7 +79,7 @@ object PopupFeedback {
             android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT),
         )
         dialog.window?.setLayout(
-            (context.resources.displayMetrics.widthPixels * 0.82).toInt(),
+            (context.resources.displayMetrics.widthPixels * DIALOG_WIDTH_RATIO).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     }
