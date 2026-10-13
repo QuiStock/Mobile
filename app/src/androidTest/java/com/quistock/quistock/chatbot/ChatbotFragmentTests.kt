@@ -82,16 +82,19 @@ class ChatbotFragmentTests {
     }
 
     @Test
-    fun emptyMessage_shouldShowValidationAndChatbotErrors_shouldShowTheirMessages() = runInstrumented { _ ->
+    fun emptyMessage_shouldShowValidationError() = runInstrumented { _ ->
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_empty_message)))
+    }
 
-        val message = "Olá, chatbot"
-        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
-        onView(withId(R.id.btnEnviarPergunta)).perform(click())
+    @Test
+    fun notLoggedInError_shouldShowLoginMessage() = runInstrumented { _ ->
         emitUiState(ChatbotUiState.Error.NOT_LOGGED_IN)
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_login_required)))
+    }
 
+    @Test
+    fun requestFailedError_shouldShowRetryMessage() = runInstrumented { _ ->
         emitUiState(ChatbotUiState.Error.REQUEST_FAILED)
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_request_failed)))
     }

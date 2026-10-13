@@ -46,15 +46,20 @@ class OrderAndPromotionFragmentTests {
         }
 
     @Test
-    fun promotionForm_shouldShowValidationForEachMissingFieldAndConfirmSubmission() =
-        runInstrumented(NavGraph.Destinations.PROMOTION) { navController ->
+    fun promotionForm_shouldShowValidationForEachMissingField() =
+        runInstrumented(NavGraph.Destinations.PROMOTION) { _ ->
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
 
             onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
+        }
 
+    @Test
+    fun promotionForm_withRequiredFields_shouldConfirmSubmission() =
+        runInstrumented(NavGraph.Destinations.PROMOTION) { navController ->
+            onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
             onView(withId(R.id.etPromotionDuration)).perform(scrollTo(), replaceText("3"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
