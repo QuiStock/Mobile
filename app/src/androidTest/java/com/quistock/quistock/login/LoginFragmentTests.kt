@@ -62,6 +62,24 @@ class LoginFragmentTests {
     }
 
     @Test
+    fun submit_withBlankEmail_shouldNotCallAuthenticate() = runInstrumented {
+        onPasswordFormField().perform(typeText("Abcd123!"), closeSoftKeyboard())
+
+        onSubmitButtonView().perform(scrollTo(), click())
+
+        verify(exactly = 0) { viewModel.authenticate(any(), any()) }
+    }
+
+    @Test
+    fun submit_withBlankPassword_shouldNotCallAuthenticate() = runInstrumented {
+        onEmailFormField().perform(typeText("example@email.com"), closeSoftKeyboard())
+
+        onSubmitButtonView().perform(scrollTo(), click())
+
+        verify(exactly = 0) { viewModel.authenticate(any(), any()) }
+    }
+
+    @Test
     fun submit_withFormFilledIn_shouldCallAuthenticateWithCorrectCredentials() = runInstrumented {
         val email = "example@email.com"
         val password = "Abcd123!"

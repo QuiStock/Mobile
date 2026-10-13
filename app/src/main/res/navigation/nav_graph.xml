@@ -70,7 +70,7 @@
             app:destination="@id/profileFragment" />
     </fragment>
 
-    <fragment
+       <fragment
         android:id="@+id/profileFragment"
         android:name="com.quistock.quistock.presentation.profile.ProfileFragment"
         android:label="@string/profile_title">
@@ -80,8 +80,35 @@
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="false" />
         <action
+            android:id="@+id/action_profileFragment_to_faqFragment"
+            app:destination="@id/faqFragment" />
+        <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/faqFragment"
+        android:name="com.quistock.quistock.presentation.help.FaqFragment"
+        android:label="@string/help_faq_label">
+        <action
+            android:id="@+id/action_faqFragment_to_profileFragment"
+            app:destination="@id/profileFragment"
+            app:popUpTo="@id/profileFragment"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_faqFragment_to_contactFragment"
+            app:destination="@id/contactFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/contactFragment"
+        android:name="com.quistock.quistock.presentation.help.ContactFragment"
+        android:label="@string/help_contact_title">
+        <action
+            android:id="@+id/action_contactFragment_to_faqFragment"
+            app:destination="@id/faqFragment"
+            app:popUpTo="@id/faqFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
