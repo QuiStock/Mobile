@@ -24,7 +24,7 @@ object PopupFeedback {
         layout.setBackgroundResource(if (isError) R.drawable.bg_popup_error else R.drawable.bg_popup_success)
         icon.setImageResource(if (isError) R.drawable.ic_error else R.drawable.ic_success)
         text.text = message
-        val snackbarLayout = snackbar.view as Snackbar.SnackbarLayout
+        val snackbarLayout = snackbar.view as ViewGroup
         snackbarLayout.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         snackbarLayout.setPadding(SNACKBAR_HORIZONTAL_PADDING, 0, SNACKBAR_HORIZONTAL_PADDING, 0)
         snackbarLayout.removeAllViews()
