@@ -9,11 +9,8 @@ import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
 
 class EmployeeFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_employee, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        inflater.inflate(R.layout.fragment_employee, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
