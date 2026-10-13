@@ -1,4 +1,4 @@
-package com.quistock.quistock.domain.model
+package com.quistock.quistock.data.secrets
 
 import kotlinx.serialization.Serializable
 
@@ -9,5 +9,3 @@ value class RefreshToken(val token: String)
 @JvmInline
 @Serializable
 value class AccessToken(val token: String)
-
-data class AuthTokens(val accessToken: AccessToken, val refreshToken: RefreshToken)

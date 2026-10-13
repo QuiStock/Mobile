@@ -49,7 +49,7 @@ class LoginFragmentTests {
     fun setup() {
         val session = mockk<SessionUseCase>(relaxed = true)
         every { session.state } returns MutableStateFlow(SessionState.SignedOut)
-        every { session.snapshot() } returns SessionSnapshot(0, null)
+        every { session.snapshot() } returns SessionSnapshot(0, false)
         coEvery { session.restore() } returns SessionState.SignedOut
         GlobalContext.get().declare(session, allowOverride = true)
         uiState = MutableLiveData(LoginUiState.Idle)

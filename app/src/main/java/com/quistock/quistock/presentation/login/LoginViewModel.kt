@@ -8,6 +8,7 @@ import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
@@ -23,13 +24,26 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
 
     @Suppress("TooGenericExceptionCaught")
     fun authenticate(email: String, password: String) {
-        if (mutableState.value == LoginUiState.Loading) return
+        if (mutableState.value == LoginUiState.Loading ||
+            (mutableState.value as? LoginUiState.Error)?.retryBlocked == true
+        ) {
+            return
+        }
         mutableState.value = LoginUiState.Loading
         viewModelScope.launch {
             try {
                 mutableState.value = when (val result = loginUseCase(email, password)) {
                     is AuthResult.Success -> LoginUiState.Authenticated
-                    is LoginError -> LoginUiState.Error(result)
+
+                    is LoginError -> LoginUiState.Error(
+                        result,
+                        result == LoginError.RateLimited && loginUseCase.retryDelayMillis() > 0,
+                    )
+                }
+                val error = mutableState.value as? LoginUiState.Error
+                if (error?.retryBlocked == true) {
+                    delay(loginUseCase.retryDelayMillis())
+                    mutableState.value = error.copy(retryBlocked = false)
                 }
             } catch (e: CancellationException) {
                 throw e

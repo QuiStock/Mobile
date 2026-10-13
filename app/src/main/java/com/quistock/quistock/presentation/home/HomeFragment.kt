@@ -46,6 +46,7 @@ class HomeFragment : Fragment() {
                     SessionFailure.NETWORK -> R.string.session_network
                     SessionFailure.TIMEOUT -> R.string.session_timeout
                     SessionFailure.SERVER -> R.string.session_server
+                    SessionFailure.RATE_LIMIT -> R.string.session_rate_limit
                     SessionFailure.UNEXPECTED -> R.string.erro_login_erro_inesperado
                 },
             )

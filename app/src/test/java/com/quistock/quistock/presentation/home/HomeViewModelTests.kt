@@ -171,7 +171,7 @@ class HomeViewModelTests {
     fun `transient session failures preserve cached numbers and retry only on action`() = runTest {
         val session = mockk<SessionUseCase>()
         val state = MutableStateFlow<SessionState>(SessionState.Failure(SessionFailure.NETWORK))
-        val snapshot = SessionSnapshot(1, null)
+        val snapshot = SessionSnapshot(1, false)
         every { session.state } returns state
         every { session.snapshot() } returns snapshot
         coEvery { useCase() } returns RefreshResult.UpToDate(BigNumbers(1, 2, 3, now))
@@ -204,13 +204,13 @@ class HomeViewModelTests {
         val session = mockk<SessionUseCase>()
         val state = MutableStateFlow<SessionState>(SessionState.Active)
         every { session.state } returns state
-        every { session.snapshot() } returns SessionSnapshot(1, null)
+        every { session.snapshot() } returns SessionSnapshot(1, false)
         val pending = CompletableDeferred<RefreshResult<BigNumbers>>()
         coEvery { useCase() } coAnswers { pending.await() }
         val home = HomeViewModel(useCase, clock, session)
         home.load()
         runCurrent()
-        every { session.snapshot() } returns SessionSnapshot(2, null)
+        every { session.snapshot() } returns SessionSnapshot(2, false)
         pending.complete(RefreshResult.UpToDate(BigNumbers(99, 99, 99, now)))
         advanceUntilIdle()
         home.uiState.value?.numbers shouldBe null

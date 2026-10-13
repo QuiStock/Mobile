@@ -8,7 +8,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
 import com.quistock.quistock.data.remote.auth.RefreshCookieBatch
 import com.quistock.quistock.data.remote.auth.RefreshCookieRecord
-import com.quistock.quistock.domain.model.RefreshToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext

@@ -2,12 +2,17 @@ import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+val authBaseUrl = providers.environmentVariable("AUTH_BASE_URL").orElse("https://auth-base-url.invalid/").get()
+require(authBaseUrl.startsWith("https://") && authBaseUrl.endsWith("/")) {
+    "AUTH_BASE_URL must use HTTPS and end with '/'"
+}
+
 val coreBaseUrl = providers
     .environmentVariable("CORE_BASE_URL")
     .orElse("https://core-base-url.invalid/")
     .get()
-require(coreBaseUrl.startsWith("https://") || coreBaseUrl.startsWith("http://")) {
-    "CORE_BASE_URL must be an HTTP origin"
+require(coreBaseUrl.startsWith("https://")) {
+    "CORE_BASE_URL must use HTTPS"
 }
 
 val backendBaseUrlDummy = "https://backend-base-url.invalid/api/"
@@ -227,6 +232,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resValue("string", "backend_base_url", backendBaseUrl)
         resValue("string", "core_base_url", coreBaseUrl)
+        resValue("string", "auth_base_url", authBaseUrl)
     }
 
     buildTypes {

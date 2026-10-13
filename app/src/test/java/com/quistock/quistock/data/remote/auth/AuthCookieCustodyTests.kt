@@ -39,6 +39,7 @@ class AuthCookieCustodyTests {
         isolated.begin(1)
         val task = async { isolated.commit(1, pair(), true) }
         entered.await()
+        assertNull(isolated.access(1))
         task.cancel()
         release.complete(Unit)
         task.join()
@@ -147,8 +148,10 @@ class AuthCookieCustodyTests {
         custody.commit(1, pair(), true)
         assertTrue(custody.requestJar(1, false).loadForRequest(origin).isEmpty())
         val jar = custody.requestJar(1, true)
-        assertTrue(jar.loadForRequest("https://auth.example.test:444/".toHttpUrl()).isEmpty())
-        assertTrue(jar.loadForRequest("http://auth.example.test/".toHttpUrl()).isEmpty())
+        assertEquals(1, jar.loadForRequest(origin.resolve("auth/refresh")!!).size)
+        assertTrue(jar.loadForRequest(origin.resolve("auth/login")!!).isEmpty())
+        assertTrue(jar.loadForRequest("https://auth.example.test:444/auth/refresh".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("http://auth.example.test/auth/refresh".toHttpUrl()).isEmpty())
     }
 }
 

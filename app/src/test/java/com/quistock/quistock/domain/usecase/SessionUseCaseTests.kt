@@ -1,242 +1,160 @@
 package com.quistock.quistock.domain.usecase
 
-import com.quistock.quistock.domain.model.AccessToken
 import com.quistock.quistock.domain.model.AuthRefreshError
 import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.AuthResult
-import com.quistock.quistock.domain.model.AuthTokens
-import com.quistock.quistock.domain.model.RefreshToken
+import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.CachedBigNumbersRepository
-import com.quistock.quistock.domain.port.SecretStorage
-import com.quistock.quistock.domain.port.delete
-import com.quistock.quistock.domain.port.read
-import com.quistock.quistock.domain.port.save
+import com.quistock.quistock.domain.port.StoredSession
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SessionUseCaseTests {
-    private val auth = mockk<AuthRepository>()
-    private val storage = mockk<SecretStorage>(relaxed = true)
+    private val auth = mockk<AuthRepository>(relaxed = true)
     private val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
-    private val tokens = AuthTokens(AccessToken("synthetic-access"), RefreshToken("opaque-not-uuid"))
-
-    @Test fun delayedStorageReadFailureCannotReplaceNewLogin() = runTest {
-        val pending = CompletableDeferred<RefreshToken?>()
-        coEvery { storage.read(RefreshToken::class) } coAnswers { pending.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        val restoration = async { session.restore() }
-        yield()
-        assertTrue(session.install(tokens))
-        pending.completeExceptionally(IllegalStateException())
-        assertEquals(SessionState.Active, restoration.await())
-        assertEquals(tokens.accessToken, session.requireAccess(session.snapshot()).accessToken)
-        coVerify(exactly = 0) { auth.refresh(any()) }
+    private val session = SessionUseCase(auth, cache)
+    private fun active() {
+        every { auth.hasAccess(any()) } returns true
+        coEvery { auth.login(any(), any(), any()) } returns AuthResult.Success
     }
 
-    @Test fun missingTokenDoesNotRefresh() = runTest {
-        coEvery { storage.read(RefreshToken::class) } returns null
-        val session = SessionUseCase(auth, storage, cache)
+    @Test fun deletionFailureStillFencesOldResponsesAndAttemptsCacheCleanup() = runTest {
+        active()
+        session.login("synthetic", "synthetic")
+        val old = session.snapshot()
+        coEvery { auth.clear(old.generation) } throws IllegalStateException()
+        session.expire(old)
+        assertEquals(SessionState.LocalFailure, session.state.value)
+        coVerify { auth.begin(old.generation + 1) }
+        coVerify(exactly = 2) { cache.clear() }
+        assertTrue(runCatching { session.requireAccess(old) }.isFailure)
+    }
+
+    @Test fun successfulLoginPublishesSecretFreeSnapshotAfterRepositoryCommit() = runTest {
+        active()
+        assertEquals(AuthResult.Success, session.login("synthetic@example.com", "synthetic"))
+        assertTrue(session.snapshot().hasAccess)
+        assertEquals(SessionState.Active, session.state.value)
+        coVerifyOrder {
+            auth.begin(1)
+            auth.clear(1)
+            cache.clear()
+            auth.login(any(), any(), 1)
+        }
+    }
+
+    @Test fun missingCredentialDoesNotRefreshOrShowExpiration() = runTest {
+        coEvery { auth.restore(any()) } returns StoredSession.MISSING
         assertEquals(SessionState.SignedOut, session.restore())
         coVerify(exactly = 0) { auth.refresh(any()) }
+        coVerify(exactly = 0) { cache.clear() }
     }
 
-    @Test fun storageFailureDoesNotPublishPartialSession() = runTest {
-        coEvery { storage.save(any<AccessToken>(), AccessToken::class) } throws IllegalStateException()
-        val session = SessionUseCase(auth, storage, cache)
-        assertFalse(session.install(tokens))
-        assertNull(session.snapshot().accessToken)
-        coVerify { storage.delete(RefreshToken::class) }
+    @Test fun expiredCredentialShowsExpirationAndClearsCache() = runTest {
+        coEvery { auth.restore(any()) } returns StoredSession.EXPIRED
+        assertEquals(SessionState.Expired, session.restore())
+        coVerify { cache.clear() }
+        coVerify(exactly = 0) { auth.refresh(any()) }
     }
 
-    @Test fun concurrentRefreshIsSharedAndLateUnauthorizedUsesCurrentToken() = runTest {
-        val pending = CompletableDeferred<AuthRefreshResult>()
-        coEvery { auth.refresh(tokens.refreshToken) } coAnswers { pending.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
+    @Test fun unreadableCredentialBlocksRestoration() = runTest {
+        coEvery { auth.restore(any()) } throws IllegalStateException()
+        assertEquals(SessionState.LocalFailure, session.restore())
+        coVerify(exactly = 0) { auth.refresh(any()) }
+    }
+
+    @Test fun partialInstallationDoesNotPublishSuccess() = runTest {
+        coEvery { auth.login(any(), any(), any()) } returns AuthResult.Success
+        every { auth.hasAccess(any()) } returns false
+        assertEquals(LoginError.UnexpectedError, session.login("synthetic", "synthetic"))
+        assertEquals(SessionState.LocalFailure, session.state.value)
+        assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
+    }
+
+    @Test fun concurrentRefreshIsSharedAndLateUnauthorizedReusesRevision() = runTest {
+        active()
+        session.login("synthetic", "synthetic")
         val old = session.snapshot()
+        val pending = CompletableDeferred<AuthRefreshResult>()
+        coEvery { auth.refresh(any()) } coAnswers { pending.await() }
         val first = async { session.refresh(old) }
         val second = async { session.refresh(old) }
         yield()
-        val renewed = AuthTokens(AccessToken("renewed"), RefreshToken("rotated"))
-        pending.complete(AuthResult.Success(renewed))
-        assertEquals(renewed.accessToken, first.await().accessToken)
-        assertEquals(renewed.accessToken, second.await().accessToken)
-        assertEquals(renewed.accessToken, session.refresh(old).accessToken)
+        pending.complete(AuthResult.Success)
+        assertEquals(old.revision + 1, first.await().revision)
+        assertEquals(first.await(), second.await())
+        session.refresh(old)
         coVerify(exactly = 1) { auth.refresh(any()) }
     }
 
-    @Test fun oldRefreshCannotRevokeNewLogin() = runTest {
-        val pending = CompletableDeferred<AuthRefreshResult>()
-        coEvery { auth.refresh(any()) } coAnswers { pending.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val old = session.snapshot()
-        val refresh = async { session.refresh(old) }
-        yield()
-        val newTokens = AuthTokens(AccessToken("new-account"), RefreshToken("new-refresh"))
-        session.install(newTokens)
-        pending.complete(AuthRefreshError.InvalidToken)
-        refresh.await()
-        assertEquals(newTokens.accessToken, session.snapshot().accessToken)
-        coVerify(exactly = 2) { cache.clear() }
+    @Test fun oldRefreshCannotRevokeOrReplaceNewLogin() = runTest {
+        for (result in listOf(AuthRefreshError.InvalidToken, AuthResult.Success)) {
+            active()
+            session.login("old", "synthetic")
+            val pending = CompletableDeferred<AuthRefreshResult>()
+            coEvery { auth.refresh(any()) } coAnswers { pending.await() }
+            val operation = async { session.refresh(session.snapshot()) }
+            yield()
+            session.login("new", "synthetic")
+            val replacement = session.snapshot()
+            pending.complete(result)
+            operation.await()
+            assertEquals(replacement, session.snapshot())
+            assertEquals(SessionState.Active, session.state.value)
+        }
     }
 
-    @Test fun sharedTransientFailurePreservesSessionWithoutAutomaticRetry() = runTest {
+    @Test fun transientRestorationPreservesCacheAndOffersManualRetry() = runTest {
+        coEvery { auth.restore(any()) } returns StoredSession.AVAILABLE
+        coEvery { auth.refresh(any()) } returns AuthRefreshError.RateLimited
+        assertEquals(SessionState.Failure(SessionFailure.RATE_LIMIT), session.restore())
+        coVerify(exactly = 0) { cache.clear() }
+        coVerify(exactly = 0) { auth.clear(any()) }
+    }
+
+    @Test fun sharedRejectionExpiresOnlyOnce() = runTest {
+        active()
+        session.login("synthetic", "synthetic")
+        val expected = session.snapshot()
         val pending = CompletableDeferred<AuthRefreshResult>()
         coEvery { auth.refresh(any()) } coAnswers { pending.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val expected = session.snapshot()
         val first = async { session.refresh(expected) }
         val second = async { session.refresh(expected) }
         yield()
-        pending.complete(AuthRefreshError.NetworkError)
-        assertEquals(expected, first.await())
-        assertEquals(expected, second.await())
-        assertEquals(
-            SessionState.Failure(com.quistock.quistock.domain.model.SessionFailure.NETWORK),
-            session.state.value,
-        )
-        coVerify(exactly = 1) { auth.refresh(any()) }
-        coVerify(exactly = 0) { storage.delete(RefreshToken::class) }
-        coVerify(exactly = 1) { cache.clear() }
-    }
-
-    @Test fun lateUnauthorizedDoesNotRefreshAgainWhenMockReturnsSameTokens() = runTest {
-        coEvery { auth.refresh(any()) } returns AuthResult.Success(tokens)
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val old = session.snapshot()
-        session.refresh(old)
-        session.refresh(old)
-        coVerify(exactly = 1) { auth.refresh(any()) }
-    }
-
-    @Test fun persistedTokenRestoresWithoutCredentials() = runTest {
-        coEvery { storage.read(RefreshToken::class) } returns tokens.refreshToken
-        coEvery { auth.refresh(tokens.refreshToken) } returns AuthResult.Success(tokens)
-        val session = SessionUseCase(auth, storage, cache)
-        assertEquals(SessionState.Active, session.restore())
-        assertEquals(tokens.accessToken, session.snapshot().accessToken)
-        coVerify(exactly = 0) { auth.login(any(), any()) }
-        coVerify(exactly = 0) { cache.clear() }
-    }
-
-    @Test fun unreadableTokenReportsUnexpectedWithoutRefresh() = runTest {
-        coEvery { storage.read(RefreshToken::class) } throws IllegalStateException()
-        val session = SessionUseCase(auth, storage, cache)
-        assertEquals(
-            SessionState.LocalFailure,
-            session.restore(),
-        )
-        coVerify(exactly = 0) { auth.refresh(any()) }
-    }
-
-    @Test fun recoveryTransientFailuresPreserveRefreshAndCache() = runTest {
-        for ((error, reason) in listOf(
-            AuthRefreshError.NetworkError to com.quistock.quistock.domain.model.SessionFailure.NETWORK,
-            AuthRefreshError.Timeout to com.quistock.quistock.domain.model.SessionFailure.TIMEOUT,
-            AuthRefreshError.ServerError to com.quistock.quistock.domain.model.SessionFailure.SERVER,
-        )) {
-            coEvery { storage.read(RefreshToken::class) } returns tokens.refreshToken
-            coEvery { auth.refresh(any()) } returns error
-            val session = SessionUseCase(auth, storage, cache)
-            assertEquals(SessionState.Failure(reason), session.restore())
-            assertNull(session.snapshot().accessToken)
-        }
-        coVerify(exactly = 3) { auth.refresh(tokens.refreshToken) }
-        coVerify(exactly = 0) { storage.delete(RefreshToken::class) }
-        coVerify(exactly = 0) { cache.clear() }
-    }
-
-    @Test fun oldSuccessfulRefreshCannotOverwriteNewTokens() = runTest {
-        val pending = CompletableDeferred<AuthRefreshResult>()
-        coEvery { auth.refresh(any()) } coAnswers { pending.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val old = session.snapshot()
-        val refresh = async { session.refresh(old) }
-        yield()
-        val replacement = AuthTokens(AccessToken("different-account"), RefreshToken("different-refresh"))
-        session.install(replacement)
-        pending.complete(AuthResult.Success(AuthTokens(AccessToken("late"), RefreshToken("late-refresh"))))
-        refresh.await()
-        assertEquals(replacement.accessToken, session.snapshot().accessToken)
-        coVerify(exactly = 0) { storage.save(AccessToken("late"), AccessToken::class) }
-    }
-
-    @Test fun expiredGenerationCannotWriteCache() = runTest {
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val old = session.snapshot()
-        session.expire(old)
-        session.install(tokens)
-        assertTrue(
-            runCatching { session.withCurrentSession(old) { error("must not run") } }.exceptionOrNull() is
-                com.quistock.quistock.domain.model.SessionException,
-        )
-    }
-
-    @Test fun refreshTokenWriteFailureAlsoBlocksRemoteAccess() = runTest {
-        coEvery { storage.save(any<RefreshToken>(), RefreshToken::class) } throws IllegalStateException()
-        val session = SessionUseCase(auth, storage, cache)
-        assertFalse(session.install(tokens))
-        assertNull(session.snapshot().accessToken)
-        assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
-        coVerify(exactly = 0) { storage.save(any<AccessToken>(), AccessToken::class) }
-    }
-
-    @Test fun sharedRejectionExpiresOnce() = runTest {
-        val result = CompletableDeferred<AuthRefreshResult>()
-        coEvery { auth.refresh(any()) } coAnswers { result.await() }
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        val old = session.snapshot()
-        val first = async { session.refresh(old) }
-        val second = async { session.refresh(old) }
-        yield()
-        result.complete(AuthRefreshError.InvalidToken)
+        pending.complete(AuthRefreshError.InvalidToken)
         first.await()
         second.await()
         assertEquals(SessionState.Expired, session.state.value)
-        coVerify(exactly = 1) { auth.refresh(any()) }
         coVerify(exactly = 2) { cache.clear() }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun elapsedTimeDoesNotRefreshOrParseTokens() = runTest {
-        val session = SessionUseCase(auth, storage, cache)
-        session.install(tokens)
-        advanceTimeBy(172800000)
-        advanceUntilIdle()
-        assertEquals(tokens.accessToken, session.snapshot().accessToken)
-        coVerify(exactly = 0) { auth.refresh(any()) }
+    @Test fun localFailureAfterRotationRequiresLoginAndBlocksAccess() = runTest {
+        active()
+        session.login("synthetic", "synthetic")
+        coEvery { auth.refresh(any()) } returns AuthRefreshError.UnexpectedError
+        session.refresh(session.snapshot())
+        assertEquals(SessionState.LocalFailure, session.state.value)
+        assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
     }
 
-    @Test fun recoveryStorageFailureDoesNotGrantAccess() = runTest {
-        coEvery { storage.read(RefreshToken::class) } returns tokens.refreshToken
-        coEvery { auth.refresh(any()) } returns AuthResult.Success(tokens)
-        coEvery { storage.save(any<AccessToken>(), AccessToken::class) } throws IllegalStateException()
-        val session = SessionUseCase(auth, storage, cache)
-        assertEquals(SessionState.LocalFailure, session.restore())
-        assertNull(session.snapshot().accessToken)
-        assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
-        coVerify { storage.delete(RefreshToken::class) }
+    @Test fun oldGenerationCannotWriteCache() = runTest {
+        active()
+        session.login("old", "synthetic")
+        val old = session.snapshot()
+        session.login("new", "synthetic")
+        assertTrue(runCatching { session.withCurrentSession(old) { error("Must not run") } }.isFailure)
     }
 }

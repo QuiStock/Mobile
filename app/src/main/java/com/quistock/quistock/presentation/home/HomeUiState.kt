@@ -17,7 +17,8 @@ data class HomeUiState(
     val dataDate: String? = null,
     val error: Boolean = false,
     val sessionFailure: SessionFailure? = null,
+    val retryBlocked: Boolean = false,
 ) {
     val retryVisible: Boolean get() = error || warning != null || sessionFailure != null
-    val retryEnabled: Boolean get() = retryVisible && !loading
+    val retryEnabled: Boolean get() = retryVisible && !loading && !retryBlocked
 }

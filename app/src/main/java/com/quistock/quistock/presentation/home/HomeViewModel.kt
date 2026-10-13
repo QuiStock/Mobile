@@ -12,6 +12,7 @@ import com.quistock.quistock.domain.port.Clock
 import com.quistock.quistock.domain.usecase.RefreshBigNumbersUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
@@ -41,20 +42,29 @@ class HomeViewModel(
         refreshJob = viewModelScope.launch {
             val expected = session?.snapshot()
             if (loadingState.sessionFailure != null && expected != null) session.refresh(expected)
-            if (expected != null && session.snapshot()?.generation != expected.generation) return@launch
+            if (expected != null && session.snapshot().generation != expected.generation) return@launch
             val result = try {
                 refreshBigNumbers()
             } catch (_: SessionException) {
                 return@launch
             }
-            if (expected != null && session.snapshot()?.generation != expected.generation) return@launch
+            if (expected != null && session.snapshot().generation != expected.generation) return@launch
             val rendered = when (result) {
                 is RefreshResult.UpToDate -> HomeUiState(numbers = result.data.toUiNumbers())
                 is RefreshResult.Stale -> staleState(result.data)
                 RefreshResult.Failed -> HomeUiState(error = true)
             }
             val failure = (session?.state?.value as? SessionState.Failure)?.reason
-            _uiState.value = rendered.copy(sessionFailure = failure)
+            val retryDelay = if (failure == com.quistock.quistock.domain.model.SessionFailure.RATE_LIMIT) {
+                session?.retryDelayMillis ?: 0
+            } else {
+                0
+            }
+            _uiState.value = rendered.copy(sessionFailure = failure, retryBlocked = retryDelay > 0)
+            if (retryDelay > 0) {
+                delay(retryDelay)
+                _uiState.value = _uiState.value?.copy(retryBlocked = false)
+            }
         }
     }
 

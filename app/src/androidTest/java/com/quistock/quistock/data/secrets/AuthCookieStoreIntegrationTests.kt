@@ -2,7 +2,6 @@ package com.quistock.quistock.data.secrets
 
 import androidx.test.core.app.ApplicationProvider
 import com.quistock.quistock.data.remote.auth.RefreshCookieRecord
-import com.quistock.quistock.domain.model.RefreshToken
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cookie
 import org.junit.Assert.assertEquals
