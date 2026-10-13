@@ -7,9 +7,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.typeText
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE
 import androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -50,7 +51,7 @@ class ChatbotFragmentTests {
 
     @Test
     fun menu_shouldOpenCloseAndStartANewConversation() = runInstrumented { _ ->
-        onView(withId(R.id.etPerguntaChatbot)).perform(typeText("Pergunta antiga"), closeSoftKeyboard())
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText("Pergunta antiga"), closeSoftKeyboard())
         onView(withId(R.id.btnMenuChatbot)).perform(click())
         onView(withId(R.id.chatMenuOverlay)).check(matches(withEffectiveVisibility(VISIBLE)))
 
@@ -67,7 +68,7 @@ class ChatbotFragmentTests {
         val message = "Quais produtos estão acabando?"
         val response = ChatbotResponse("Há dois produtos com estoque baixo.", "inventory", emptyList())
 
-        onView(withId(R.id.etPerguntaChatbot)).perform(typeText(message), closeSoftKeyboard())
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(withText(message)).check(matches(isDisplayed()))
         verify(exactly = 1) { viewModel.sendMessage(message) }
@@ -85,6 +86,9 @@ class ChatbotFragmentTests {
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_empty_message)))
 
+        val message = "Olá, chatbot"
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
+        onView(withId(R.id.btnEnviarPergunta)).perform(click())
         emitUiState(ChatbotUiState.Error.NOT_LOGGED_IN)
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_login_required)))
 
@@ -95,23 +99,23 @@ class ChatbotFragmentTests {
     @Test
     fun networkError_shouldOfferRetryForTheLastMessage() = runInstrumented { _ ->
         val message = "Consultar estoque"
-        onView(withId(R.id.etPerguntaChatbot)).perform(typeText(message), closeSoftKeyboard())
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
 
         emitUiState(ChatbotUiState.Error.NETWORK)
-        onView(withId(R.id.retryNoConnection)).check(matches(isDisplayed())).perform(click())
+        onView(withId(R.id.retryNoConnection)).inRoot(isDialog()).check(matches(isDisplayed())).perform(click())
 
         verify(exactly = 2) { viewModel.sendMessage(message) }
 
         emitUiState(ChatbotUiState.Error.NETWORK)
-        onView(withId(R.id.closeNoConnection)).perform(click())
+        onView(withId(R.id.closeNoConnection)).inRoot(isDialog()).perform(click())
         verify(exactly = 2) { viewModel.sendMessage(message) }
     }
 
     @Test
     fun startingANewConversation_shouldRemoveExistingMessages() = runInstrumented { _ ->
         val message = "Mensagem anterior"
-        onView(withId(R.id.etPerguntaChatbot)).perform(typeText(message), closeSoftKeyboard())
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(withText(message)).check(matches(isDisplayed()))
 
