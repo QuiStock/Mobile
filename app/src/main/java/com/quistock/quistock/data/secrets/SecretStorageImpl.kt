@@ -83,8 +83,7 @@ class SecretStorageImpl(context: Context) : SecretStorage {
     }
 }
 
-private class SecretCipher {
-    private val alias = "quistock_secrets_v1"
+internal class SecretCipher(private val alias: String = "quistock_secrets_v1") {
 
     private fun key(): SecretKey {
         val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
