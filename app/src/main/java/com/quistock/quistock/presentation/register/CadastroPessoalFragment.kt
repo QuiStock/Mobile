@@ -1,14 +1,14 @@
 package com.quistock.quistock.presentation.register
 
 import android.os.Bundle
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.util.Patterns
 import android.widget.EditText
-import com.quistock.quistock.presentation.common.PopupFeedback
 import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
+import com.quistock.quistock.presentation.common.PopupFeedback
 
 class CadastroPessoalFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
@@ -23,8 +23,11 @@ class CadastroPessoalFragment : Fragment() {
             val message = when {
                 listOf(name, email, password, confirmPassword).any { it.text.isNullOrBlank() } ->
                     R.string.popup_register_required
+
                 !Patterns.EMAIL_ADDRESS.matcher(email.text.toString().trim()).matches() -> R.string.popup_register_email
+
                 password.text.toString() != confirmPassword.text.toString() -> R.string.popup_register_password_mismatch
+
                 else -> null
             }
             if (message != null) {

@@ -56,6 +56,7 @@ class ChatbotFragment : Fragment() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 ChatbotUiState.Answered -> Unit
+
                 is ChatbotUiState.Error -> {
                     when (state) {
                         ChatbotUiState.Error.NETWORK -> {
@@ -63,14 +64,17 @@ class ChatbotFragment : Fragment() {
                                 lastMessage?.let(viewModel::sendMessage)
                             }
                         }
+
                         ChatbotUiState.Error.NOT_LOGGED_IN -> {
                             PopupFeedback.showStatus(view, getString(R.string.chatbot_login_required), isError = true)
                         }
+
                         ChatbotUiState.Error.REQUEST_FAILED -> {
                             PopupFeedback.showStatus(view, getString(R.string.chatbot_request_failed), isError = true)
                         }
                     }
                 }
+
                 else -> Unit
             }
         }
