@@ -8,6 +8,9 @@ import com.quistock.quistock.domain.model.ChatbotRequest
 import com.quistock.quistock.domain.model.ChatbotResponse
 import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
+import java.io.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class ChatbotViewModel(
@@ -19,6 +22,14 @@ class ChatbotViewModel(
 
     private val _uiState = MutableLiveData<ChatbotUiState>(ChatbotUiState.Idle)
     val uiState: LiveData<ChatbotUiState> = _uiState
+    private var sendJob: Job? = null
+
+    fun clearConversation() {
+        sendJob?.cancel()
+        sendJob = null
+        _answer.value = null
+        _uiState.value = ChatbotUiState.Idle
+    }
 
     @Suppress("RethrowCaughtException")
     fun sendMessage(message: String) {
@@ -35,12 +46,18 @@ class ChatbotViewModel(
         )
 
         _uiState.value = ChatbotUiState.Loading
-        viewModelScope.launch {
-            val response = sendMessageToChatbot(request)
-            _answer.value = response
-            _uiState.value = ChatbotUiState.Answered
+        sendJob = viewModelScope.launch {
+            try {
+                val response = sendMessageToChatbot(request)
+                _answer.value = response
+                _uiState.value = ChatbotUiState.Answered
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: IOException) {
+                _uiState.value = ChatbotUiState.Error.NETWORK
+            } catch (_: Exception) {
+                _uiState.value = ChatbotUiState.Error.REQUEST_FAILED
+            }
         }
-
-        _uiState.value = ChatbotUiState.Idle
     }
 }

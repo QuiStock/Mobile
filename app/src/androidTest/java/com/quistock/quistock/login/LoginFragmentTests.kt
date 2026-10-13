@@ -103,7 +103,7 @@ class LoginFragmentTests {
 
         onSubmitButtonView().check(matches(isNotEnabled()))
         onLoadingSpinner().check(matches(isDisplayed()))
-        onErrorMessageView().check(matches(not(isDisplayed())))
+        onInlineErrorMessageView().check(matches(not(isDisplayed())))
     }
 
     @Test
@@ -185,5 +185,7 @@ class LoginFragmentTests {
 
     private fun onPasswordFormField(): ViewInteraction = onView(withId(R.id.senha_login))
 
-    private fun onErrorMessageView(): ViewInteraction = onView(withId(R.id.txt_erro_login))
+    private fun onErrorMessageView(): ViewInteraction = onView(withId(R.id.statusPopupMessage))
+
+    private fun onInlineErrorMessageView(): ViewInteraction = onView(withId(R.id.txt_erro_login))
 }

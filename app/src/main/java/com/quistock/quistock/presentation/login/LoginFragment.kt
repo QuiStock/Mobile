@@ -45,7 +45,14 @@ class LoginFragment : Fragment() {
     private fun login() {
         val email = binding.emailLogin.text.toString()
         val password = binding.senhaLogin.text.toString()
-        if (email.isBlank() || password.isBlank()) return
+        if (email.isBlank() || password.isBlank()) {
+            com.quistock.quistock.presentation.common.PopupFeedback.showStatus(
+                binding.root,
+                getString(R.string.popup_login_invalid),
+                isError = true,
+            )
+            return
+        }
 
         viewModel.authenticate(email = email, password = password)
     }
@@ -103,10 +110,12 @@ class LoginFragment : Fragment() {
             LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 
-        binding.txtErroLogin.apply {
-            text = getString(message)
-            visibility = View.VISIBLE
-        }
+        hideError()
+        com.quistock.quistock.presentation.common.PopupFeedback.showStatus(
+            binding.root,
+            getString(message),
+            isError = true,
+        )
     }
 
     fun hideError() {

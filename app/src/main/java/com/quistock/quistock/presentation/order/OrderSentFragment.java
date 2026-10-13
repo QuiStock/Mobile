@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.quistock.quistock.R;
+import com.quistock.quistock.presentation.common.PopupFeedback;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -62,5 +63,10 @@ public class OrderSentFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_order_sent, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        PopupFeedback.showStatus(view, getString(R.string.popup_order_sent), false);
     }
 }

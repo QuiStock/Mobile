@@ -2,13 +2,18 @@ package com.quistock.quistock.presentation.promotion;
 
 import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+
+import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.quistock.quistock.R;
+import com.quistock.quistock.presentation.common.PopupFeedback;
+import kotlin.Unit;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -62,5 +67,22 @@ public class PromotionFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_promotion, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        EditText discount = view.findViewById(R.id.etPromotionDiscount);
+        EditText duration = view.findViewById(R.id.etPromotionDuration);
+        Button submit = view.findViewById(R.id.btnSubmitPromotion);
+        submit.setOnClickListener(button -> {
+            if (discount.getText().toString().trim().isEmpty() || duration.getText().toString().trim().isEmpty()) {
+                PopupFeedback.showStatus(view, getString(R.string.popup_promotion_invalid), true);
+                return;
+            }
+            PopupFeedback.showConfirmation(requireContext(), getString(R.string.popup_promotion_confirm), () -> {
+                NavHostFragment.findNavController(this).navigate(R.id.action_promotionFragment_to_promoSentFragment);
+                return Unit.INSTANCE;
+            });
+        });
     }
 }
