@@ -8,10 +8,10 @@ import com.quistock.quistock.domain.model.ChatbotRequest
 import com.quistock.quistock.domain.model.ChatbotResponse
 import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
-import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class ChatbotViewModel(
     private val sendMessageToChatbot: SendMessageToChatbotUseCase,
