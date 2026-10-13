@@ -260,7 +260,7 @@
             android:background="#11061F"
             android:gravity="center"
             android:orientation="horizontal"
-            android:weightSum="4"
+            android:weightSum="5"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -292,17 +292,30 @@
                 android:src="@drawable/ic_interferences" />
 
 
-            <!-- PRODUCT CONTROL -->
+            <!-- EMPLOYEES -->
 
             <ImageButton
-                android:id="@+id/btnProdutos"
+                android:id="@+id/btnFuncionarios"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:contentDescription="Funcionários"
+                android:padding="0dp"
+                android:src="@drawable/ic_employee" />
+
+
+            <!-- NOTIFICATIONS -->
+
+            <ImageButton
+                android:id="@+id/btnNotificacoesBottom"
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:contentDescription="Produtos"
+                android:contentDescription="Notificações"
                 android:padding="0dp"
-                android:src="@drawable/ic_product_control" />
+                android:src="@drawable/ic_notification" />
 
 
             <!-- CHATBOT -->
@@ -313,7 +326,7 @@
                 android:layout_height="25dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:contentDescription="Outra seção"
+                android:contentDescription="Chatbot"
                 android:padding="0dp"
                 android:src="@drawable/ic_chatbot" />
 
