@@ -88,25 +88,44 @@ that identify their feature, such as `fragment_login.xml` and `fragment_home.xml
 
 ### Example flow
 
-A login request passes through these existing boundaries:
+A login request passes through these boundaries:
 
 ```text
 LoginFragment
     -> LoginViewModel
         -> LoginUseCase
-            -> AuthRepository (domain)
-                -> MockAuthRepository (data)
-            -> SessionUseCase (domain)
-                -> SecretStorage and session cache ports
+            -> SessionUseCase
+                -> AuthRepository (domain)
+                    -> RetrofitAuthRepository (data)
+                        -> isolated CookieJar and encrypted refresh store
+                -> session cache ports
 ```
 
-QUIS-128 implements the client-side token flow with a synthetic authentication source while the
-real API contract is pending. `SessionUseCase` stores tokens, restores persisted sessions, shares
-refresh attempts, and invalidates expired sessions and their cache. The named Koin `CoreHttpClient`
-uses the explicit `CORE_BASE_URL` origin and never attaches Core tokens to the legacy chatbot client.
-Core redirects are disabled so an authenticated operation cannot forward a token to another origin.
-Gradle reads this variable from the build environment, with an invalid dummy origin as the fallback;
-it does not load `.env` automatically. Big numbers still use a simulated source without HTTP.
+Authentication follows DS_Auth: login sends email, password and `platform=mobile`; login and
+refresh return `access_token` and `refresh_token` cookies with no response body. The private
+cookie custody uses server expiry, keeps access only in memory, and persists only refresh
+metadata in encrypted DataStore. Legacy refresh values without expiry/scope are deleted.
+Domain models expose generation/revision and availability, never credential values.
+
+`SessionUseCase` restores sessions, shares refresh attempts, and fences response commits,
+retries, cache writes and rendering by generation. The Core client extracts a valid access
+cookie privately in data and sends Bearer to the exact configured Core origin. It sends no
+authentication cookies; the independent legacy chatbot client receives no Core credentials.
+Auth sends only refresh cookies to the configured refresh route; login sends no stored cookies.
+Both clients disable redirects and connection retries. Renewal happens on demand, without timers.
+
+Gradle reads `AUTH_BASE_URL` and `CORE_BASE_URL` from the build environment; both require HTTPS
+and default to invalid dummy origins. Each base includes its public gateway prefix, if any,
+and ends with `/`. Gradle does not load `.env` automatically. Deployment URLs and server cookie
+attributes still require environment configuration. Big numbers continue to use a simulated
+source and validate session access before a protected fetch.
+
+Local revocation destroys a dedicated Keystore key before removing the encrypted refresh
+record. Disk removal is attempted even if key destruction fails. If both fail, the app reports
+a local error and blocks the current session; durable revocation cannot be promised when all
+local mechanisms fail. Unreadable ciphertext never restores a session. Other secret keys are
+unaffected. A valid `Retry-After` temporarily disables manual retry after 429; reaching the
+limit only re-enables the action and does not trigger a request.
 
 ### Tests
 
