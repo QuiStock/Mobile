@@ -169,12 +169,12 @@
         android:id="@+id/scrollFuncionarios"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="31dp"
         android:clipToPadding="false"
         android:fillViewport="false"
-        android:paddingBottom="12dp"
+        android:paddingBottom="20dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationFuncionarios"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -191,15 +191,21 @@
                 android:id="@+id/cardBrunaAlves"
                 layout="@layout/item_employee_card" />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
+
             <include
                 android:id="@+id/cardRicardoMacedo"
-                layout="@layout/item_employee_card"
-                android:layout_marginTop="20dp" />
+                layout="@layout/item_employee_card" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
 
             <include
                 android:id="@+id/cardBrenoAlmeida"
-                layout="@layout/item_employee_card"
-                android:layout_marginTop="20dp" />
+                layout="@layout/item_employee_card" />
         </LinearLayout>
     </ScrollView>
 
