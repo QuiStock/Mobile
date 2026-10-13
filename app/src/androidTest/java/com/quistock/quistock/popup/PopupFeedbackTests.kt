@@ -4,6 +4,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,17 +27,18 @@ class PopupFeedbackTests {
                 PopupFeedback.showManagerOrderApproval(activity) { confirmed = true }
             }
 
-            onView(withId(R.id.confirmationMessage)).check(matches(withText(R.string.popup_manager_approve_order)))
-            onView(withId(R.id.confirmationNo)).perform(click())
+            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
+                .check(matches(withText(R.string.popup_manager_approve_order)))
+            onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
             assertThat(confirmed, `is`(false))
 
             scenario.onActivity { activity ->
                 PopupFeedback.showManagerPromotionApproval(activity) { confirmed = true }
             }
 
-            onView(withId(R.id.confirmationMessage))
+            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
                 .check(matches(withText(R.string.popup_manager_approve_promotion)))
-            onView(withId(R.id.confirmationYes)).perform(click())
+            onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
             assertThat(confirmed, `is`(true))
         }
     }

@@ -6,9 +6,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,18 +29,19 @@ class OrderAndPromotionFragmentTests {
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
 
-            onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), typeText("20"), closeSoftKeyboard())
+            onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
 
-            onView(withId(R.id.etOrderDate)).perform(scrollTo(), typeText("15 ago"), closeSoftKeyboard())
+            onView(withId(R.id.etOrderDate)).perform(scrollTo(), replaceText("15 ago"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationMessage)).check(matches(withText(R.string.popup_order_confirm)))
-            onView(withId(R.id.confirmationNo)).perform(click())
+            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
+                .check(matches(withText(R.string.popup_order_confirm)))
+            onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
             assertDestination(navController, NavGraph.Destinations.ORDER)
 
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationYes)).perform(click())
+            onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
             assertDestination(navController, NavGraph.Destinations.ORDER_SENT)
         }
 
@@ -49,18 +51,19 @@ class OrderAndPromotionFragmentTests {
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
 
-            onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), typeText("15"), closeSoftKeyboard())
+            onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
 
-            onView(withId(R.id.etPromotionDuration)).perform(scrollTo(), typeText("3"), closeSoftKeyboard())
+            onView(withId(R.id.etPromotionDuration)).perform(scrollTo(), replaceText("3"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationMessage)).check(matches(withText(R.string.popup_promotion_confirm)))
-            onView(withId(R.id.confirmationNo)).perform(click())
+            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
+                .check(matches(withText(R.string.popup_promotion_confirm)))
+            onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
             assertDestination(navController, NavGraph.Destinations.PROMOTION)
 
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationYes)).perform(click())
+            onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
             assertDestination(navController, NavGraph.Destinations.PROMO_SENT)
         }
 
