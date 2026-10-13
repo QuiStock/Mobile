@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="96dp"
+    android:background="@drawable/bg_card_summary"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="25dp"
+    android:paddingEnd="24dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingTop="11dp"
+        android:paddingBottom="9dp">
+
+        <TextView
+            android:id="@+id/tvNomeFuncionario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bruna Alves"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCargoFuncionario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estoquista"
+            android:textColor="#BFAFC5"
+            android:textSize="9sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="11dp"
+            android:text="Data de início"
+            android:textColor="#C7B7CC"
+            android:textSize="8sp" />
+
+        <TextView
+            android:id="@+id/tvDataInicioFuncionario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="06/08/2026"
+            android:textColor="#FFFFFF"
+            android:textSize="8sp" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:contentDescription="Foto do funcionário"
+        android:src="@drawable/ic_profile" />
+</LinearLayout>
