@@ -11,5 +11,5 @@ sealed interface LoginUiState {
 
     data object Authenticated : LoginUiState
 
-    data class Error(val reason: LoginError) : LoginUiState
+    data class Error(val reason: LoginError, val retryBlocked: Boolean = false) : LoginUiState
 }

@@ -2,9 +2,15 @@ package com.quistock.quistock.domain.port
 
 import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.LoginResult
-import com.quistock.quistock.domain.model.RefreshToken
 
 interface AuthRepository {
-    suspend fun login(email: String, password: String): LoginResult
-    suspend fun refresh(refreshToken: RefreshToken): AuthRefreshResult
+    suspend fun begin(generation: Long)
+    suspend fun login(email: String, password: String, generation: Long): LoginResult
+    suspend fun refresh(generation: Long): AuthRefreshResult
+    suspend fun restore(generation: Long): StoredSession
+    suspend fun clear(generation: Long)
+    fun retryDelayMillis(): Long = 0
+    fun hasAccess(generation: Long): Boolean
 }
+
+enum class StoredSession { MISSING, EXPIRED, AVAILABLE }

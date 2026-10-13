@@ -91,7 +91,7 @@ class LoginFragment : Fragment() {
                 }
 
                 is LoginUiState.Error -> {
-                    enableLogin(true)
+                    enableLogin(!state.retryBlocked)
                     showSpinner(false)
                     notifyError(state.reason)
                 }
@@ -118,6 +118,8 @@ class LoginFragment : Fragment() {
             LoginError.NetworkError -> R.string.erro_login_internet
             LoginError.UserDisabled -> R.string.erro_login_usuario_desabilitado
             LoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
+            LoginError.RateLimited -> R.string.session_rate_limit
+            LoginError.PlatformNotAllowed -> R.string.login_platform_not_allowed
             LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 

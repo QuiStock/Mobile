@@ -2,12 +2,9 @@ package com.quistock.quistock.presentation.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
-import com.quistock.quistock.domain.model.AccessToken
 import com.quistock.quistock.domain.model.AuthResult
-import com.quistock.quistock.domain.model.AuthTokens
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
-import com.quistock.quistock.domain.model.RefreshToken
 import com.quistock.quistock.domain.port.UserPreferences
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import io.kotest.matchers.shouldBe
@@ -143,6 +140,5 @@ class LoginViewModelTests {
         verify(exactly = 0) { userPreferences.saveUserId(any()) }
     }
 
-    private fun successfulLoginResult() =
-        AuthResult.Success(AuthTokens(AccessToken("synthetic-access"), RefreshToken("opaque")))
+    private fun successfulLoginResult() = AuthResult.Success
 }

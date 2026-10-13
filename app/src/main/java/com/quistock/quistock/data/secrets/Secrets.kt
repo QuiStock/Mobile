@@ -1,7 +1,7 @@
 package com.quistock.quistock.data.secrets
 
-import com.quistock.quistock.domain.model.AccessToken
-import com.quistock.quistock.domain.model.RefreshToken
+import com.quistock.quistock.data.secrets.AccessToken
+import com.quistock.quistock.data.secrets.RefreshToken
 
 object Secrets {
     val accessToken = SecretDefinition(

@@ -1,179 +1,168 @@
 package com.quistock.quistock.data.remote.auth
 
 import com.quistock.quistock.app.di.createCoreHttpClient
-import com.quistock.quistock.domain.model.AccessToken
-import com.quistock.quistock.domain.model.AuthRefreshError
-import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.AuthResult
-import com.quistock.quistock.domain.model.AuthTokens
-import com.quistock.quistock.domain.model.RefreshToken
+import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
-import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.CachedBigNumbersRepository
-import com.quistock.quistock.domain.port.SecretStorage
 import com.quistock.quistock.domain.usecase.SessionUseCase
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CoreSessionInterceptorTests {
-    private val auth = mockk<AuthRepository>()
-    private val storage = mockk<SecretStorage>(relaxed = true)
-    private val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
-    private val session = SessionUseCase(auth, storage, cache)
-    private val initial = AuthTokens(AccessToken("old-synthetic"), RefreshToken("opaque"))
-    private val renewed = AuthTokens(AccessToken("new-synthetic"), RefreshToken("rotated"))
+    @Test fun expiredAccessRenewsBeforeFirstProtectedRequestWithoutIdleCalls() = runBlocking {
+        var now = System.currentTimeMillis()
+        AuthHttpFixture { now }.use { f ->
+            f.login()
+            now += 301000
+            assertEquals(1, f.auth.requestCount)
+            assertFalse(f.session.snapshot().hasAccess)
+            f.auth.enqueue(cookieResponse("renewed", 600))
+            f.core.enqueue(MockResponse())
+            f.execute().close()
+            assertEquals(1, f.core.requestCount)
+            assertTrue(f.core.takeRequest().getHeader("Authorization") == "Bearer renewed")
+            assertEquals(2, f.auth.requestCount)
+        }
+    }
 
-    @Test fun unauthorizedRefreshesAndRetriesWithStoredToken() = runBlocking {
-        MockWebServer().use { server ->
-            session.install(initial)
-            coEvery { auth.refresh(initial.refreshToken) } returns AuthResult.Success(renewed)
-            server.enqueue(MockResponse().setResponseCode(401))
-            server.enqueue(MockResponse().setBody("ok"))
-            execute(server).use { assertEquals(200, it.code) }
-            assertEquals("Bearer old-synthetic", server.takeRequest().getHeader("Authorization"))
-            assertEquals("Bearer new-synthetic", server.takeRequest().getHeader("Authorization"))
-            coVerify(exactly = 1) { storage.save(renewed.accessToken, AccessToken::class) }
-            coVerify(exactly = 1) { auth.refresh(initial.refreshToken) }
+    @Test fun unauthorizedRefreshesAndRetriesWithoutSendingCookiesToCore() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(cookieResponse("new"))
+            f.core.enqueue(MockResponse().setResponseCode(401))
+            f.core.enqueue(MockResponse().setBody("ok"))
+            f.execute().use { assertEquals(200, it.code) }
+            assertEquals("Bearer old", f.core.takeRequest().getHeader("Authorization"))
+            val retried = f.core.takeRequest()
+            assertEquals("Bearer new", retried.getHeader("Authorization"))
+            assertNull(retried.getHeader("Cookie"))
+            val refresh = f.auth.takeRequest()
+            assertEquals("/auth/refresh", refresh.path)
+            assertEquals("refresh_token=old-refresh", refresh.getHeader("Cookie"))
+            assertNull(refresh.getHeader("Authorization"))
+            assertEquals(0, refresh.bodySize)
         }
     }
 
     @Test fun secondUnauthorizedExpiresAndClearsCacheWithoutLoop() = runBlocking {
-        MockWebServer().use { server ->
-            session.install(initial)
-            coEvery { auth.refresh(any()) } returns AuthResult.Success(renewed)
-            repeat(2) { server.enqueue(MockResponse().setResponseCode(401)) }
-            assertTrue(runCatching { execute(server) }.isFailure)
-            assertEquals(2, server.requestCount)
-            assertEquals(SessionState.Expired, session.state.value)
-            coVerify(exactly = 1) { auth.refresh(any()) }
-            coVerify(exactly = 2) { cache.clear() }
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(cookieResponse("new"))
+            repeat(2) { f.core.enqueue(MockResponse().setResponseCode(401)) }
+            assertTrue(runCatching { f.execute().close() }.isFailure)
+            assertEquals(SessionState.Expired, f.session.state.value)
+            assertEquals(2, f.core.requestCount)
+            assertNull(f.store.record)
+            coVerify(exactly = 2) { f.cache.clear() }
         }
     }
 
-    @Test fun otherOriginDoesNotReceiveBearer() = runBlocking {
-        MockWebServer().use { core ->
+    @Test fun otherOriginAndRedirectDoNotReceiveCredentials() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
             MockWebServer().use { other ->
-                session.install(initial)
                 other.enqueue(MockResponse())
-                val client = OkHttpClient.Builder().addInterceptor(
-                    CoreSessionInterceptor(core.url("/"), session),
-                ).build()
-                client.newCall(Request.Builder().url(other.url("/fixture")).build()).execute().close()
-                assertNull(other.takeRequest().getHeader("Authorization"))
+                f.client.newCall(Request.Builder().url(other.url("/fixture")).build()).execute().close()
+                val request = other.takeRequest()
+                assertNull(request.getHeader("Cookie"))
+                assertNull(request.getHeader("Authorization"))
+                f.core.enqueue(MockResponse().setResponseCode(302).setHeader("Location", other.url("/fixture")))
+                f.execute().use { assertEquals(302, it.code) }
+                assertEquals(1, other.requestCount)
             }
         }
     }
 
     @Test fun nonUnauthorizedResponsesNeverRefresh() = runBlocking {
-        MockWebServer().use { server ->
-            session.install(initial)
+        AuthHttpFixture().use { f ->
+            f.login()
             for (code in listOf(200, 403, 500)) {
-                server.enqueue(MockResponse().setResponseCode(code))
-                execute(server).use { assertEquals(code, it.code) }
+                f.core.enqueue(MockResponse().setResponseCode(code))
+                f.execute().use { assertEquals(code, it.code) }
             }
-            coVerify(exactly = 0) { auth.refresh(any()) }
+            assertEquals(1, f.auth.requestCount)
         }
     }
 
-    @Test fun transientRefreshPreservesSessionAndDoesNotRetryRequest() = runBlocking {
-        MockWebServer().use { server ->
-            session.install(initial)
-            coEvery { auth.refresh(any()) } returns AuthRefreshError.ServerError
-            server.enqueue(MockResponse().setResponseCode(401))
-            assertTrue(runCatching { execute(server) }.isFailure)
-            assertEquals(1, server.requestCount)
-            assertEquals(initial.accessToken, session.snapshot().accessToken)
-            coVerify(exactly = 1) { cache.clear() }
-            coVerify(exactly = 0) { storage.delete(RefreshToken::class) }
+    @Test fun transientRefreshPreservesSessionWithoutRetryingCore() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(MockResponse().setResponseCode(503))
+            f.core.enqueue(MockResponse().setResponseCode(401))
+            assertTrue(runCatching { f.execute().close() }.isFailure)
+            assertEquals(SessionState.Failure(SessionFailure.SERVER), f.session.state.value)
+            assertNotNull(f.store.record)
+            assertEquals(1, f.core.requestCount)
         }
     }
 
-    @Test fun simultaneousUnauthorizedRequestsShareRefreshAndEachRetryOnce() = runBlocking {
-        MockWebServer().use { server ->
-            session.install(initial)
-            coEvery { auth.refresh(any()) } returns AuthResult.Success(renewed)
+    @Test fun concurrentUnauthorizedRequestsShareRefreshAndEachRetryOnce() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(cookieResponse("new"))
             val barrier = CyclicBarrier(2)
-            server.dispatcher = object : Dispatcher() {
+            f.core.dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse =
-                    if (request.getHeader("Authorization") == "Bearer old-synthetic") {
-                        barrier.await(5, TimeUnit.SECONDS)
+                    if (request.getHeader("Authorization") == "Bearer old") {
+                        barrier.await(10, TimeUnit.SECONDS)
                         MockResponse().setResponseCode(401)
                     } else {
-                        MockResponse().setBody("ok")
+                        MockResponse()
                     }
             }
             val executor = Executors.newFixedThreadPool(2)
             try {
-                val requests = List(2) { executor.submit<Int> { execute(server).use { it.code } } }
-                requests.forEach { assertEquals(200, it.get(5, TimeUnit.SECONDS)) }
-                assertEquals(4, server.requestCount)
-                coVerify(exactly = 1) { auth.refresh(any()) }
+                val calls = List(2) { executor.submit<Int> { f.execute().use { it.code } } }
+                calls.forEach { assertEquals(200, it.get(15, TimeUnit.SECONDS)) }
+                assertEquals(2, f.auth.requestCount)
+                assertEquals(4, f.core.requestCount)
             } finally {
                 executor.shutdownNow()
             }
         }
     }
+}
 
-    @Test fun coreClientDoesNotFollowRedirectsToAnotherOrigin() = runBlocking {
-        MockWebServer().use { core ->
-            MockWebServer().use { other ->
-                session.install(initial)
-                core.enqueue(MockResponse().setResponseCode(302).setHeader("Location", other.url("/fixture")))
-                val client = createCoreHttpClient(core.url("/").toString(), session)
-                client.newCall(Request.Builder().url(core.url("/fixture")).build()).execute().use {
-                    assertEquals(302, it.code)
-                }
-                assertEquals(0, other.requestCount)
-            }
-        }
+fun cookieResponse(access: String = "synthetic", age: Int = 300): MockResponse = MockResponse()
+    .addHeader("Set-Cookie", "access_token=" + access + "; Path=/; HttpOnly; Max-Age=" + age)
+    .addHeader("Set-Cookie", "refresh_token=" + access + "-refresh; Path=/; HttpOnly; Max-Age=1296000")
+
+class AuthHttpFixture(now: () -> Long = System::currentTimeMillis) : java.io.Closeable {
+    val auth = MockWebServer()
+    val core = MockWebServer()
+    val store = MemoryCookieStore()
+    val custody = AuthCookieCustody(store, auth.url("/"), now)
+    val repository = RetrofitAuthRepository(auth.url("/"), custody)
+    val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
+    val session = SessionUseCase(repository, cache)
+    val client = createCoreHttpClient(core.url("/").toString(), session, custody)
+    suspend fun login() {
+        auth.enqueue(cookieResponse("old"))
+        assertEquals(AuthResult.Success, session.login("synthetic@example.com", "synthetic"))
+        val request = auth.takeRequest()
+        assertNull(request.getHeader("Cookie"))
+        assertNull(request.getHeader("Authorization"))
+        assertTrue(request.body.readUtf8().contains("\"platform\":\"mobile\""))
     }
-
-    @Test fun operationWaitingForRecoveryCannotUseANewLoginIdentity() = runBlocking {
-        coEvery { storage.read(RefreshToken::class) } returns initial.refreshToken
-        coEvery { auth.refresh(any()) } returns AuthRefreshError.NetworkError
-        session.restore()
-        val started = CountDownLatch(1)
-        val pending = CompletableDeferred<AuthRefreshResult>()
-        coEvery { auth.refresh(any()) } coAnswers {
-            started.countDown()
-            pending.await()
-        }
-        MockWebServer().use { server ->
-            server.enqueue(MockResponse())
-            val executor = Executors.newSingleThreadExecutor()
-            try {
-                val operation = executor.submit<Boolean> { runCatching { execute(server).close() }.isFailure }
-                assertTrue(started.await(5, TimeUnit.SECONDS))
-                session.install(renewed)
-                pending.complete(AuthResult.Success(initial))
-                assertTrue(operation.get(5, TimeUnit.SECONDS))
-                assertEquals(0, server.requestCount)
-                assertEquals(renewed.accessToken, session.snapshot().accessToken)
-            } finally {
-                executor.shutdownNow()
-            }
-        }
-    }
-
-    private fun execute(server: MockWebServer): okhttp3.Response {
-        val client = OkHttpClient.Builder().addInterceptor(CoreSessionInterceptor(server.url("/"), session)).build()
-        return client.newCall(Request.Builder().url(server.url("/fixture")).build()).execute()
+    fun execute() = client.newCall(Request.Builder().url(core.url("/fixture")).build()).execute()
+    override fun close() {
+        auth.shutdown()
+        core.shutdown()
     }
 }

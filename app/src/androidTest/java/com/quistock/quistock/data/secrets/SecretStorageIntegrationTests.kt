@@ -3,8 +3,8 @@ package com.quistock.quistock.data.secrets
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.quistock.quistock.domain.model.AccessToken
-import com.quistock.quistock.domain.model.RefreshToken
+import com.quistock.quistock.data.secrets.AccessToken
+import com.quistock.quistock.data.secrets.RefreshToken
 import com.quistock.quistock.domain.port.delete
 import com.quistock.quistock.domain.port.read
 import com.quistock.quistock.domain.port.save

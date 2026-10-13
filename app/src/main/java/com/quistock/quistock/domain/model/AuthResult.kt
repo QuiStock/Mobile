@@ -1,7 +1,7 @@
 package com.quistock.quistock.domain.model
 
 sealed interface AuthResult {
-    data class Success(val tokens: AuthTokens) :
+    data object Success :
         LoginResult,
         AuthRefreshResult
 }
@@ -13,6 +13,8 @@ sealed interface LoginError : LoginResult {
     data object InvalidCredentials : LoginError
     data object UserDisabled : LoginError
     data object UnexpectedError : LoginError
+    data object PlatformNotAllowed : LoginError
+    data object RateLimited : LoginError
 }
 
 sealed interface AuthRefreshResult : AuthResult
@@ -23,4 +25,5 @@ sealed interface AuthRefreshError : AuthRefreshResult {
     data object ServerError : AuthRefreshError
     data object InvalidToken : AuthRefreshError
     data object UnexpectedError : AuthRefreshError
+    data object RateLimited : AuthRefreshError
 }

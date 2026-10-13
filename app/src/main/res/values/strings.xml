@@ -156,4 +156,6 @@
     <string name="profile_email_hint">milena.souza@quistock.com</string>
     <string name="profile_save_changes">Salvar alterações</string>
     <string name="profile_cancel">Cancelar</string>
+    <string name="session_rate_limit">Limite de tentativas ultrapassado. Aguarde e tente novamente.</string>
+    <string name="login_platform_not_allowed">Este perfil não pode acessar esta plataforma.</string>
 </resources>
