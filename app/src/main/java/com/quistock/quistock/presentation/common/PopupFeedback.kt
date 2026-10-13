@@ -46,7 +46,7 @@ object PopupFeedback {
         }
         view.findViewById<Button>(R.id.confirmationNo).setOnClickListener { dialog.dismiss() }
         dialog.show()
-        dialog.window?.setBackgroundDrawableResource(
+        dialog.window?.setBackgroundDrawable(
             android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT),
         )
         dialog.window?.setLayout(
@@ -75,7 +75,7 @@ object PopupFeedback {
             onRetry()
         }
         dialog.show()
-        dialog.window?.setBackgroundDrawableResource(
+        dialog.window?.setBackgroundDrawable(
             android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT),
         )
         dialog.window?.setLayout(
