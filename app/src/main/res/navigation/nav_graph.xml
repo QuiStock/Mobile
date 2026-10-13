@@ -58,6 +58,9 @@
         <action
             android:id="@+id/action_homeFragment_to_productControlFragment"
             app:destination="@id/productControlFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_employeeFragment"
+            app:destination="@id/employeeFragment" />
 
         <action
             android:id="@+id/action_homeFragment_to_chatbotFragment"
@@ -196,6 +199,11 @@
         android:id="@+id/productDetailFragment"
         android:name="com.quistock.quistock.presentation.control.ProductDetailFragment"
         android:label="Detalhes do produto" />
+
+    <fragment
+        android:id="@+id/employeeFragment"
+        android:name="com.quistock.quistock.presentation.employee.EmployeeFragment"
+        android:label="Funcionários" />
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
