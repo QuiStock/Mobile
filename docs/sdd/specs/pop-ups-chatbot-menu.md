@@ -21,10 +21,10 @@ Status feedback uses `ic_error` with `#CA2424` for errors and `ic_success` with 
 
 | ID | Observable given / when / then | Planned test or check |
 | --- | --- | --- |
-| AC-01 | Login and chatbot errors show consistent red feedback; successful actions show green feedback. | Manual review of rendered screens and state handling |
-| AC-02 | Empty order/promotion fields show a validation error; valid forms ask for confirmation; manager approval prompts show the correct approval copy; Yes and No have distinct outcomes. | Manual form interaction |
-| AC-03 | Chatbot network failure offers retry and close; retry resends the last prompt. | Manual offline/online check |
-| AC-04 | The chatbot menu opens, dismisses, and starts a clean visible conversation. | Manual interaction |
+| AC-01 | Login and chatbot errors show consistent red feedback; successful actions show green feedback. | `ChatbotFragmentTests`, `OrderAndPromotionFragmentTests`, and `PopupFeedbackTests` |
+| AC-02 | Empty order/promotion fields show a validation error; valid forms ask for confirmation; manager approval prompts show the correct approval copy; Yes and No have distinct outcomes. | `OrderAndPromotionFragmentTests` and `PopupFeedbackTests` |
+| AC-03 | Chatbot network failure offers retry and close; retry resends the last prompt. | `ChatbotFragmentTests` and `ChatbotViewModelTests` |
+| AC-04 | The chatbot menu opens, dismisses, and starts a clean visible conversation. | `ChatbotFragmentTests` |
 
 ## Technical impact
 
@@ -39,4 +39,4 @@ Adds reusable presentation components and updates login, chatbot, order, and pro
 
 ## Implementation outcome
 
-Delivered shared error/success snackbars, input validation feedback, order and promotion confirmation flows, reusable manager approval confirmations, chatbot offline retry dialog, and the chatbot menu overlay. Added ChatbotViewModel unit tests and updated login UI assertions for the popup. `git diff --check` passed. Gradle assembly and formatter execution could not complete in this environment because Gradle failed with `Unable to establish loopback connection`; manual device review remains outstanding. The manager approval prompts are ready to be called from the manager screens when those destinations are implemented.
+Delivered shared error/success snackbars, input validation feedback, order and promotion confirmation flows, reusable manager approval confirmations, chatbot offline retry dialog, and the chatbot menu overlay. Automated coverage now includes `ChatbotViewModelTests`, `ChatbotFragmentTests`, `OrderAndPromotionFragmentTests`, and `PopupFeedbackTests`; FAQ/contact navigation and expansion are covered by `FaqFragmentTests`. Local Gradle and ADB execution could not be completed in this environment because Gradle failed with `Unable to establish loopback connection` and ADB could not start its local server. The updated combined coverage percentage therefore still needs CI confirmation. The manager approval prompts are ready to be called from the manager screens when those destinations are implemented.
