@@ -75,6 +75,22 @@
     <string name="erro_login_usuario_desabilitado">Este usuário foi desabilitado. Consulte seu gestor e tente novamente mais tarde.</string>
     <string name="erro_login_credenciais_invalidas">Email ou senha incorretos.</string>
     <string name="erro_login_erro_inesperado">Algo deu errado! Tente novamente mais tarde.</string>
+    <string name="popup_order_invalid">Informe a quantidade e a data desejada para continuar.</string>
+    <string name="popup_order_confirm">Tem certeza que deseja enviar este pedido para aprovação?</string>
+    <string name="popup_promotion_invalid">Informe o desconto e a duração da promoção para continuar.</string>
+    <string name="popup_promotion_confirm">Tem certeza que deseja enviar esta promoção para aprovação?</string>
+    <string name="popup_manager_approve_order">Tem certeza que deseja aprovar este pedido?</string>
+    <string name="popup_manager_approve_promotion">Tem certeza que deseja aprovar essa promoção?</string>
+    <string name="chatbot_welcome_title">Boas-vindas</string>
+    <string name="chatbot_empty_message">Digite uma mensagem antes de enviar.</string>
+    <string name="chatbot_login_required">Entre na sua conta para conversar com o assistente.</string>
+    <string name="chatbot_request_failed">Não foi possível processar sua mensagem. Tente novamente mais tarde.</string>
+    <string name="popup_order_sent">Pedido enviado para aprovação com sucesso.</string>
+    <string name="popup_promotion_sent">Promoção enviada para aprovação com sucesso.</string>
+    <string name="popup_login_invalid">Preencha seu e-mail e sua senha para entrar.</string>
+    <string name="popup_register_required">Preencha todos os campos para continuar.</string>
+    <string name="popup_register_email">Confira o formato do seu e-mail e tente novamente.</string>
+    <string name="popup_register_password_mismatch">As senhas não coincidem. Confira e tente novamente.</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

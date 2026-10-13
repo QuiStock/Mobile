@@ -2,13 +2,18 @@ package com.quistock.quistock.presentation.order;
 
 import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+
+import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.quistock.quistock.R;
+import com.quistock.quistock.presentation.common.PopupFeedback;
+import kotlin.Unit;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -62,5 +67,22 @@ public class OrderFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_order, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        EditText quantity = view.findViewById(R.id.etOrderQuantity);
+        EditText date = view.findViewById(R.id.etOrderDate);
+        Button submit = view.findViewById(R.id.btnSubmitOrder);
+        submit.setOnClickListener(button -> {
+            if (quantity.getText().toString().trim().isEmpty() || date.getText().toString().trim().isEmpty()) {
+                PopupFeedback.showStatus(view, getString(R.string.popup_order_invalid), true);
+                return;
+            }
+            PopupFeedback.showConfirmation(requireContext(), getString(R.string.popup_order_confirm), () -> {
+                NavHostFragment.findNavController(this).navigate(R.id.action_orderFragment_to_orderSentFragment);
+                return Unit.INSTANCE;
+            });
+        });
     }
 }
