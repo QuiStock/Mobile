@@ -187,6 +187,18 @@
         android:label="Interferências" />
 
     <fragment
+        android:id="@+id/managerInterferencesFragment"
+        android:name="com.quistock.quistock.presentation.interferences.ManagerInterferencesFragment"
+        android:label="Interferências (Gerente)">
+        <action
+            android:id="@+id/action_managerInterferencesFragment_to_employeeFragment"
+            app:destination="@id/employeeFragment" />
+        <action
+            android:id="@+id/action_managerInterferencesFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/productControlFragment"
         android:name="com.quistock.quistock.presentation.control.ProductControlFragment"
         android:label="Controle de produtos">
@@ -210,6 +222,9 @@
         <action
             android:id="@+id/action_employeeFragment_to_employeeProfileFragment"
             app:destination="@id/employeeProfileFragment" />
+        <action
+            android:id="@+id/action_employeeFragment_to_managerInterferencesFragment"
+            app:destination="@id/managerInterferencesFragment" />
     </fragment>
 
     <fragment
