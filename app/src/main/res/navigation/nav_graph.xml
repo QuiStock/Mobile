@@ -207,12 +207,24 @@
         <action
             android:id="@+id/action_employeeFragment_to_employeeDetailFragment"
             app:destination="@id/employeeDetailFragment" />
+        <action
+            android:id="@+id/action_employeeFragment_to_employeeProfileFragment"
+            app:destination="@id/employeeProfileFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/employeeDetailFragment"
         android:name="com.quistock.quistock.presentation.employee.EmployeeDetailFragment"
         android:label="Cadastro de funcionário" />
+
+    <fragment
+        android:id="@+id/employeeProfileFragment"
+        android:name="com.quistock.quistock.presentation.employee.EmployeeProfileFragment"
+        android:label="Perfil do funcionário">
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeDetailFragment"
+            app:destination="@id/employeeDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/cadastroPessoalFragment"
