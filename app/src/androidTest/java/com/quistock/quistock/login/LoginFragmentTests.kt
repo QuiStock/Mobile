@@ -160,12 +160,14 @@ class LoginFragmentTests {
     @Test
     fun expiredNoticeRemainsWhileFieldsAreFilled() = runInstrumented {
         emitUiState(LoginUiState.Expired)
-        onErrorMessageView().check(matches(withText(R.string.session_expired)))
+        onInlineErrorMessageView().check(matches(withText(R.string.session_expired)))
+        onInlineErrorMessageView().check(matches(isDisplayed()))
         onEmailFormField().perform(typeText("synthetic@example.com"), closeSoftKeyboard())
         onPasswordFormField().perform(typeText("synthetic"), closeSoftKeyboard())
-        onErrorMessageView().check(matches(withText(R.string.session_expired)))
+        onInlineErrorMessageView().check(matches(withText(R.string.session_expired)))
+        onInlineErrorMessageView().check(matches(isDisplayed()))
         emitUiState(LoginUiState.Loading)
-        onErrorMessageView().check(matches(not(isDisplayed())))
+        onInlineErrorMessageView().check(matches(not(isDisplayed())))
     }
 
     @Test

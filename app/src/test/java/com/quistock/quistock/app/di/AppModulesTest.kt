@@ -5,7 +5,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.domain.port.AuthRepository
-import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -26,6 +25,9 @@ class AppModulesTest {
                 FirebaseAuth::class,
                 FirebaseCrashlytics::class,
                 ChatbotApi::class,
+                // Constructed explicitly by the Auth factories, rather than resolved through get().
+                okhttp3.HttpUrl::class,
+                kotlin.Function0::class,
             ),
         )
     }
@@ -46,7 +48,6 @@ class AppModulesTest {
                     single<com.quistock.quistock.data.remote.auth.AuthCookieStore> {
                         com.quistock.quistock.data.remote.auth.MemoryCookieStore()
                     }
-                    single<CachedBigNumbersRepository> { mockk(relaxed = true) }
                     single<Logger> { mockk(relaxed = true) }
                 },
             )

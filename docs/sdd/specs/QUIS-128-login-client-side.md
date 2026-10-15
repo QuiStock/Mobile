@@ -1,5 +1,7 @@
 # QUIS-128 — Novo fluxo de login: Client-Side
 
+> Current scope (2026-10-15): the preceding indicator feature was cancelled. Its Home UI, fetch, cache integration and associated tests are removed. Historical references to those components and validation below describe the former stack only. The current cleanup criteria and evidence are recorded in QUIS-128 under "Removal of the cancelled indicator feature". Authentication credential revocation, generation fencing and HTTP recovery remain in scope.
+
 **Status:** Implemented and validated — etapa Client-Side com fontes simuladas
 **Issue:** [QUIS-128 — Migrar o fluxo de login via Firebase para o novo fluxo via API de autenticação](https://quistock.atlassian.net/browse/QUIS-128)
 **Product decision owner:** Solicitante, nesta conversa
@@ -186,3 +188,54 @@ final session quality refactor, and documentation. Code and behavioral tests are
 
 The real API contract and error mapping remain Open for the integration stage. Authentication
 and big numbers still use synthetic sources; HTTP policy was exercised with controlled transport.
+
+
+### Removal of the cancelled indicator feature (2026-10-15)
+
+The user cancelled the preceding indicator branch and requested removal of its rebase remnants.
+This supersedes the indicator/cache integration and its historical evidence below/above: no indicator
+fetch, Room cache, Home loading/retry UI or cache cleanup belongs to this login delivery.
+Home returns to the existing main-branch layout and navigation. Authentication retains credential
+revocation, generation fencing, refresh sharing, HTTP retry policy and login diagnostics.
+There is no remaining user cache to migrate or clear; no generic cache abstraction is introduced.
+Identical duplicated string resources left by conflict resolution are collapsed, preserving their values.
+Logger/Logcat and DataStore Preferences 1.2.1 remain required by authentication and are restored
+from the former stack without restoring the cancelled cache or Room.
+
+| ID | Acceptance criterion | Evidence |
+| --- | --- | --- |
+| CLEAN-01 | Home retains main's static layout and navigation without fetching indicators. | Compare HomeFragment/layout to origin/main; removed indicator-only tests. |
+| CLEAN-02 | Login, restore, expiration and late-response rejection work without a cache dependency. | SessionUseCaseTests, CoreSessionInterceptorTests, RetrofitAuthRepositoryTests. |
+| CLEAN-03 | Production and test sources contain no references to the cancelled feature; DI resolves login. | rg source scan, AppModulesTest, unit suite and Android test compilation. |
+
+Device execution and combined coverage remain separate checks; historical validation is not evidence
+for this cleanup. Transient session failures keep their existing navigation behavior; indicator retry
+is removed with the cancelled feature.
+
+
+Cleanup validation (2026-10-15): final testDebugUnitTest passed: 74 tests, zero failures/errors.
+spotlessCheck and detekt passed again after the Koin fixture correction. lintDebug,
+assembleRelease and compileDebugAndroidTestKotlin passed in the preceding combined run;
+that run failed overall only on the subsequently corrected Koin test. The fixture explicitly
+recognizes HttpUrl and Function0 constructed by Auth factories, as before the rebase; the
+runtime graph resolution test also passes. No quality gates were changed.
+The first attempts exposed duplicate XML strings and missing DataStore, so they do not
+establish a behavioral Red-Green cycle. Manual checks confirmed HomeFragment/layout equal
+origin/main, all resource names/values preserved, no conflict markers and no cancelled-feature
+references in app/src. Historical spec references remain explicitly marked as superseded.
+Instrumented tests were compiled, not executed; combined coverage is not established.
+
+
+### Expiration notice instrumented selector correction (2026-10-15)
+
+The connected report reproduced NoMatchingViewException in
+LoginFragmentTests.expiredNoticeRemainsWhileFieldsAreFilled: it selected statusPopupMessage,
+while the persistent expiration notice intentionally uses txt_erro_login. Correct only this
+test to select the inline notice, assert its text and visibility before/after filling both
+fields, and assert it is hidden on Loading. Popup selectors for ordinary login errors remain.
+This is a mechanical test correction for the existing expiration-notice criterion; no product
+behavior changed and no new behavior spec is needed.
+
+Validation: spotlessCheck and connectedDebugAndroidTest filtered to the complete
+com.quistock.quistock.login.LoginFragmentTests class passed on the connected Android 12 device:
+12 tests, zero failures/skips. This run does not establish full-suite instrumented coverage.

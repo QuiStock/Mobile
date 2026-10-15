@@ -10,7 +10,6 @@ import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.AuthRepository
-import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import com.quistock.quistock.domain.port.StoredSession
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -21,7 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class SessionUseCase(private val auth: AuthRepository, private val cache: CachedBigNumbersRepository) {
+class SessionUseCase(private val auth: AuthRepository) {
     private val mutex = Mutex()
     private val mutableState = MutableStateFlow<SessionState>(SessionState.Restoring)
     val state = mutableState.asStateFlow()
@@ -43,7 +42,6 @@ class SessionUseCase(private val auth: AuthRepository, private val cache: Cached
             try {
                 auth.begin(current.generation)
                 auth.clear(current.generation)
-                cache.clear()
                 mutableState.value = SessionState.SignedOut
             } catch (e: CancellationException) {
                 throw e
@@ -176,8 +174,7 @@ class SessionUseCase(private val auth: AuthRepository, private val cache: Cached
         val cleared = runCatching { auth.clear(previous) }
         // Advance custody even when deletion fails, so an old response cannot recreate the credential.
         val fenced = runCatching { auth.begin(current.generation) }
-        val cacheCleared = runCatching { cache.clear() }
-        mutableState.value = if (cleared.isSuccess && fenced.isSuccess && cacheCleared.isSuccess) {
+        mutableState.value = if (cleared.isSuccess && fenced.isSuccess) {
             SessionState.Expired
         } else {
             SessionState.LocalFailure

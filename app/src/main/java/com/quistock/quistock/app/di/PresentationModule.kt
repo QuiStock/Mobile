@@ -8,7 +8,6 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     viewModelOf(::ChatbotViewModel)
-    viewModelOf(::HomeViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::SessionViewModel)
 }

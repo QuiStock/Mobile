@@ -22,10 +22,12 @@ googleFirebaseCrashlytics = "3.0.8"
 kotest = "6.2.4"
 retrofit = "3.0.0"
 kotlin = "2.3.20"
+datastore = "1.2.1"
 kotlinxSerialization = "1.11.0"
 okhttp = "4.12.0"
 
 [libraries]
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

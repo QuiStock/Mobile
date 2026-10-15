@@ -10,6 +10,8 @@ Updated on 2026-10-13 from repository files. This document guides discovery; con
 - The backend URL comes from `BACKEND_BASE_URL` in the build process. `.env.example` explains its format; Gradle does not load `.env` automatically. A dummy URL is used when the variable is absent. Do not record private endpoints in specs.
 - There are unit tests for domain, ViewModel, dependency injection, and infrastructure, plus an instrumented login test. Their presence does not imply complete coverage of every flow.
 
+- The cancelled indicator branch is no longer part of the login stack. Home retains main's static layout; SessionUseCase has no indicator/cache dependency. Login retains the Logger/Logcat adapter used for safe diagnostics.
+
 ## Sources of truth
 
 | Topic | Source |
