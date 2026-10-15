@@ -2,6 +2,7 @@ package com.quistock.quistock.app.di
 
 import android.content.Context
 import com.quistock.quistock.R
+import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
@@ -13,6 +14,8 @@ import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.serialization.json.Json
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -59,9 +62,14 @@ val retrofitModule = module {
     single<AuthCookieStore> { EncryptedAuthCookieStore(get()) }
     single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()) }
     single<AuthRepository> {
+        val baseUrl = get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()
+        val client = OkHttpClient()
         RetrofitAuthRepository(
-            get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl(),
+            baseUrl,
             get(),
+            createApi = { jar ->
+                createAuthApi(baseUrl, jar, client)
+            },
             logger = get(),
         )
     }
@@ -95,3 +103,18 @@ internal fun createCoreHttpClient(baseUrl: String, session: SessionUseCase, cust
         .followRedirects(false)
         .followSslRedirects(false)
         .build()
+
+internal fun createAuthApi(baseUrl: HttpUrl, jar: CookieJar, client: OkHttpClient = OkHttpClient()): AuthApi =
+    Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .client(
+            client.newBuilder().cookieJar(jar).retryOnConnectionFailure(false)
+                .followRedirects(false).followSslRedirects(false).build(),
+        )
+        .addConverterFactory(
+            Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+            }.asConverterFactory("application/json".toMediaType()),
+        )
+        .build().create(AuthApi::class.java)
