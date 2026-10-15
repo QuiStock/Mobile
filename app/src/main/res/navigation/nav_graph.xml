@@ -213,6 +213,9 @@
             app:destination="@id/managerInterferencesFragment"
             app:popUpTo="@id/managerInterferencesFragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_managerPromotionDetailFragment_to_managerPromoApprovedFragment"
+            app:destination="@id/managerPromoApprovedFragment" />
     </fragment>
 
     <fragment
@@ -221,6 +224,31 @@
         android:label="Criar pedido">
         <action
             android:id="@+id/action_managerOrderDetailFragment_to_managerInterferencesFragment"
+            app:destination="@id/managerInterferencesFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_managerOrderDetailFragment_to_managerOrderApprovedFragment"
+            app:destination="@id/managerOrderApprovedFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerPromoApprovedFragment"
+        android:name="com.quistock.quistock.presentation.interferences.ManagerPromoApprovedFragment"
+        android:label="Promoção aprovada">
+        <action
+            android:id="@+id/action_managerPromoApprovedFragment_to_managerInterferencesFragment"
+            app:destination="@id/managerInterferencesFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerOrderApprovedFragment"
+        android:name="com.quistock.quistock.presentation.interferences.ManagerOrderApprovedFragment"
+        android:label="Pedido aprovado">
+        <action
+            android:id="@+id/action_managerOrderApprovedFragment_to_managerInterferencesFragment"
             app:destination="@id/managerInterferencesFragment"
             app:popUpTo="@id/managerInterferencesFragment"
             app:popUpToInclusive="false" />
