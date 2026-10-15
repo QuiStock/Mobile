@@ -16,15 +16,14 @@ import java.security.KeyStore
 
 private val Context.authCookieDataStore by preferencesDataStore(name = "auth_cookies")
 
-class EncryptedAuthCookieStore(context: Context) : AuthCookieStore {
+class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
     private val dataStore = context.applicationContext.authCookieDataStore
-    private val legacy = SecretStorageImpl(context.applicationContext)
     private val cipher = SecretCipher(ALIAS)
     private val recordKey = stringPreferencesKey("refresh_cookie_v1")
 
     override suspend fun read(): List<RefreshCookieRecord> = withContext(Dispatchers.IO) {
         // Values without HTTP expiry/scope are never interpreted as cookies.
-        legacy.delete(RefreshToken::class)
+        removeLegacyAuthCredential(context)
         val saved = dataStore.data.first()[recordKey] ?: return@withContext emptyList()
         val plaintext = cipher.decrypt(recordKey.name, Base64.decode(saved, Base64.NO_WRAP))
         val batch = Json.decodeFromString<RefreshCookieBatch>(plaintext.toString(Charsets.UTF_8))
