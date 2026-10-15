@@ -46,7 +46,7 @@ interface AuthApi {
     @POST("/login")
     fun login(@Body request: LoginRequest): Call<Unit>
 
-    @POST("/refresh")
+    @POST(AuthCookieCustody.REFRESH_PATH)
     fun refresh(): Call<Unit>
 }
 
@@ -98,7 +98,7 @@ class RetrofitAuthRepository(
         val logContext = mapOf("operation" to if (login == null) "auth_refresh" else "login")
         val limited = retryDelayMillis() > 0
         val jar = custody.requestJar(generation, refresh = login == null)
-        val refreshUrl = requireNotNull(baseUrl.resolve("/refresh"))
+        val refreshUrl = requireNotNull(baseUrl.resolve(AuthCookieCustody.REFRESH_PATH))
         if (limited || (login == null && jar.loadForRequest(refreshUrl).isEmpty())) {
             return if (limited) Outcome.LIMIT else Outcome.INVALID
         }

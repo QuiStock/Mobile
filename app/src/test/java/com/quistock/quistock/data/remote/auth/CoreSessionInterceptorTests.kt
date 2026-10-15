@@ -53,7 +53,7 @@ class CoreSessionInterceptorTests {
             assertEquals("Bearer new", retried.getHeader("Authorization"))
             assertNull(retried.getHeader("Cookie"))
             val refresh = f.auth.takeRequest()
-            assertEquals("/auth/refresh", refresh.path)
+            assertEquals("/refresh", refresh.path)
             assertEquals("refresh_token=old-refresh", refresh.getHeader("Cookie"))
             assertNull(refresh.getHeader("Authorization"))
             assertEquals(0, refresh.bodySize)

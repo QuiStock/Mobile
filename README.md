@@ -117,7 +117,7 @@ Both clients disable redirects and connection retries. Renewal happens on demand
 Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
 CORE_BASE_URL remains a build environment variable with an invalid dummy default.
 Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
-gateway prefixes and cookie refresh scope must match the remodeled API before deployment.
+the cookie jar authorizes only /refresh on the configured Auth origin. Cookie path metadata remains unchanged.
 Big numbers continue to use a simulated source and validate session access before a protected fetch.
 
 Local revocation destroys a dedicated Keystore key before removing the encrypted refresh

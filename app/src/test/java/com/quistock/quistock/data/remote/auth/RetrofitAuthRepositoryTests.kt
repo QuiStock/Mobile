@@ -20,6 +20,23 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class RetrofitAuthRepositoryTests {
+    @Test fun reopeningRestoresRefreshCookieAndRenewsSessionAtCurrentRoute() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
+            val recreatedCustody = AuthCookieCustody(f.store, f.auth.url("/"))
+            val recreatedRepository = RetrofitAuthRepository(f.auth.url("/"), recreatedCustody)
+            val recreatedSession = com.quistock.quistock.domain.usecase.SessionUseCase(recreatedRepository, f.cache)
+            f.auth.enqueue(cookieResponse("renewed"))
+
+            assertEquals(SessionState.Active, recreatedSession.restore())
+            val refresh = f.auth.takeRequest(5, TimeUnit.SECONDS)!!
+            assertEquals("/refresh", refresh.path)
+            assertEquals("refresh_token=old-refresh", refresh.getHeader("Cookie"))
+            assertEquals("renewed", recreatedCustody.access(recreatedSession.snapshot().generation))
+            assertEquals("renewed-refresh", f.store.record!!.value)
+        }
+    }
+
     @Test fun incompleteSuccessAndCookiesWithoutExpiryCannotAuthenticate() = runBlocking {
         AuthHttpFixture().use { f ->
             f.auth.enqueue(MockResponse().addHeader("Set-Cookie", "access_token=synthetic; HttpOnly; Max-Age=300"))
@@ -46,14 +63,13 @@ class RetrofitAuthRepositoryTests {
                 val entered = CountDownLatch(1)
                 val release = CountDownLatch(1)
                 f.auth.dispatcher = object : Dispatcher() {
-                    override fun dispatch(request: RecordedRequest): MockResponse =
-                        if (request.path == "/auth/refresh") {
-                            entered.countDown()
-                            check(release.await(10, TimeUnit.SECONDS))
-                            late
-                        } else {
-                            cookieResponse("new-account")
-                        }
+                    override fun dispatch(request: RecordedRequest): MockResponse = if (request.path == "/refresh") {
+                        entered.countDown()
+                        check(release.await(10, TimeUnit.SECONDS))
+                        late
+                    } else {
+                        cookieResponse("new-account")
+                    }
                 }
                 val old = async(Dispatchers.IO) { f.session.refresh(f.session.snapshot()) }
                 try {
@@ -68,7 +84,7 @@ class RetrofitAuthRepositoryTests {
                     assertEquals(
                         "new-account-refresh",
                         recreated.requestJar(99, true)
-                            .loadForRequest(f.auth.url("/auth/refresh")).single().value,
+                            .loadForRequest(f.auth.url("/refresh")).single().value,
                     )
                 } finally {
                     release.countDown()
