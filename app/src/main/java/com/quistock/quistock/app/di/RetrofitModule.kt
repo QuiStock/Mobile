@@ -12,37 +12,58 @@ import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.Qualifier
+import org.koin.core.qualifier.QualifierValue
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
-@OptIn(ExperimentalSerializationApi::class)
+private sealed interface ApiQualifier : Qualifier {
+    object Core : ApiQualifier {
+        override val value: QualifierValue get() = "api-core"
+    }
+
+    object Auth : ApiQualifier {
+        override val value: QualifierValue get() = "api-auth"
+    }
+}
+
 val retrofitSdkModule = module {
     single { createJson() }
 
-    single {
+    single(qualifier = ApiQualifier.Auth) {
         createRetrofit(
-            baseUrl = get<Context>().getString(R.string.backend_base_url),
+            baseUrl = get<Context>().getString(R.string.core_base_url),
             json = get(),
         )
     }
 
-    single<ChatbotApi> { createChatbotApi(get()) }
+    single(qualifier = ApiQualifier.Core) {
+        createRetrofit(
+            baseUrl = get<Context>().getString(R.string.auth_base_url),
+            json = get(),
+        )
+    }
+
+    single<ChatbotApi> { createChatbotApi(get(qualifier = ApiQualifier.Core)) }
 }
 
 val retrofitModule = module {
     single<AuthCookieStore> { EncryptedAuthCookieStore(get()) }
-    single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).toHttpUrl()) }
+    single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()) }
     single<AuthRepository> {
-        RetrofitAuthRepository(get<Context>().getString(R.string.auth_base_url).toHttpUrl(), get())
+        RetrofitAuthRepository(
+            get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl(),
+            get(),
+            logger = get(),
+        )
     }
 
     single(named("CoreHttpClient")) {
@@ -53,7 +74,6 @@ val retrofitModule = module {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 internal fun createJson(): Json = Json {
     ignoreUnknownKeys = true
     explicitNulls = false

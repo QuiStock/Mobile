@@ -8,7 +8,7 @@
         user_id
     </string>
 
-    <string name="backend_base_url" translatable="false">
-        https://backend-base-url.invalid/api/
+    <string name="auth_base_url" translatable="false">
+        https://ds-auth-v3rj.onrender.com
     </string>
 </resources>

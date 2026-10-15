@@ -6,6 +6,7 @@ import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
 import com.quistock.quistock.domain.port.AuthRepository
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.StoredSession
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +25,17 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import java.io.IOException
+import java.net.ConnectException
 import java.net.HttpURLConnection
+import java.net.ProtocolException
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 
 @Serializable
 data class LoginRequest(val email: String, val password: String, val platform: String = "mobile") {
@@ -35,10 +43,10 @@ data class LoginRequest(val email: String, val password: String, val platform: S
 }
 
 interface AuthApi {
-    @POST("auth/login")
+    @POST("/login")
     fun login(@Body request: LoginRequest): Call<Unit>
 
-    @POST("auth/refresh")
+    @POST("/refresh")
     fun refresh(): Call<Unit>
 }
 
@@ -48,6 +56,7 @@ class RetrofitAuthRepository(
     private val client: OkHttpClient = OkHttpClient.Builder().retryOnConnectionFailure(false)
         .followRedirects(false).followSslRedirects(false).build(),
     private val now: () -> Long = System::currentTimeMillis,
+    private val logger: Logger? = null,
 ) : AuthRepository {
     @Volatile private var retryAt = 0L
     private val json = Json {
@@ -86,9 +95,10 @@ class RetrofitAuthRepository(
 
     @Suppress("TooGenericExceptionCaught")
     private suspend fun request(generation: Long, login: LoginRequest?): Outcome {
+        val logContext = mapOf("operation" to if (login == null) "auth_refresh" else "login")
         val limited = retryDelayMillis() > 0
         val jar = custody.requestJar(generation, refresh = login == null)
-        val refreshUrl = requireNotNull(baseUrl.resolve("auth/refresh"))
+        val refreshUrl = requireNotNull(baseUrl.resolve("/refresh"))
         if (limited || (login == null && jar.loadForRequest(refreshUrl).isEmpty())) {
             return if (limited) Outcome.LIMIT else Outcome.INVALID
         }
@@ -100,13 +110,25 @@ class RetrofitAuthRepository(
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build().create(AuthApi::class.java)
         return withContext(Dispatchers.IO) {
+            val started = System.nanoTime()
+            logger?.debug(
+                "Auth HTTP request started",
+                logContext + mapOf(
+                    "https" to baseUrl.isHttps,
+                    "placeholder_host" to baseUrl.host.endsWith(".invalid"),
+                    "base_path_discarded" to (baseUrl.encodedPath != "/"),
+                ),
+            )
             val response = try {
                 if (login == null) api.refresh().execute() else api.login(login).execute()
-            } catch (_: SocketTimeoutException) {
+            } catch (e: SocketTimeoutException) {
+                logTransportFailure(e, started, logContext)
                 return@withContext Outcome.TIMEOUT
-            } catch (_: IOException) {
+            } catch (e: IOException) {
+                logTransportFailure(e, started, logContext)
                 return@withContext Outcome.NETWORK
             }
+            logger?.debug("Auth HTTP response received", logContext + ("http_status" to response.code()))
             // Stay in the worker until cookies are durably committed. Cancellation at the dispatcher
             // boundary must not lose a successor after the server has consumed the old refresh.
             try {
@@ -125,6 +147,16 @@ class RetrofitAuthRepository(
                 response.errorBody()?.close()
             }
         }
+    }
+
+    private fun logTransportFailure(error: IOException, started: Long, context: Map<String, String>) {
+        logger?.info(
+            "Auth HTTP transport failed",
+            context + mapOf(
+                "failure" to transportFailureCategory(error),
+                "elapsed_ms" to TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started),
+            ),
+        )
     }
 
     private fun updateRetryAfter(response: Response<Unit>) {
@@ -168,4 +200,15 @@ class RetrofitAuthRepository(
     }
 
     private enum class Outcome { SUCCESS, INVALID, PLATFORM, NETWORK, TIMEOUT, SERVER, LIMIT, UNEXPECTED }
+}
+
+internal fun transportFailureCategory(error: IOException): String = when (error) {
+    is UnknownHostException -> "dns"
+    is ConnectException -> "connection"
+    is SocketTimeoutException -> "timeout"
+    is SSLPeerUnverifiedException -> "tls_peer_verification"
+    is SSLHandshakeException -> "tls_handshake"
+    is SSLException -> "tls"
+    is ProtocolException -> "protocol"
+    else -> "io"
 }
