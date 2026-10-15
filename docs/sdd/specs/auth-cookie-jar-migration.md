@@ -170,3 +170,21 @@ Comando completo executado: gradlew.bat --max-workers=2 spotlessCheck detekt tes
 Produção não foi exercitada: origens públicas, atributos de cookies e roteamento ainda dependem de configuração do ambiente. Fixtures HTTP são sintéticas e não aprovam um deployment.
 
 Referências técnicas: [contrato CookieJar do OkHttp 4.12.0](https://github.com/square/okhttp/blob/parent-4.12.0/okhttp/src/main/kotlin/okhttp3/CookieJar.kt) e [Cookie do OkHttp 4.12.0](https://github.com/square/okhttp/blob/parent-4.12.0/okhttp/src/main/kotlin/okhttp3/Cookie.kt).
+
+### Login observability (2026-10-15)
+
+Requested addition: use the existing Logger/Logcat adapter. DEBUG records login start, successful session publication and cancellation; INFO records completion with a result category or an unexpected failure. Never log email, password, cookies, tokens, URLs, response bodies, exception messages or stack traces. Authentication outcomes and cancellation propagation remain unchanged.
+
+Acceptance: a failed login emits DEBUG start and INFO with its result category, without input values (LoginUseCaseTests); existing login/session/DI checks validate integration. Manual Logcat check: filter tag QuiStock and operation=login; Android execution pending.
+
+Validation for the logging addition: spotlessApply and detekt passed; instrumented Kotlin sources compiled in the first run. The targeted unit run executed 12 tests with one failure: the isolated DI fixture lacked Logger. The fixture was corrected. The repeat was blocked during main compilation by an unrelated local configuration change: RetrofitModule references R.string.backend_base_url, which is no longer generated. The corrected DI test has not been confirmed passing; no device tests were executed. No complete Red–Green claim is made for this addition.
+
+### Auth transport diagnostics and XML configuration (2026-10-15)
+
+The user tests on a physical device against a remote API and configures Auth in config.xml. Inspection of the previous merged debug resources confirmed the generated dummy Auth origin had replaced that XML value. Remove the Gradle Auth resValue and environment fallback: auth_base_url in XML is now the Auth source of truth. Core configuration is unchanged. No private endpoint is recorded here.
+
+DEBUG transport events expose only operation, HTTPS/placeholder/base-path flags and HTTP status. INFO failures expose operation, bounded DNS/connection/timeout/TLS/protocol/I/O category and elapsed milliseconds. No URLs, messages, stack traces, headers, bodies, credentials or cookie values are logged. UI result mapping remains unchanged. Acceptance: AuthTransportDiagnosticsTests checks categories and safe context with a synthetic failure; inspect merged resource selection without printing its value. A physical-device retry is still required.
+
+Separate findings: root-relative /login and /refresh discard any base path; the cookie jar still authorizes auth/refresh. API prefix/refresh alignment needs confirmation against the remodeled contract. SDK Auth/Core qualifiers also reference the opposite resources; this separate chatbot/SDK wiring was not changed as part of the login transport diagnosis.
+
+Validation of transport diagnosis: spotlessCheck, detekt and the targeted AuthTransportDiagnosticsTests/LoginUseCaseTests/LoginViewModelTests/AppModulesTest run passed. The initial combined formatting/analysis run encountered an internal Detekt parser exception; rerunning after formatting completed passed. Resource inspection confirmed merged auth_base_url equals config.xml and no longer uses the dummy host (values withheld). Physical-device/API verification remains pending. Historical cookie transport suites were not rerun against the remodeled endpoints.
