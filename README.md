@@ -114,11 +114,11 @@ authentication cookies; the independent legacy chatbot client receives no Core c
 Auth sends only refresh cookies to the configured refresh route; login sends no stored cookies.
 Both clients disable redirects and connection retries. Renewal happens on demand, without timers.
 
-Gradle reads `AUTH_BASE_URL` and `CORE_BASE_URL` from the build environment; both require HTTPS
-and default to invalid dummy origins. Each base includes its public gateway prefix, if any,
-and ends with `/`. Gradle does not load `.env` automatically. Deployment URLs and server cookie
-attributes still require environment configuration. Big numbers continue to use a simulated
-source and validate session access before a protected fetch.
+Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
+CORE_BASE_URL remains a build environment variable with an invalid dummy default.
+Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
+gateway prefixes and cookie refresh scope must match the remodeled API before deployment.
+Big numbers continue to use a simulated source and validate session access before a protected fetch.
 
 Local revocation destroys a dedicated Keystore key before removing the encrypted refresh
 record. Disk removal is attempted even if key destruction fails. If both fail, the app reports
