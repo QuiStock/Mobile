@@ -77,7 +77,9 @@ class AuthCookieCustodyTests {
         recreated.begin(2)
         recreated.restore(2)
         assertTrue(recreated.requestJar(2, true).loadForRequest(origin).isEmpty())
-        assertEquals(1, recreated.requestJar(2, true).loadForRequest(origin.resolve("auth/refresh")!!).size)
+        assertEquals("/auth", store.record!!.path)
+        assertTrue(recreated.requestJar(2, true).loadForRequest(origin.resolve("/refresh")!!).isEmpty())
+        assertTrue(recreated.requestJar(2, true).loadForRequest(origin.resolve("/auth/refresh")!!).isEmpty())
     }
 
     @Test fun persistsOnlyRefreshAndRestoresOriginalMetadata() = runBlocking {
@@ -88,7 +90,7 @@ class AuthCookieCustodyTests {
         recreated.begin(2)
         assertEquals(RestoreCookies.AVAILABLE, recreated.restore(2))
         assertNull(recreated.access(2))
-        assertEquals(pair()[1], recreated.requestJar(2, true).loadForRequest(origin.resolve("auth/refresh")!!).single())
+        assertEquals(pair()[1], recreated.requestJar(2, true).loadForRequest(origin.resolve("/refresh")!!).single())
     }
 
     @Test fun expiresAtExactBoundaryWithoutExtendingValidity() = runBlocking {
@@ -148,10 +150,11 @@ class AuthCookieCustodyTests {
         custody.commit(1, pair(), true)
         assertTrue(custody.requestJar(1, false).loadForRequest(origin).isEmpty())
         val jar = custody.requestJar(1, true)
-        assertEquals(1, jar.loadForRequest(origin.resolve("auth/refresh")!!).size)
-        assertTrue(jar.loadForRequest(origin.resolve("auth/login")!!).isEmpty())
-        assertTrue(jar.loadForRequest("https://auth.example.test:444/auth/refresh".toHttpUrl()).isEmpty())
-        assertTrue(jar.loadForRequest("http://auth.example.test/auth/refresh".toHttpUrl()).isEmpty())
+        assertEquals(1, jar.loadForRequest(origin.resolve("/refresh")!!).size)
+        assertTrue(jar.loadForRequest(origin.resolve("/auth/refresh")!!).isEmpty())
+        assertTrue(jar.loadForRequest(origin.resolve("/login")!!).isEmpty())
+        assertTrue(jar.loadForRequest("https://auth.example.test:444/refresh".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("http://auth.example.test/refresh".toHttpUrl()).isEmpty())
     }
 }
 

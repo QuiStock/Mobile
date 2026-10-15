@@ -126,6 +126,7 @@ class AuthCookieCustody(
     companion object {
         const val ACCESS = "access_token"
         const val REFRESH = "refresh_token"
+        const val REFRESH_PATH = "/refresh"
     }
 }
 
@@ -147,7 +148,7 @@ class StagedAuthCookieJar(
         }
     }
     override fun loadForRequest(url: HttpUrl): List<Cookie> =
-        if (sameOrigin(url) && url.encodedPath == origin.resolve("auth/refresh")?.encodedPath) {
+        if (sameOrigin(url) && url.encodedPath == origin.resolve(AuthCookieCustody.REFRESH_PATH)?.encodedPath) {
             initial.filter { it.expiresAt > now() && it.matches(url) }
         } else {
             emptyList()
