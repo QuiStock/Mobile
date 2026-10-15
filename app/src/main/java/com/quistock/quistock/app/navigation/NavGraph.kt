@@ -15,6 +15,8 @@ object NavGraph {
         val MANAGER_INTERFERENCES = R.id.managerInterferencesFragment
         val MANAGER_PROMOTION_DETAIL = R.id.managerPromotionDetailFragment
         val MANAGER_ORDER_DETAIL = R.id.managerOrderDetailFragment
+        val MANAGER_PROMO_APPROVED = R.id.managerPromoApprovedFragment
+        val MANAGER_ORDER_APPROVED = R.id.managerOrderApprovedFragment
         val ORDER = R.id.orderFragment
         val PROMOTION = R.id.promotionFragment
         val ORDER_SENT = R.id.orderSentFragment
@@ -70,8 +72,16 @@ object NavGraph {
             R.id.action_managerInterferencesFragment_to_managerOrderDetailFragment
         val PROMOTION_DETAIL_TO_MANAGER_INTERFERENCES =
             R.id.action_managerPromotionDetailFragment_to_managerInterferencesFragment
+        val PROMOTION_DETAIL_TO_PROMO_APPROVED =
+            R.id.action_managerPromotionDetailFragment_to_managerPromoApprovedFragment
         val ORDER_DETAIL_TO_MANAGER_INTERFERENCES =
             R.id.action_managerOrderDetailFragment_to_managerInterferencesFragment
+        val ORDER_DETAIL_TO_ORDER_APPROVED =
+            R.id.action_managerOrderDetailFragment_to_managerOrderApprovedFragment
+        val PROMO_APPROVED_TO_MANAGER_INTERFERENCES =
+            R.id.action_managerPromoApprovedFragment_to_managerInterferencesFragment
+        val ORDER_APPROVED_TO_MANAGER_INTERFERENCES =
+            R.id.action_managerOrderApprovedFragment_to_managerInterferencesFragment
         val PRODUCT_CONTROL_TO_PRODUCT_DETAIL = R.id.action_productControlFragment_to_productDetailFragment
     }
 }
