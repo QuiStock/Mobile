@@ -196,3 +196,13 @@ The current Auth transport uses root-relative /login and /refresh. Cookie sendin
 Acceptance: after successful login, recreate custody/repository/session using the same persisted refresh, restore, send only the refresh cookie to /refresh, become Active, and persist the rotated successor. RetrofitAuthRepositoryTests.reopeningRestoresRefreshCookieAndRenewsSessionAtCurrentRoute reproduces the failure. Update existing HTTP fixtures and cookie-scope checks to the remodeled routes; obsolete auth/refresh must receive no cookie. Cookie path metadata is never widened to make a request succeed. Actual Android persistence/device execution remains separate from the synthetic recreation test.
 
 Validation: the new recreation test first failed with expected Active but actual Expired. After sharing the /refresh route between transport/preflight/jar and adapting historical fixtures, spotlessCheck, detekt and the complete testDebugUnitTest suite passed (96 tests, 0 failures/errors). Android device reopening was not executed here. A refresh deleted by the previous buggy expiry cannot be recovered; one fresh login is required after installing the fix.
+
+### Startup navigation after restored refresh (2026-10-15)
+
+The navigation graph starts at splashFragment. Once session restoration becomes Active, navigate from splash or login to Home, clearing the startup back stack as already implemented by MainActivity. A transient restore Failure must also leave splash for Home retry, preserving session/cache behavior. Active sessions on protected destinations must not be redirected. Restoring remains hidden; SignedOut/Expired/LocalFailure keep their existing destinations.
+
+Acceptance: SessionNavigationTests verifies Active and transient Failure from splash reach Home, while Active on Home does not navigate. Existing Android recoveryOpensHomeAndExpirationRemovesProtectedBackStack checks navigation when executed on a device. The generic resource-close warning has no confirmed origin from the available evidence and is not treated as proof of an Auth HTTP leak.
+
+Navigation validation: the three focused unit tests first produced two failures (Active and transient Failure from splash); preserving Home passed. After the fix, spotlessCheck, detekt and the complete unit suite passed (99 tests, 0 failures/errors). No device/instrumented execution or attribution of the close warning is claimed.
+
+Post-rebase validation on the current main → homepage → login stack: 102 unit tests passed with zero failures/errors; spotlessCheck, detekt, lintDebug, assembleRelease and compileDebugAndroidTestKotlin passed. Instrumented tests were compiled but not executed on a device. The stack retains the main UI changes and the login-specific refresh/splash fixes.

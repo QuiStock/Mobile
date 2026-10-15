@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                         android.view.View.VISIBLE
                     }
                     if (!sessionViewModel.consumeNavigation(state)) return@collect
-                    val destination = destination(state, nav.currentDestination?.id)
+                    val destination = sessionDestination(state, nav.currentDestination?.id)
                     if (destination != null) {
                         nav.navigate(
                             destination,
@@ -71,19 +71,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+}
 
-    private fun destination(state: SessionState, current: Int?): Int? = when (state) {
-        SessionState.Restoring -> null
+internal fun sessionDestination(state: SessionState, current: Int?): Int? = when (state) {
+    SessionState.Restoring -> null
 
-        SessionState.SignedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+    SessionState.SignedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
 
-        SessionState.Active -> if (current == R.id.loginFragment) R.id.homeFragment else null
+    SessionState.Active -> if (current == R.id.loginFragment || current == R.id.splashFragment) {
+        R.id.homeFragment
+    } else {
+        null
+    }
 
-        SessionState.Expired, SessionState.LocalFailure -> R.id.loginFragment
+    SessionState.Expired, SessionState.LocalFailure -> R.id.loginFragment
 
-        is SessionState.Failure -> when {
-            current == R.id.loginFragment -> R.id.homeFragment
-            else -> null
-        }
+    is SessionState.Failure -> when {
+        current == R.id.loginFragment || current == R.id.splashFragment -> R.id.homeFragment
+        else -> null
     }
 }
