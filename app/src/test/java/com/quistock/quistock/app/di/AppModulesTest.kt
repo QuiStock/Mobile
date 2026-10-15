@@ -6,6 +6,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.CachedBigNumbersRepository
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import io.mockk.mockk
@@ -46,6 +47,7 @@ class AppModulesTest {
                         com.quistock.quistock.data.remote.auth.MemoryCookieStore()
                     }
                     single<CachedBigNumbersRepository> { mockk(relaxed = true) }
+                    single<Logger> { mockk(relaxed = true) }
                 },
             )
         }

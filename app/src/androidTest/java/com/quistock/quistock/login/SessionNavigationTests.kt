@@ -42,7 +42,10 @@ class SessionNavigationTests {
         session = SessionUseCase(auth, cache)
         GlobalContext.get().declare(session, allowOverride = true)
         GlobalContext.get().declare<CachedBigNumbersRepository>(cache, allowOverride = true)
-        GlobalContext.get().declare(LoginViewModel(LoginUseCase(session)), allowOverride = true)
+        GlobalContext.get().declare(
+            LoginViewModel(LoginUseCase(session, GlobalContext.get().get())),
+            allowOverride = true,
+        )
     }
 
     @Test fun recoveryOpensHomeAndExpirationRemovesProtectedBackStack() {
