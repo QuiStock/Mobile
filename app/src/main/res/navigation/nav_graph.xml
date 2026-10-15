@@ -295,6 +295,20 @@
         <action
             android:id="@+id/action_employeeProfileFragment_to_employeeDetailFragment"
             app:destination="@id/employeeDetailFragment" />
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_editEmployeeFragment"
+            app:destination="@id/editEmployeeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editEmployeeFragment"
+        android:name="com.quistock.quistock.presentation.employee.EditEmployeeFragment"
+        android:label="Editar funcionário">
+        <action
+            android:id="@+id/action_editEmployeeFragment_to_employeeProfileFragment"
+            app:destination="@id/employeeProfileFragment"
+            app:popUpTo="@id/employeeProfileFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment

@@ -26,6 +26,7 @@ object NavGraph {
         val EMPLOYEES = R.id.employeeFragment
         val EMPLOYEE_DETAIL = R.id.employeeDetailFragment
         val EMPLOYEE_PROFILE = R.id.employeeProfileFragment
+        val EDIT_EMPLOYEE = R.id.editEmployeeFragment
         val CHATBOT = R.id.chatbotFragment
         val NOTIFICATIONS = R.id.notificationsFragment
         val PROFILE = R.id.profileFragment
@@ -64,6 +65,10 @@ object NavGraph {
         val EMPLOYEES_TO_EMPLOYEE_PROFILE = R.id.action_employeeFragment_to_employeeProfileFragment
         val EMPLOYEES_TO_MANAGER_INTERFERENCES = R.id.action_employeeFragment_to_managerInterferencesFragment
         val EMPLOYEE_PROFILE_TO_EMPLOYEE_DETAIL = R.id.action_employeeProfileFragment_to_employeeDetailFragment
+        val EMPLOYEE_PROFILE_TO_EDIT_EMPLOYEE =
+            R.id.action_employeeProfileFragment_to_editEmployeeFragment
+        val EDIT_EMPLOYEE_TO_EMPLOYEE_PROFILE =
+            R.id.action_editEmployeeFragment_to_employeeProfileFragment
         val MANAGER_INTERFERENCES_TO_EMPLOYEES = R.id.action_managerInterferencesFragment_to_employeeFragment
         val MANAGER_INTERFERENCES_TO_HOME = R.id.action_managerInterferencesFragment_to_homeFragment
         val MANAGER_INTERFERENCES_TO_PROMOTION_DETAIL =
