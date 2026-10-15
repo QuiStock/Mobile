@@ -13,7 +13,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.port.AuthRepository
-import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
@@ -32,16 +31,14 @@ import org.koin.core.context.GlobalContext
 @RunWith(AndroidJUnit4::class)
 class SessionNavigationTests {
     private val auth = mockk<AuthRepository>(relaxed = true)
-    private val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
     private lateinit var session: SessionUseCase
 
     @Before fun setup() {
         coEvery { auth.restore(any()) } returns com.quistock.quistock.domain.port.StoredSession.AVAILABLE
         io.mockk.every { auth.hasAccess(any()) } returns true
         coEvery { auth.refresh(any()) } returns AuthResult.Success
-        session = SessionUseCase(auth, cache)
+        session = SessionUseCase(auth)
         GlobalContext.get().declare(session, allowOverride = true)
-        GlobalContext.get().declare<CachedBigNumbersRepository>(cache, allowOverride = true)
         GlobalContext.get().declare(
             LoginViewModel(LoginUseCase(session, GlobalContext.get().get())),
             allowOverride = true,
@@ -76,7 +73,7 @@ class SessionNavigationTests {
                 assertEquals(R.id.loginFragment, nav.currentDestination?.id)
                 assertFalse(nav.popBackStack())
             }
-            coVerify(exactly = 1) { cache.clear() }
+            coVerify(exactly = 1) { auth.clear(1) }
         }
     }
 }

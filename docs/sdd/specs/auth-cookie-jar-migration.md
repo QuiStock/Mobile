@@ -1,5 +1,7 @@
 # Migração da autenticação para cookies com persistência seletiva
 
+> Current scope (2026-10-15): the preceding indicator feature was cancelled. Its Home UI, fetch, cache integration and associated tests are removed. Historical references to those components and validation below describe the former stack only. The current cleanup criteria and evidence are recorded in QUIS-128 under "Removal of the cancelled indicator feature". Authentication credential revocation, generation fencing and HTTP recovery remain in scope.
+
 **Status:** Implemented client-side; Android execution and deployment validation pending
 **Issue:** none — evolução do fluxo [QUIS-128](QUIS-128-login-client-side.md)
 **Product decision owner:** Solicitante; contrato DS_Auth adotado; configuração de deployment pendente

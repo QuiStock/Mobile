@@ -4,10 +4,7 @@ import com.quistock.quistock.app.di.createCoreHttpClient
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
-import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
-import io.mockk.coVerify
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import okhttp3.Request
 import okhttp3.mockwebserver.Dispatcher
@@ -60,7 +57,7 @@ class CoreSessionInterceptorTests {
         }
     }
 
-    @Test fun secondUnauthorizedExpiresAndClearsCacheWithoutLoop() = runBlocking {
+    @Test fun secondUnauthorizedExpiresAndRevokesCredentialsWithoutLoop() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
             f.auth.enqueue(cookieResponse("new"))
@@ -69,7 +66,6 @@ class CoreSessionInterceptorTests {
             assertEquals(SessionState.Expired, f.session.state.value)
             assertEquals(2, f.core.requestCount)
             assertNull(f.store.record)
-            coVerify(exactly = 2) { f.cache.clear() }
         }
     }
 
@@ -149,8 +145,7 @@ class AuthHttpFixture(now: () -> Long = System::currentTimeMillis) : java.io.Clo
     val store = MemoryCookieStore()
     val custody = AuthCookieCustody(store, auth.url("/"), now)
     val repository = RetrofitAuthRepository(auth.url("/"), custody)
-    val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
-    val session = SessionUseCase(repository, cache)
+    val session = SessionUseCase(repository)
     val client = createCoreHttpClient(core.url("/").toString(), session, custody)
     suspend fun login() {
         auth.enqueue(cookieResponse("old"))

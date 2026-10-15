@@ -25,7 +25,7 @@ class RetrofitAuthRepositoryTests {
             f.login()
             val recreatedCustody = AuthCookieCustody(f.store, f.auth.url("/"))
             val recreatedRepository = RetrofitAuthRepository(f.auth.url("/"), recreatedCustody)
-            val recreatedSession = com.quistock.quistock.domain.usecase.SessionUseCase(recreatedRepository, f.cache)
+            val recreatedSession = com.quistock.quistock.domain.usecase.SessionUseCase(recreatedRepository)
             f.auth.enqueue(cookieResponse("renewed"))
 
             assertEquals(SessionState.Active, recreatedSession.restore())

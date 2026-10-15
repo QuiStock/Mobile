@@ -7,7 +7,6 @@ import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.AuthRepository
-import com.quistock.quistock.domain.port.CachedBigNumbersRepository
 import com.quistock.quistock.domain.port.StoredSession
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -19,19 +18,19 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SessionUseCaseTests {
     private val auth = mockk<AuthRepository>(relaxed = true)
-    private val cache = mockk<CachedBigNumbersRepository>(relaxed = true)
-    private val session = SessionUseCase(auth, cache)
+    private val session = SessionUseCase(auth)
     private fun active() {
         every { auth.hasAccess(any()) } returns true
         coEvery { auth.login(any(), any(), any()) } returns AuthResult.Success
     }
 
-    @Test fun deletionFailureStillFencesOldResponsesAndAttemptsCacheCleanup() = runTest {
+    @Test fun deletionFailureStillFencesOldResponses() = runTest {
         active()
         session.login("synthetic", "synthetic")
         val old = session.snapshot()
@@ -39,7 +38,6 @@ class SessionUseCaseTests {
         session.expire(old)
         assertEquals(SessionState.LocalFailure, session.state.value)
         coVerify { auth.begin(old.generation + 1) }
-        coVerify(exactly = 2) { cache.clear() }
         assertTrue(runCatching { session.requireAccess(old) }.isFailure)
     }
 
@@ -51,7 +49,6 @@ class SessionUseCaseTests {
         coVerifyOrder {
             auth.begin(1)
             auth.clear(1)
-            cache.clear()
             auth.login(any(), any(), 1)
         }
     }
@@ -60,13 +57,13 @@ class SessionUseCaseTests {
         coEvery { auth.restore(any()) } returns StoredSession.MISSING
         assertEquals(SessionState.SignedOut, session.restore())
         coVerify(exactly = 0) { auth.refresh(any()) }
-        coVerify(exactly = 0) { cache.clear() }
     }
 
-    @Test fun expiredCredentialShowsExpirationAndClearsCache() = runTest {
+    @Test fun expiredCredentialShowsExpirationAndRevokesCredential() = runTest {
         coEvery { auth.restore(any()) } returns StoredSession.EXPIRED
         assertEquals(SessionState.Expired, session.restore())
-        coVerify { cache.clear() }
+        coVerify(exactly = 1) { auth.clear(1) }
+        coVerify(exactly = 1) { auth.begin(2) }
         coVerify(exactly = 0) { auth.refresh(any()) }
     }
 
@@ -117,11 +114,10 @@ class SessionUseCaseTests {
         }
     }
 
-    @Test fun transientRestorationPreservesCacheAndOffersManualRetry() = runTest {
+    @Test fun transientRestorationPreservesCredential() = runTest {
         coEvery { auth.restore(any()) } returns StoredSession.AVAILABLE
         coEvery { auth.refresh(any()) } returns AuthRefreshError.RateLimited
         assertEquals(SessionState.Failure(SessionFailure.RATE_LIMIT), session.restore())
-        coVerify(exactly = 0) { cache.clear() }
         coVerify(exactly = 0) { auth.clear(any()) }
     }
 
@@ -138,7 +134,8 @@ class SessionUseCaseTests {
         first.await()
         second.await()
         assertEquals(SessionState.Expired, session.state.value)
-        coVerify(exactly = 2) { cache.clear() }
+        coVerify(exactly = 2) { auth.clear(expected.generation) }
+        coVerify(exactly = 1) { auth.begin(expected.generation + 1) }
     }
 
     @Test fun localFailureAfterRotationRequiresLoginAndBlocksAccess() = runTest {
@@ -150,11 +147,13 @@ class SessionUseCaseTests {
         assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
     }
 
-    @Test fun oldGenerationCannotWriteCache() = runTest {
+    @Test fun oldGenerationCannotRunProtectedAction() = runTest {
         active()
         session.login("old", "synthetic")
         val old = session.snapshot()
         session.login("new", "synthetic")
-        assertTrue(runCatching { session.withCurrentSession(old) { error("Must not run") } }.isFailure)
+        var executed = false
+        assertTrue(runCatching { session.withCurrentSession(old) { executed = true } }.isFailure)
+        assertFalse(executed)
     }
 }
