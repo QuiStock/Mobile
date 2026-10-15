@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.app.di.createAuthApi
 import com.quistock.quistock.app.di.createCoreHttpClient
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.SessionFailure
@@ -144,7 +145,7 @@ class AuthHttpFixture(now: () -> Long = System::currentTimeMillis) : java.io.Clo
     val core = MockWebServer()
     val store = MemoryCookieStore()
     val custody = AuthCookieCustody(store, auth.url("/"), now)
-    val repository = RetrofitAuthRepository(auth.url("/"), custody)
+    val repository = RetrofitAuthRepository(auth.url("/"), custody, { createAuthApi(auth.url("/"), it) })
     val session = SessionUseCase(repository)
     val client = createCoreHttpClient(core.url("/").toString(), session, custody)
     suspend fun login() {

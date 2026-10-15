@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.data.remote.auth.dto.LoginRequest
 import com.quistock.quistock.domain.model.AuthRefreshError
 import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.AuthResult
@@ -11,19 +12,11 @@ import com.quistock.quistock.domain.port.StoredSession
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import retrofit2.Call
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
 import java.io.IOException
 import java.net.ConnectException
 import java.net.HttpURLConnection
@@ -37,24 +30,10 @@ import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
 
-@Serializable
-data class LoginRequest(val email: String, val password: String, val platform: String = "mobile") {
-    override fun toString() = "LoginRequest(redacted)"
-}
-
-interface AuthApi {
-    @POST("/login")
-    fun login(@Body request: LoginRequest): Call<Unit>
-
-    @POST(AuthCookieCustody.REFRESH_PATH)
-    fun refresh(): Call<Unit>
-}
-
 class RetrofitAuthRepository(
     private val baseUrl: HttpUrl,
     private val custody: AuthCookieCustody,
-    private val client: OkHttpClient = OkHttpClient.Builder().retryOnConnectionFailure(false)
-        .followRedirects(false).followSslRedirects(false).build(),
+    private val createApi: (StagedAuthCookieJar) -> AuthApi,
     private val now: () -> Long = System::currentTimeMillis,
     private val logger: Logger? = null,
 ) : AuthRepository {
@@ -102,13 +81,7 @@ class RetrofitAuthRepository(
         if (limited || (login == null && jar.loadForRequest(refreshUrl).isEmpty())) {
             return if (limited) Outcome.LIMIT else Outcome.INVALID
         }
-        val api = Retrofit.Builder().baseUrl(baseUrl)
-            .client(
-                client.newBuilder().cookieJar(jar).retryOnConnectionFailure(false)
-                    .followRedirects(false).followSslRedirects(false).build(),
-            )
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .build().create(AuthApi::class.java)
+        val api = createApi(jar)
         return withContext(Dispatchers.IO) {
             val started = System.nanoTime()
             logger?.debug(

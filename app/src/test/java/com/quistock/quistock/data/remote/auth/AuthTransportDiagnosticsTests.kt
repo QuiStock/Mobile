@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.app.di.createAuthApi
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.port.Logger
 import io.mockk.mockk
@@ -41,7 +42,7 @@ class AuthTransportDiagnosticsTests {
         val client = OkHttpClient.Builder().addInterceptor {
             throw UnknownHostException("sensitive-url-and-credentials")
         }.build()
-        val repository = RetrofitAuthRepository(origin, custody, client, logger = logger)
+        val repository = RetrofitAuthRepository(origin, custody, { createAuthApi(origin, it, client) }, logger = logger)
         assertEquals(LoginError.NetworkError, repository.login("private-email", "private-password", 1))
         verify(exactly = 1) {
             logger.info(

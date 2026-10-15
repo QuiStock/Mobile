@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.app.di.createAuthApi
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.SessionState
@@ -24,7 +25,11 @@ class RetrofitAuthRepositoryTests {
         AuthHttpFixture().use { f ->
             f.login()
             val recreatedCustody = AuthCookieCustody(f.store, f.auth.url("/"))
-            val recreatedRepository = RetrofitAuthRepository(f.auth.url("/"), recreatedCustody)
+            val recreatedRepository = RetrofitAuthRepository(
+                f.auth.url("/"),
+                recreatedCustody,
+                { createAuthApi(f.auth.url("/"), it) },
+            )
             val recreatedSession = com.quistock.quistock.domain.usecase.SessionUseCase(recreatedRepository)
             f.auth.enqueue(cookieResponse("renewed"))
 
@@ -134,7 +139,7 @@ class RetrofitAuthRepositoryTests {
             var now = System.currentTimeMillis()
             val store = MemoryCookieStore()
             val custody = AuthCookieCustody(store, server.url("/")) { now }
-            val repository = RetrofitAuthRepository(server.url("/"), custody)
+            val repository = RetrofitAuthRepository(server.url("/"), custody, { createAuthApi(server.url("/"), it) })
             custody.begin(1)
             val parsed = Cookie.parseAll(server.url("/"), cookieResponse("synthetic").headers)
             custody.commit(1, parsed, true)

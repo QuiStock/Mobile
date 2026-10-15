@@ -28,6 +28,7 @@ class AppModulesTest {
                 // Constructed explicitly by the Auth factories, rather than resolved through get().
                 okhttp3.HttpUrl::class,
                 kotlin.Function0::class,
+                kotlin.Function1::class,
             ),
         )
     }
