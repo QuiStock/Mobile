@@ -1,7 +1,10 @@
 package com.quistock.quistock.data.secrets
 
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.quistock.quistock.data.remote.auth.RefreshCookieRecord
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cookie
 import org.junit.Assert.assertEquals
@@ -44,11 +47,27 @@ class AuthCookieStoreIntegrationTests {
     }
 
     @Test fun upgradeDeletesLegacyValueWithoutCreatingCookieValidity() = runBlocking {
-        val legacy = SecretStorageImpl(context)
+        val legacy = context.legacyAuthDataStore
+        val legacyKey = stringPreferencesKey("refresh_token")
+        val unrelatedKey = stringPreferencesKey("unrelated")
         val store = EncryptedAuthCookieStore(context)
         store.revoke()
-        legacy.save(RefreshToken("synthetic-legacy"), RefreshToken::class)
+        // The previous format was a JSON string encrypted with this alias and AAD.
+        val ciphertext = SecretCipher("quistock_secrets_v1").encrypt(
+            legacyKey.name,
+            "\"synthetic-legacy\"".toByteArray(Charsets.UTF_8),
+        )
+        legacy.edit {
+            it[legacyKey] = android.util.Base64.encodeToString(ciphertext, android.util.Base64.NO_WRAP)
+            it[unrelatedKey] = "preserved"
+        }
         assertTrue(store.read().isEmpty())
-        assertNull(legacy.read(RefreshToken::class))
+        try {
+            assertNull(legacy.data.first()[legacyKey])
+            assertEquals("preserved", legacy.data.first()[unrelatedKey])
+            assertTrue(EncryptedAuthCookieStore(context).read().isEmpty())
+        } finally {
+            legacy.edit { it.remove(unrelatedKey) }
+        }
     }
 }
