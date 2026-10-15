@@ -33,6 +33,7 @@ object NavGraph {
         val FAQ = R.id.faqFragment
         val CONTACT = R.id.contactFragment
         val EDIT_PROFILE = R.id.editProfileFragment
+        val LOADING = R.id.loadingFragment
     }
 
     object Actions {
@@ -88,5 +89,6 @@ object NavGraph {
         val ORDER_APPROVED_TO_MANAGER_INTERFERENCES =
             R.id.action_managerOrderApprovedFragment_to_managerInterferencesFragment
         val PRODUCT_CONTROL_TO_PRODUCT_DETAIL = R.id.action_productControlFragment_to_productDetailFragment
+        val LOADING_TO_HOME = R.id.action_loadingFragment_to_homeFragment
     }
 }

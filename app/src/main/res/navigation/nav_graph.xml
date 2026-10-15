@@ -322,4 +322,15 @@
             app:launchSingleTop="true"
             app:popUpTo="@id/loginFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/loadingFragment"
+        android:name="com.quistock.quistock.presentation.loading.LoadingFragment"
+        android:label="Carregando">
+        <action
+            android:id="@+id/action_loadingFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/loadingFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>
