@@ -13,6 +13,8 @@ object NavGraph {
         val REGISTER = R.id.cadastroPessoalFragment
         val INTERFERENCES = R.id.interferencesFragment
         val MANAGER_INTERFERENCES = R.id.managerInterferencesFragment
+        val MANAGER_PROMOTION_DETAIL = R.id.managerPromotionDetailFragment
+        val MANAGER_ORDER_DETAIL = R.id.managerOrderDetailFragment
         val ORDER = R.id.orderFragment
         val PROMOTION = R.id.promotionFragment
         val ORDER_SENT = R.id.orderSentFragment
@@ -62,6 +64,14 @@ object NavGraph {
         val EMPLOYEE_PROFILE_TO_EMPLOYEE_DETAIL = R.id.action_employeeProfileFragment_to_employeeDetailFragment
         val MANAGER_INTERFERENCES_TO_EMPLOYEES = R.id.action_managerInterferencesFragment_to_employeeFragment
         val MANAGER_INTERFERENCES_TO_HOME = R.id.action_managerInterferencesFragment_to_homeFragment
+        val MANAGER_INTERFERENCES_TO_PROMOTION_DETAIL =
+            R.id.action_managerInterferencesFragment_to_managerPromotionDetailFragment
+        val MANAGER_INTERFERENCES_TO_ORDER_DETAIL =
+            R.id.action_managerInterferencesFragment_to_managerOrderDetailFragment
+        val PROMOTION_DETAIL_TO_MANAGER_INTERFERENCES =
+            R.id.action_managerPromotionDetailFragment_to_managerInterferencesFragment
+        val ORDER_DETAIL_TO_MANAGER_INTERFERENCES =
+            R.id.action_managerOrderDetailFragment_to_managerInterferencesFragment
         val PRODUCT_CONTROL_TO_PRODUCT_DETAIL = R.id.action_productControlFragment_to_productDetailFragment
     }
 }
