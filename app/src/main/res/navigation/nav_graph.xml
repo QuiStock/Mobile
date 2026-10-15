@@ -196,6 +196,34 @@
         <action
             android:id="@+id/action_managerInterferencesFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_managerInterferencesFragment_to_managerPromotionDetailFragment"
+            app:destination="@id/managerPromotionDetailFragment" />
+        <action
+            android:id="@+id/action_managerInterferencesFragment_to_managerOrderDetailFragment"
+            app:destination="@id/managerOrderDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerPromotionDetailFragment"
+        android:name="com.quistock.quistock.presentation.interferences.ManagerPromotionDetailFragment"
+        android:label="Criar promoção">
+        <action
+            android:id="@+id/action_managerPromotionDetailFragment_to_managerInterferencesFragment"
+            app:destination="@id/managerInterferencesFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerOrderDetailFragment"
+        android:name="com.quistock.quistock.presentation.interferences.ManagerOrderDetailFragment"
+        android:label="Criar pedido">
+        <action
+            android:id="@+id/action_managerOrderDetailFragment_to_managerInterferencesFragment"
+            app:destination="@id/managerInterferencesFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
