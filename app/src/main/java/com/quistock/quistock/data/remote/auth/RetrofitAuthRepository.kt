@@ -15,9 +15,10 @@ import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import retrofit2.Response
 import java.io.IOException
+import java.io.InterruptedIOException
 import java.net.ConnectException
 import java.net.ProtocolException
-import java.net.SocketTimeoutException
+import java.net.HttpURLConnection
 import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -54,11 +55,14 @@ class RetrofitAuthRepository(
             val jar = requireNotNull(captured)
             captured = null
             withContext(Dispatchers.IO) {
+                val logContext = mapOf("operation" to "auth_logout")
+                val started = logRequestStarted(logContext)
                 val call = createApi(jar).logout()
                 call.timeout().timeout(LOGOUT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 try {
                     val response = call.execute()
                     try {
+                        logger?.debug("Auth HTTP response received", logContext + ("http_status" to response.code()))
                         val confirmed = response.code() == HttpURLConnection.HTTP_NO_CONTENT
                         if (confirmed && listOf(AuthCookieCustody.ACCESS, AuthCookieCustody.REFRESH).any { name ->
                                 jar.received().none { it.name == name && it.expiresAt <= now() }
@@ -70,7 +74,8 @@ class RetrofitAuthRepository(
                     } finally {
                         response.errorBody()?.close()
                     }
-                } catch (_: IOException) {
+                } catch (error: IOException) {
+                    logTransportFailure(error, started, logContext)
                     false
                 } finally {
                     // Drops references to the captured refresh when the operation finishes.
@@ -115,6 +120,29 @@ class RetrofitAuthRepository(
         }
     }
 
+    private fun logRequestStarted(context: Map<String, String>): Long {
+        val started = System.nanoTime()
+        logger?.debug(
+            "Auth HTTP request started",
+            context + mapOf(
+                "https" to baseUrl.isHttps,
+                "placeholder_host" to baseUrl.host.endsWith(".invalid"),
+                "base_path_discarded" to (baseUrl.encodedPath != "/"),
+            ),
+        )
+        return started
+    }
+
+    private fun logTransportFailure(error: IOException, started: Long, context: Map<String, String>) {
+        logger?.info(
+            "Auth HTTP transport failed",
+            context + mapOf(
+                "failure" to transportFailureCategory(error),
+                "elapsed_ms" to TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started),
+            ),
+        )
+    }
+
     private fun updateRetryAfter(response: Response<*>) {
         val value = response.headers()["Retry-After"]
         val seconds = value?.toLongOrNull()?.takeIf { it >= 0 }
@@ -137,7 +165,7 @@ class RetrofitAuthRepository(
 internal fun transportFailureCategory(error: IOException): String = when (error) {
     is UnknownHostException -> "dns"
     is ConnectException -> "connection"
-    is SocketTimeoutException -> "timeout"
+    is InterruptedIOException -> "timeout"
     is SSLPeerUnverifiedException -> "tls_peer_verification"
     is SSLHandshakeException -> "tls_handshake"
     is SSLException -> "tls"

@@ -48,6 +48,7 @@ Documentação local consultada em 16/10/2026. Exemplos históricos de integraç
 - Sem refresh elegível, tentar logout sem cookie, sem enviar credencial expirada. Aceitar 204 mesmo sem cookies de expiração; registrar diagnóstico sanitizado da divergência contratual, sem afirmar revogação de família não identificável. Demais status, falhas de transporte e timeout seguem o aviso remoto aprovado e não restauram sessão.
 - Usar `/logout` na origem Auth configurada separadamente da Core. O solicitante confirmou ambiente remoto sem prefixo. Preservar escopo real dos cookies e permitir refresh somente em `/refresh` e `/logout`, sem ampliar Domain/Path nem enviar cookies fora da origem. URLs base separadas não tornam rotas root-relative compatíveis com prefixos; suporte futuro a prefixos exige ajustar também as rotas e a política de cookies.
 - O controle e seus estados devem ser utilizáveis por TalkBack e teclado, com indicação acessível de progresso/erro conforme O-02.
+- Diagnóstico aprovado pelo solicitante em 16/10/2026: logout registra início e resposta HTTP em debug, com `operation=auth_logout`, e falhas de transporte com categoria sanitizada e duração, seguindo login/refresh. Não registrar URLs, corpos, cookies, tokens, identidade ou mensagens/stack traces de exceções. Esses eventos descrevem a chamada remota, não comprovam limpeza local.
 
 ## Acceptance criteria and evidence
 
@@ -67,6 +68,7 @@ Critérios planejados com decisões concluídas. Aplicar Red–Green–Refactor 
 | AC-10 | Dado ambiente de integração aprovado, quando login → logout → nova tentativa de refresh da família encerrada ocorre, então logout retorna 204 e a família não renova; outro login independente permanece válido. | Smoke integrado controlado com dados de teste, sem registrar tokens; necessário porque mocks não comprovam revogação real. |
 | AC-11 | Dada chamada remota bloqueada, quando decorrem 10 segundos totais, então cancela a chamada sem retry e navega para Login se a limpeza local concluiu; recriação da View não duplica nem cancela a operação. | Teste de transporte com timeout e teste instrumentado de recriação. |
 | AC-12 | Dados refresh legado, identificador persistido e conversa em memória, quando logout conclui, então são removidos com confirmação durável onde aplicável; preferências do aparelho e dados de negócio permanecem. Falha de remoção apresenta recuperação local. | Testes de persistência com falhas injetadas e testes de estados da sessão/chatbot. |
+| AC-13 | Dada tentativa remota de logout, quando começa, recebe resposta ou falha no transporte, então registra os eventos sanitizados com operation=auth_logout, status quando disponível e duração na falha, sem dados sensíveis. | `AuthTransportDiagnosticsTests`: início/resposta 204 e falha DNS, incluindo campos permitidos; escritos, não executados. |
 
 ## Technical impact
 
