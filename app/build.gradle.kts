@@ -305,3 +305,7 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.navigation.test)
 }
+
+secrets {
+    defaultPropertiesFileName = "secrets.defaults.properties"
+}
