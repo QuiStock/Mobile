@@ -45,6 +45,18 @@ class AuthCookieCustodyTests {
         .name(name).value(value).hostOnlyDomain(origin.host).path("/").secure().httpOnly().expiresAt(expires).build()
     private fun pair() = listOf(cookie("access_token"), cookie("refresh_token"))
 
+    @Test fun logoutCaptureCannotSendRefreshToOtherRoutesOrOrigins() = runBlocking {
+        custody.begin(1)
+        custody.commit(1, pair(), true)
+        val jar = custody.requestJar(1, true, AuthCookieCustody.LOGOUT_PATH)
+        assertEquals(listOf("refresh_token"), jar.loadForRequest(origin.resolve("/logout")!!).map { it.name })
+        assertTrue(jar.loadForRequest(origin.resolve("/refresh")!!).isEmpty())
+        assertTrue(jar.loadForRequest(origin.resolve("/login")!!).isEmpty())
+        assertTrue(jar.loadForRequest("https://other.example.test/logout".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("http://auth.example.test/logout".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("https://auth.example.test:8443/logout".toHttpUrl()).isEmpty())
+    }
+
     @Test fun cancellationAfterPersistenceStartsCompletesCommitBeforePropagation() = kotlinx.coroutines.test.runTest {
         val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
         val release = kotlinx.coroutines.CompletableDeferred<Unit>()

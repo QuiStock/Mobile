@@ -18,6 +18,8 @@ import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ActivityMainBinding
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.presentation.profile.LogoutProgressDialog
+import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -27,6 +29,9 @@ class MainActivity : AppCompatActivity() {
     val binding: ActivityMainBinding get() = _binding!!
 
     private val sessionViewModel: SessionViewModel by viewModel()
+    private val logoutBackBlocker = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = Unit
+    }
     private val recoveryBack = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() { /* Protected navigation remains hidden until recovery. */ }
     }
@@ -40,6 +45,7 @@ class MainActivity : AppCompatActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
         setContentView(binding.root)
+        onBackPressedDispatcher.addCallback(this, logoutBackBlocker)
         onBackPressedDispatcher.addCallback(this, recoveryBack)
         binding.sessionRecoveryRetry.setOnClickListener { sessionViewModel.retrySession() }
 
@@ -58,24 +64,7 @@ class MainActivity : AppCompatActivity() {
                 combine(sessionViewModel.session.state, sessionViewModel.recovery) { state, recovery ->
                     state to recovery
                 }.collect { (state, recovery) ->
-                    val blocked = state is SessionState.Failure || recovery.retrying
-                    binding.navHostFragment.visibility = if (state == SessionState.Restoring || blocked) {
-                        View.INVISIBLE
-                    } else {
-                        View.VISIBLE
-                    }
-                    binding.navHostFragment.importantForAccessibility = if (blocked) {
-                        View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                    } else {
-                        View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
-                    }
-                    recoveryBack.isEnabled = blocked
-                    binding.sessionRecovery.visibility = if (blocked) View.VISIBLE else View.GONE
-                    binding.sessionRecoveryProgress.visibility = if (recovery.retrying) View.VISIBLE else View.GONE
-                    binding.sessionRecoveryRetry.isEnabled = !recovery.retrying && !recovery.retryBlocked
-                    binding.sessionRecoveryMessage.setText(
-                        sessionFailureMessage((state as? SessionState.Failure)?.reason),
-                    )
+                    renderSession(state, recovery)
                     if (!sessionViewModel.consumeNavigation(state)) return@collect
                     val destination = sessionDestination(state, nav.currentDestination?.id)
                     if (destination != null) {
@@ -84,6 +73,10 @@ class MainActivity : AppCompatActivity() {
                             Bundle().apply {
                                 putBoolean("expired", state == SessionState.Expired)
                                 putBoolean("unexpected", state == SessionState.LocalFailure)
+                                putBoolean(
+                                    LogoutRemoteWarningDialog.ARGUMENT,
+                                    state is SessionState.LoggedOut && !state.remoteConfirmed,
+                                )
                             },
                             navOptions {
                                 popUpTo(R.id.nav_graph) { inclusive = true }
@@ -93,6 +86,36 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun renderSession(state: SessionState, recovery: SessionRecoveryUiState) {
+        val logoutBlocked = state == SessionState.LoggingOut || state is SessionState.LogoutFailed
+        val recovering = state is SessionState.Failure || (recovery.retrying && !logoutBlocked &&
+            state !is SessionState.LoggedOut)
+        val blocked = logoutBlocked || recovering || state == SessionState.Restoring
+        binding.navHostFragment.visibility = if (blocked) View.INVISIBLE else View.VISIBLE
+        binding.navHostFragment.importantForAccessibility = if (blocked) {
+            View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        } else {
+            View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        }
+        logoutBackBlocker.isEnabled = logoutBlocked
+        recoveryBack.isEnabled = recovering
+        binding.sessionRecovery.visibility = if (recovering) View.VISIBLE else View.GONE
+        binding.sessionRecoveryProgress.visibility = if (recovery.retrying) View.VISIBLE else View.GONE
+        binding.sessionRecoveryRetry.isEnabled = !recovery.retrying && !recovery.retryBlocked
+        binding.sessionRecoveryMessage.setText(sessionFailureMessage((state as? SessionState.Failure)?.reason))
+        renderLogoutDialog(logoutBlocked)
+    }
+
+    private fun renderLogoutDialog(blocked: Boolean) {
+        if (supportFragmentManager.isStateSaved) return
+        val existing = supportFragmentManager.findFragmentByTag(LogoutProgressDialog.TAG) as? LogoutProgressDialog
+        if (blocked && existing == null) {
+            LogoutProgressDialog().showNow(supportFragmentManager, LogoutProgressDialog.TAG)
+        } else if (!blocked) {
+            existing?.dismissNow()
         }
     }
 }

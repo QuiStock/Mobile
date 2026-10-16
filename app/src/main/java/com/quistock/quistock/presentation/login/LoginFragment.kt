@@ -10,6 +10,7 @@ import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.databinding.FragmentLoginBinding
 import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginFragment : Fragment() {
@@ -37,6 +38,12 @@ class LoginFragment : Fragment() {
         arguments?.remove("expired")
         arguments?.remove("unexpected")
         observeState()
+        if (arguments?.getBoolean(LogoutRemoteWarningDialog.ARGUMENT) == true) {
+            if (childFragmentManager.findFragmentByTag(LogoutRemoteWarningDialog.TAG) == null) {
+                LogoutRemoteWarningDialog().show(childFragmentManager, LogoutRemoteWarningDialog.TAG)
+            }
+            arguments?.remove(LogoutRemoteWarningDialog.ARGUMENT)
+        }
     }
 
     override fun onDestroyView() {
