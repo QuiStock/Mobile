@@ -8,6 +8,7 @@ import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.Logger
+import com.quistock.quistock.domain.port.LogoutRequest
 import com.quistock.quistock.domain.port.StoredSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,6 +22,7 @@ import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
@@ -42,6 +44,41 @@ class RetrofitAuthRepository(
         RestoreCookies.AVAILABLE -> StoredSession.AVAILABLE
     }
     override fun retryDelayMillis() = (retryAt - now()).coerceAtLeast(0)
+
+    override fun prepareLogout(generation: Long): LogoutRequest {
+        // Capture before local revocation. Never commit logout responses into live custody.
+        var captured: StagedAuthCookieJar? = custody.requestJar(generation, true, AuthCookieCustody.LOGOUT_PATH)
+        val used = AtomicBoolean(false)
+        return LogoutRequest {
+            check(used.compareAndSet(false, true)) { "Logout request already consumed" }
+            val jar = requireNotNull(captured)
+            captured = null
+            withContext(Dispatchers.IO) {
+                val call = createApi(jar).logout()
+                call.timeout().timeout(LOGOUT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                try {
+                    val response = call.execute()
+                    try {
+                        val confirmed = response.code() == HttpURLConnection.HTTP_NO_CONTENT
+                        if (confirmed && listOf(AuthCookieCustody.ACCESS, AuthCookieCustody.REFRESH).any { name ->
+                                jar.received().none { it.name == name && it.expiresAt <= now() }
+                            }
+                        ) {
+                            logger?.info("Logout response missing cookie expiry", mapOf("operation" to "auth_logout"))
+                        }
+                        confirmed
+                    } finally {
+                        response.errorBody()?.close()
+                    }
+                } catch (_: IOException) {
+                    false
+                } finally {
+                    // Drops references to the captured refresh when the operation finishes.
+                    call.cancel()
+                }
+            }
+        }
+    }
 
     override suspend fun login(email: String, password: String, generation: Long): LoginResult =
         when (request(generation, LoginRequest(email, password))) {
@@ -92,6 +129,7 @@ class RetrofitAuthRepository(
     }
 
     companion object {
+        private const val LOGOUT_TIMEOUT_SECONDS = 10L
         private const val MILLIS_PER_SECOND = 1000L
     }
 }

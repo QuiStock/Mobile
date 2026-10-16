@@ -12,6 +12,9 @@ interface AuthApi {
     @GET(AuthCookieCustody.CSRF_PATH)
     fun csrf(): Call<CsrfResponse>
 
+    @POST(AuthCookieCustody.LOGOUT_PATH)
+    fun logout(): Call<Unit>
+
     @POST("/login")
     fun login(@Body request: LoginRequest): Call<Unit>
 

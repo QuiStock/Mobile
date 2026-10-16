@@ -58,7 +58,7 @@ class AuthCookieCustody(
 
     fun isCurrent(expected: Long): Boolean = generation == expected
 
-    fun requestJar(expected: Long, refresh: Boolean): StagedAuthCookieJar {
+    fun requestJar(expected: Long, refresh: Boolean, path: String = REFRESH_PATH): StagedAuthCookieJar {
         val captured = state
         return StagedAuthCookieJar(
             origin,
@@ -70,6 +70,7 @@ class AuthCookieCustody(
                 emptyList()
             },
             now,
+            path,
         )
     }
 
@@ -131,6 +132,7 @@ class AuthCookieCustody(
         const val REFRESH_PATH = "/refresh"
         const val CSRF_PATH = "/csrf"
         const val CSRF = "AUTH-XSRF-TOKEN"
+        const val LOGOUT_PATH = "/logout"
     }
 }
 
@@ -140,6 +142,7 @@ class StagedAuthCookieJar(
     private val origin: HttpUrl,
     private val initial: List<Cookie>,
     private val now: () -> Long,
+    private val requestPath: String = AuthCookieCustody.REFRESH_PATH,
 ) : CookieJar {
     private val received = mutableListOf<Cookie>()
     private val csrf = mutableListOf<Cookie>()
@@ -157,7 +160,9 @@ class StagedAuthCookieJar(
         }
     }
     override fun loadForRequest(url: HttpUrl): List<Cookie> =
-        if (sameOrigin(url) && url.encodedPath == origin.resolve(AuthCookieCustody.REFRESH_PATH)?.encodedPath) {
+        if (requestPath in listOf(AuthCookieCustody.REFRESH_PATH, AuthCookieCustody.LOGOUT_PATH) &&
+            sameOrigin(url) && url.encodedPath == origin.resolve(requestPath)?.encodedPath
+        ) {
             initial.filter { it.expiresAt > now() && it.matches(url) } +
                 synchronized(received) { csrf.filter { eligibleCsrf(it, url) }.takeIf { it.size == 1 }.orEmpty() }
         } else {
