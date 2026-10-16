@@ -1,0 +1,10 @@
+<resources>
+    <item type="id" name="demo_register" />
+    <string name="demo_app_name">QuiStock Demo</string>
+    <string name="demo_banner">Demonstração · nada é enviado ou salvo</string>
+    <string name="demo_operator">Visão operacional</string>
+    <string name="demo_manager">Visão gerencial</string>
+    <string name="demo_register">Criar conta</string>
+    <string name="demo_unavailable">Ação ainda sem funcionalidade nesta demonstração.</string>
+    <string name="demo_confirm">Continuar com este exemplo? Nenhum dado será enviado.</string>
+</resources>

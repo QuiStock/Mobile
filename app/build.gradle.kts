@@ -213,6 +213,12 @@ android {
     }
 
     buildTypes {
+        create("demo") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".demo"
+            versionNameSuffix = "-demo"
+            matchingFallbacks += "debug"
+        }
         release {
             optimization {
                 enable = true
@@ -233,6 +239,18 @@ android {
     buildFeatures {
         resValues = true
         viewBinding = true
+    }
+
+    if (providers.gradleProperty("demoTests").isPresent) {
+        testBuildType = "demo"
+        sourceSets.getByName("androidTest").setRoot("src/demoAndroidTest")
+    }
+}
+
+// The offline design preview has no Firebase configuration or telemetry.
+tasks.configureEach {
+    if (name == "processDemoGoogleServices" || (name.contains("Crashlytics") && name.contains("Demo"))) {
+        enabled = false
     }
 }
 
