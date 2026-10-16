@@ -57,6 +57,15 @@ class ProfileLogoutTests {
         }
     }
 
+    @Test fun headerPhotoOpensProfileAndBackReturnsToExistingHome() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            openProfile(scenario)
+            scenario.onActivity { assertEquals(R.id.profileFragment, nav(it).currentDestination?.id) }
+            onView(withId(R.id.profile_back_control)).perform(click())
+            scenario.onActivity { assertEquals(R.id.homeFragment, nav(it).currentDestination?.id) }
+        }
+    }
+
     @Test fun recreationKeepsOneLogoutAndFailureWarningAppearsOverClearedLoginStack() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             openProfile(scenario)
@@ -80,8 +89,8 @@ class ProfileLogoutTests {
     private fun openProfile(scenario: ActivityScenario<MainActivity>) {
         scenario.onActivity {
             nav(it).navigate(R.id.homeFragment)
-            nav(it).navigate(R.id.profileFragment)
         }
+        onView(withId(R.id.btnPerfil)).perform(click())
     }
 
     private fun nav(activity: MainActivity) =

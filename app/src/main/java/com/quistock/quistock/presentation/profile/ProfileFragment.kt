@@ -19,6 +19,9 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding?.profileBackControl?.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
         binding?.profileHelpRow?.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_faqFragment)
         }

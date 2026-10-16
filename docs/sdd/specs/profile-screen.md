@@ -17,12 +17,14 @@ Store operators need a profile page to access account, store, and help areas and
 
 When the profile destination opens, it displays the provided profile content and visual style. The edit-profile destination displays the provided form fields and controls. The photo control is identified for the camera handler, which is implemented separately. Profile/edit navigation routes are declared, with stable IDs for future click handlers.
 
+Follow-up approved by the requester on 2026-10-16: tapping the Home header photo (`btnPerfil`) opens Profile through the existing action. The Profile back control returns to the existing Home destination without adding another Home entry. Repeated taps after leaving Home must not navigate again. This follow-up wires only this entry and return path; other unspecified profile actions remain outside its scope.
+
 ## Acceptance criteria and evidence
 
 | ID | Observable given / when / then | Planned test or check |
 | --- | --- | --- |
 | AC-01 | Given the profile destination opens, when the layout renders, then the store header, profile details, account/store/help rows, and edit/sign-out controls appear in the supplied style. | Manual visual check; no screenshot test is established for static layouts. |
-| AC-02 | Given Home is active, when the profile destination is requested, then navigation can open Profile; the back route returns to Home. | Inspect the Navigation graph; manual navigation check after handlers are wired. |
+| AC-02 | Given Home is active, when the header photo is tapped, then Profile opens; tapping its back control returns to the existing Home entry. | Instrumented `ProfileLogoutTests.headerPhotoOpensProfileAndBackReturnsToExistingHome`; logout tests also enter through the photo. Written, not executed. |
 | AC-03 | Given Profile is active, when the edit-profile destination is requested, then the screen shows the photo control, full-name and email fields, save, and cancel controls. | Manual visual check; camera and save behavior are outside this scope. |
 
 ## Technical impact
@@ -39,3 +41,5 @@ Adds profile and edit-profile layouts, minimal fragment shells, strings, and nav
 ## Implementation outcome
 
 To be completed after implementation and review.
+
+2026-10-16 follow-up: connected the Home photo and Profile back control, using ViewBinding and the existing Navigation graph. Updated logout instrumentation to use the actual entry control. Runtime checks and Gradle were not executed, following the requester's standing instruction; unrelated profile decisions remain open.
