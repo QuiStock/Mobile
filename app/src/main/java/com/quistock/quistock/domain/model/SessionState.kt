@@ -1,6 +1,9 @@
 package com.quistock.quistock.domain.model
 
 sealed interface SessionState {
+    data object LoggingOut : SessionState
+    data class LogoutFailed(val remoteConfirmed: Boolean) : SessionState
+    data class LoggedOut(val remoteConfirmed: Boolean) : SessionState
     data object Restoring : SessionState
     data object LocalFailure : SessionState
     data object SignedOut : SessionState

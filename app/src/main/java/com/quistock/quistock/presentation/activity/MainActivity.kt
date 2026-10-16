@@ -106,6 +106,10 @@ internal fun sessionFailureMessage(reason: SessionFailure?): Int = when (reason)
 }
 
 internal fun sessionDestination(state: SessionState, current: Int?): Int? = when (state) {
+    SessionState.LoggingOut, is SessionState.LogoutFailed -> null
+
+    is SessionState.LoggedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+
     SessionState.Restoring -> null
 
     SessionState.SignedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment

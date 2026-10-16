@@ -1,0 +1,46 @@
+package com.quistock.quistock.data.remote.auth
+
+import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class LogoutTransportTests {
+    @Test fun logoutUsesOnlyCapturedRefreshAndDoesNotCommitResponseCookies() = runTest {
+        AuthHttpFixture().use { f ->
+            f.login()
+            val request = f.repository.prepareLogout(f.session.snapshot().generation)
+            f.repository.begin(100)
+            f.repository.clear(100)
+            f.auth.enqueue(cookieResponse("should-not-install").setResponseCode(204))
+            assertTrue(request.execute())
+            val sent = f.auth.takeRequest()
+            assertEquals("POST", sent.method)
+            assertEquals("/logout", sent.path)
+            assertEquals(0L, sent.bodySize)
+            assertEquals("refresh_token=old-refresh", sent.getHeader("Cookie"))
+            assertNull(sent.getHeader("Authorization"))
+            assertFalse(f.repository.hasAccess(100))
+        }
+    }
+
+    @Test fun missingRefreshStillCallsLogoutAndAccepts204WithoutSetCookie() = runTest {
+        AuthHttpFixture().use { f ->
+            f.auth.enqueue(MockResponse().setResponseCode(204))
+            assertTrue(f.repository.prepareLogout(0).execute())
+            assertNull(f.auth.takeRequest().getHeader("Cookie"))
+        }
+    }
+
+    @Test fun remoteFailureDoesNotInstallCookiesOrRetry() = runTest {
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(cookieResponse("rejected").setResponseCode(429).addHeader("Retry-After", "60"))
+            assertFalse(f.repository.prepareLogout(f.session.snapshot().generation).execute())
+            assertEquals(2, f.auth.requestCount)
+        }
+    }
+}

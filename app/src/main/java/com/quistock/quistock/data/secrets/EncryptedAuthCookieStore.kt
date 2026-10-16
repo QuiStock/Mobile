@@ -45,10 +45,15 @@ class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
 
     override suspend fun revoke() = withContext(Dispatchers.IO) {
         // Key destruction precedes disk removal: stale ciphertext cannot restore a revoked credential.
-        revokeCredential(
-            { KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry(ALIAS) },
-            { dataStore.edit { it.remove(recordKey) } },
-        )
+        val current = runCatching {
+            revokeCredential(
+                { KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry(ALIAS) },
+                { dataStore.edit { it.remove(recordKey) } },
+            )
+        }
+        val legacy = runCatching { removeLegacyAuthCredential(context) }
+        current.getOrThrow()
+        legacy.getOrThrow()
         Unit
     }
 
