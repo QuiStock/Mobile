@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     jacoco
 }
 
@@ -261,6 +262,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
+    implementation(libs.play.services.maps)
 
     // Navigation and lifecycle
     implementation(libs.androidx.navigation.fragment.ktx)
