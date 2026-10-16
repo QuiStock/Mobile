@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph" app:startDestination="@id/splashFragment">
+  <fragment android:id="@+id/splashFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/app_name">
+    <action android:id="@+id/action_splashFragment_to_onboardingFragment" app:destination="@id/onboardingFragment" app:popUpTo="@id/splashFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_splash" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/onboardingFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/onboarding_welcome">
+    <action android:id="@+id/action_onboardingFragment_to_loginFragment" app:destination="@id/loginFragment" app:popUpTo="@id/onboardingFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_onboarding" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/loginFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/Login">
+    <action android:id="@+id/action_loginFragment_to_cadastroPessoalFragment" app:destination="@id/cadastroPessoalFragment" />
+    <action android:id="@+id/action_loginFragment_to_homeFragment" app:destination="@id/homeFragment" app:popUpTo="@id/loginFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_login" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/homeFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/home">
+    <action android:id="@+id/action_homeFragment_to_interferencesFragment" app:destination="@id/interferencesFragment" />
+    <action android:id="@+id/action_homeFragment_to_orderFragment" app:destination="@id/orderFragment" />
+    <action android:id="@+id/action_homeFragment_to_promotionFragment" app:destination="@id/promotionFragment" />
+    <action android:id="@+id/action_homeFragment_to_productControlFragment" app:destination="@id/productControlFragment" />
+    <action android:id="@+id/action_homeFragment_to_employeeFragment" app:destination="@id/employeeFragment" />
+    <action android:id="@+id/action_homeFragment_to_chatbotFragment" app:destination="@id/chatbotFragment" />
+    <action android:id="@+id/action_homeFragment_to_notificationsFragment" app:destination="@id/notificationsFragment" />
+    <action android:id="@+id/action_homeFragment_to_profileFragment" app:destination="@id/profileFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_home" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/profileFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/profile_title">
+    <action android:id="@+id/action_profileFragment_to_homeFragment" app:destination="@id/homeFragment" app:popUpTo="@id/homeFragment" app:popUpToInclusive="false" />
+    <action android:id="@+id/action_profileFragment_to_faqFragment" app:destination="@id/faqFragment" />
+    <action android:id="@+id/action_profileFragment_to_editProfileFragment" app:destination="@id/editProfileFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_profile" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/faqFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/help_faq_label">
+    <action android:id="@+id/action_faqFragment_to_profileFragment" app:destination="@id/profileFragment" app:popUpTo="@id/profileFragment" app:popUpToInclusive="false" />
+    <action android:id="@+id/action_faqFragment_to_contactFragment" app:destination="@id/contactFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_faq" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/contactFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/help_contact_title">
+    <action android:id="@+id/action_contactFragment_to_faqFragment" app:destination="@id/faqFragment" app:popUpTo="@id/faqFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_contact" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/editProfileFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/profile_title">
+    <action android:id="@+id/action_editProfileFragment_to_profileFragment" app:destination="@id/profileFragment" app:popUpTo="@id/profileFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_edit_profile" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/notificationsFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/notifications_title">
+    <action android:id="@+id/action_notificationsFragment_to_homeFragment" app:destination="@id/homeFragment" app:popUpTo="@id/homeFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_notifications" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/chatbotFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Chatbot">
+    <argument android:name="layout" android:defaultValue="@layout/fragment_chatbot" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/orderFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Criar pedido">
+    <action android:id="@+id/action_orderFragment_to_orderSentFragment" app:destination="@id/orderSentFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_order" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/promotionFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Criar promoção">
+    <action android:id="@+id/action_promotionFragment_to_promoSentFragment" app:destination="@id/promoSentFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_promotion" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/orderSentFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Pedido enviado">
+    <action android:id="@+id/action_orderSentFragment_to_interferencesFragment" app:destination="@id/interferencesFragment" app:popUpTo="@id/interferencesFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_order_sent" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/promoSentFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Promoção enviada">
+    <action android:id="@+id/action_promoSentFragment_to_interferencesFragment" app:destination="@id/interferencesFragment" app:popUpTo="@id/interferencesFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_promo_sent" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/interferencesFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Interferências">
+    <argument android:name="layout" android:defaultValue="@layout/fragment_interferences" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/managerInterferencesFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Interferências (Gerente)">
+    <action android:id="@+id/action_managerInterferencesFragment_to_employeeFragment" app:destination="@id/employeeFragment" />
+    <action android:id="@+id/action_managerInterferencesFragment_to_homeFragment" app:destination="@id/homeFragment" />
+    <action android:id="@+id/action_managerInterferencesFragment_to_managerPromotionDetailFragment" app:destination="@id/managerPromotionDetailFragment" />
+    <action android:id="@+id/action_managerInterferencesFragment_to_managerOrderDetailFragment" app:destination="@id/managerOrderDetailFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_manager_interferences" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/managerPromotionDetailFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Criar promoção">
+    <action android:id="@+id/action_managerPromotionDetailFragment_to_managerInterferencesFragment" app:destination="@id/managerInterferencesFragment" app:popUpTo="@id/managerInterferencesFragment" app:popUpToInclusive="false" />
+    <action android:id="@+id/action_managerPromotionDetailFragment_to_managerPromoApprovedFragment" app:destination="@id/managerPromoApprovedFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_manager_promotion_detail" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/managerOrderDetailFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Criar pedido">
+    <action android:id="@+id/action_managerOrderDetailFragment_to_managerInterferencesFragment" app:destination="@id/managerInterferencesFragment" app:popUpTo="@id/managerInterferencesFragment" app:popUpToInclusive="false" />
+    <action android:id="@+id/action_managerOrderDetailFragment_to_managerOrderApprovedFragment" app:destination="@id/managerOrderApprovedFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_manager_order_detail" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/managerPromoApprovedFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Promoção aprovada">
+    <action android:id="@+id/action_managerPromoApprovedFragment_to_managerInterferencesFragment" app:destination="@id/managerInterferencesFragment" app:popUpTo="@id/managerInterferencesFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_manager_promo_approved" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/managerOrderApprovedFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Pedido aprovado">
+    <action android:id="@+id/action_managerOrderApprovedFragment_to_managerInterferencesFragment" app:destination="@id/managerInterferencesFragment" app:popUpTo="@id/managerInterferencesFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_manager_order_approved" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/productControlFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Controle de produtos">
+    <action android:id="@+id/action_productControlFragment_to_productDetailFragment" app:destination="@id/productDetailFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_product_control" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/productDetailFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Detalhes do produto">
+    <argument android:name="layout" android:defaultValue="@layout/fragment_product_detail" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/employeeFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Funcionários">
+    <action android:id="@+id/action_employeeFragment_to_employeeDetailFragment" app:destination="@id/employeeDetailFragment" />
+    <action android:id="@+id/action_employeeFragment_to_employeeProfileFragment" app:destination="@id/employeeProfileFragment" />
+    <action android:id="@+id/action_employeeFragment_to_managerInterferencesFragment" app:destination="@id/managerInterferencesFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_employee" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/employeeDetailFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Cadastro de funcionário">
+    <argument android:name="layout" android:defaultValue="@layout/fragment_employee_detail" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/employeeProfileFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Perfil do funcionário">
+    <action android:id="@+id/action_employeeProfileFragment_to_employeeDetailFragment" app:destination="@id/employeeDetailFragment" />
+    <action android:id="@+id/action_employeeProfileFragment_to_editEmployeeFragment" app:destination="@id/editEmployeeFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_employee_profile" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/editEmployeeFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Editar funcionário">
+    <action android:id="@+id/action_editEmployeeFragment_to_employeeProfileFragment" app:destination="@id/employeeProfileFragment" app:popUpTo="@id/employeeProfileFragment" app:popUpToInclusive="false" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_edit_employee" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/cadastroPessoalFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="@string/Cadastro">
+    <action android:id="@+id/action_cadastroPessoalFragment_to_loginFragment" app:destination="@id/loginFragment" app:launchSingleTop="true" app:popUpTo="@id/loginFragment" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_cadastro_pessoal" app:argType="reference" />
+  </fragment>
+  <fragment android:id="@+id/loadingFragment" android:name="com.quistock.quistock.app.navigation.demo.DemoPageFragment" android:label="Carregando">
+    <action android:id="@+id/action_loadingFragment_to_homeFragment" app:destination="@id/homeFragment" app:popUpTo="@id/loadingFragment" app:popUpToInclusive="true" />
+    <argument android:name="layout" android:defaultValue="@layout/fragment_loading" app:argType="reference" />
+  </fragment>
+</navigation>
