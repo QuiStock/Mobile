@@ -136,6 +136,27 @@ limit only re-enables the action and does not trigger a request.
 
 ## Useful commands
 
+### Design preview
+
+The `demo` build installs as **QuiStock Demo**, alongside the regular app. Build it with
+`./gradlew assembleDemo` (Windows: `.\gradlew.bat assembleDemo`). The APK is generated at
+`app/build/outputs/apk/demo/app-demo.apk`.
+
+The preview reuses the 28 existing page layouts. It starts at Splash, continues through
+Onboarding and Login, then opens Home without credentials. **Criar conta** opens the personal
+registration example. The persistent top button switches between operational and manager
+views and returns to Home. Use the app buttons and bottom bars to explore each flow.
+
+The banner identifies all results as examples. Forms can advance empty; confirmation dialogs
+only navigate. Undefined actions display a message. The preview has a separate application ID,
+no internet permission, no Firebase initialization, and no real session or business persistence.
+Its routing code lives entirely in `app/src/demo`; debug and release keep the real feature fragments.
+
+Run the preview's instrumented journeys with
+`./gradlew -PdemoTests connectedDemoAndroidTest` on an emulator/device. Without that property,
+the regular `connectedDebugAndroidTest` suite remains selected. See
+[the navigation specification](docs/sdd/specs/design-preview-navigation.md) for scope and evidence.
+
 - Format code: `./gradlew spotlessApply`
 - Automatically fix code smells: `./gradlew detekt --auto-correct`
 - Run unit tests: `./gradlew testDebugUnitTest`

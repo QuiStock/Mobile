@@ -1,7 +1,9 @@
 # Navegação do protótipo para avaliação de design
 
-**Status:** Complete  
-**Issue:** none  
+**Status:** Complete
+
+**Issue:** none
+
 **Product decision owner:** Open — equipe de design / solicitante
 
 ## Problem and goal
