@@ -12,11 +12,11 @@ import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.StoredSession
 import com.quistock.quistock.domain.port.UserPreferences
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -93,7 +93,11 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
         val cleared = clearLogoutData(retry.first)
         mutex.withLock {
             if (current.generation == retry.first) {
-                mutableState.value = if (cleared) SessionState.LoggedOut(retry.second) else SessionState.LogoutFailed(retry.second)
+                mutableState.value = if (cleared) {
+                    SessionState.LoggedOut(retry.second)
+                } else {
+                    SessionState.LogoutFailed(retry.second)
+                }
             }
         }
     }

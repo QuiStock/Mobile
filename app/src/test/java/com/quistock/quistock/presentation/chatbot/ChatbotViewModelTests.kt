@@ -22,6 +22,29 @@ import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatbotViewModelTests {
+    @Test
+    fun `logout clears conversation and cancels pending legacy work`() = runTest {
+        val state = kotlinx.coroutines.flow.MutableStateFlow<com.quistock.quistock.domain.model.SessionState>(
+            com.quistock.quistock.domain.model.SessionState.Active,
+        )
+        val session = mockk<com.quistock.quistock.domain.usecase.SessionUseCase>()
+        every { session.state } returns state
+        every { session.snapshot() } returns com.quistock.quistock.domain.model.SessionSnapshot(1, true)
+        every { userPreferences.getUserId() } returns "synthetic-user"
+        coEvery { sendMessageToChatbot(any()) } coAnswers { awaitCancellation() }
+        val guarded = ChatbotViewModel(sendMessageToChatbot, userPreferences, session)
+        guarded.sendMessage("synthetic-message")
+        runCurrent()
+        guarded.uiState.value shouldBe ChatbotUiState.Loading
+        state.value = com.quistock.quistock.domain.model.SessionState.LoggingOut
+        runCurrent()
+        guarded.answer.value shouldBe null
+        guarded.uiState.value shouldBe ChatbotUiState.Idle
+        guarded.sendMessage("another-message")
+        guarded.uiState.value shouldBe ChatbotUiState.Error.NOT_LOGGED_IN
+        coVerify(exactly = 1) { sendMessageToChatbot(any()) }
+    }
+
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 

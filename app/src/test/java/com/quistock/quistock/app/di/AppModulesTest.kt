@@ -50,6 +50,7 @@ class AppModulesTest {
                         com.quistock.quistock.data.remote.auth.MemoryCookieStore()
                     }
                     single<Logger> { mockk(relaxed = true) }
+                    single<com.quistock.quistock.domain.port.UserPreferences> { mockk(relaxed = true) }
                 },
             )
         }

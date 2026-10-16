@@ -46,6 +46,17 @@ class SessionViewModel(val session: SessionUseCase) : ViewModel() {
         }
     }
 
+    private var logoutJob: Job? = null
+
+    fun logout() {
+        if (logoutJob?.isActive == true) return
+        logoutJob = viewModelScope.launch { session.logout() }
+    }
+
+    fun retryLogoutCleanup() {
+        if (logoutJob?.isActive == true) return
+        logoutJob = viewModelScope.launch { session.retryLogoutCleanup() }
+    }
     fun consumeNavigation(state: SessionState): Boolean {
         if (lastNavigationState == state) return false
         lastNavigationState = state
