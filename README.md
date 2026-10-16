@@ -125,7 +125,7 @@ Both clients disable redirects and connection retries. Renewal happens on demand
 Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
 CORE_BASE_URL remains a build environment variable with an invalid dummy default.
 Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
-the cookie jar authorizes credential sending only to /refresh on the configured Auth origin.
+The cookie jar isolates /refresh and /logout attempts on the configured Auth origin.
 CSRF is received only from /csrf on that origin. Cookie path metadata remains unchanged.
 
 Local revocation destroys a dedicated Keystore key before removing the encrypted refresh
@@ -134,6 +134,15 @@ a local error and blocks the current session; durable revocation cannot be promi
 local mechanisms fail. Unreadable ciphertext never restores a session. Other secret keys are
 unaffected. A valid `Retry-After` temporarily disables manual retry after 429; reaching the
 limit only re-enables the action and does not trigger a request.
+
+Profile logout asks for confirmation, immediately blocks the session, and revokes local credentials
+independently of one remote `POST /logout` attempt with a ten-second total HTTP timeout. It removes
+the legacy refresh and stored user identifier, clears session conversation state, and returns to
+Login with the protected back stack removed. Local cleanup failure keeps protected content hidden
+and offers local-only retry; remote failure after local success shows a warning on Login. The
+activity ViewModel retains the operation across screen recreation. Logout responses never install
+cookies into a newer session, and HTTP follow-ups cannot repeat the remote attempt. See the
+[profile logout specification](docs/sdd/specs/profile-logout.md) for decisions and pending execution checks.
 
 ### Tests
 
