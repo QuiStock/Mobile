@@ -1,6 +1,6 @@
 # Logout na tela de perfil via DS_Auth
 
-**Status:** Ready for implementation  
+**Status:** Complete — implementação entregue; verificações de execução pendentes
 **Issue:** none  
 **Product decision owner:** Solicitante, conforme decisões registradas nesta conversa
 
@@ -8,7 +8,7 @@
 
 O perfil apresenta “Sair da conta” (`profile_sign_out_button`), mas `ProfileFragment` não trata esse clique. Permitir encerrar a sessão do aplicativo e solicitar a revogação remota conforme DS_Auth, sem permitir que respostas antigas restaurem a sessão encerrada.
 
-Fonte do pedido: solicitante em 16/10/2026, com a condição explícita de que esta spec só pode ser implementada quando não houver mais pontos em aberto. Esta entrega prepara documentação; não autoriza implementação.
+Fonte do pedido: solicitante em 16/10/2026, com a condição explícita de que esta spec só pode ser implementada quando não houver mais pontos em aberto. Após resolução de todas as decisões, o solicitante autorizou implementação e commits em inglês, sem testes ao final nem verificações dependentes de Gradle.
 
 ### Fontes consultadas
 
@@ -72,7 +72,7 @@ Critérios planejados com decisões concluídas. Aplicar Red–Green–Refactor 
 
 - `presentation/profile`: conectar o controle via ViewBinding e ViewModel, seguindo os padrões existentes; recursos para estados aprovados e navegação. Views não acessam infraestrutura.
 - `domain`: estender a operação de sessão/porta existente conforme necessidade concreta, mantendo o domínio Kotlin puro e a proteção por geração. Não confundir expiração automática com logout voluntário.
-- `data/remote/auth`: adicionar operação remota e permitir refresh cookie na rota de logout aprovada. Hoje `AuthApi` só declara login/refresh e `StagedAuthCookieJar` só autoriza envio em `/refresh`.
+- `data/remote/auth`: adicionar operação remota e permitir refresh cookie na rota de logout aprovada. Antes desta entrega, `AuthApi` só declarava login/refresh e `StagedAuthCookieJar` só autorizava envio em `/refresh`.
 - `data/secrets`: reutilizar a revogação existente de chave dedicada e registro, sem afetar outras chaves. Nenhuma credencial em logs, eventos, testes com dados reais ou modelos de UI.
 - Koin e grafo de navegação: ajustar somente o necessário. Manter clientes Core/chatbot isolados, sem redirects ou retries automáticos de conexão.
 - Ambiente: validação futura com serviço de teste e configuração aprovada por ambiente; não registrar URLs privadas ou segredos. Remotamente altera a família de refresh no MongoDB via DS_Auth; localmente altera apenas a sessão e sua persistência. Não excluir dados de negócio sem decisão explícita em O-05.
@@ -105,4 +105,19 @@ P-03, P-04 e P-05 aprovadas pelo solicitante em 16/10/2026; O-06 resolvido por s
 - **P-05 / O-05:** a inspeção encontrou refresh criptografado em DataStore, refresh legado removido por `LegacyAuthCleanup`, `AndroidUserPreferences` com identificador persistido e `ChatbotViewModel` com resposta em memória/cancelamento de conversa. Não foram encontrados Room ou cache de negócio persistido nas buscas do código principal; isso não constitui auditoria de armazenamento de SDKs. Proposta: revogar refresh atual, remover refresh legado e somente a chave do identificador de usuário, além de limpar estados/conversa e cancelar trabalho da sessão. Não apagar todo SharedPreferences, dados de negócio, preferências do aparelho ou dados de Analytics/Crashlytics. Falha ao remover identificador/credencial legado também impede alegar limpeza local concluída e oferece a nova tentativa local aprovada. Confirmar remoção durável; não depender apenas de gravação assíncrona sem resultado. Não alterar o protocolo legado do chatbot nesta entrega.
 - **P-06 / O-06:** o Mobile declara login/refresh root-relative e restringe cookies ao caminho de refresh; o README DS_Auth estabelece rotas raiz e prefixos como configuração de deployment. Proposta de escopo: logout usa `/logout` na mesma origem Auth configurada, com refresh somente em `/refresh` e `/logout`, preservando Domain/Path/Secure e isolamento de origem. Esta entrega suportará acesso direto ou gateway que exponha essas rotas na raiz; suporte a prefixo público fica fora de escopo e exige spec própria. Validar em ambiente controlado sem publicar URLs reais. O solicitante confirmou posteriormente que o ambiente remoto não possui prefixo; essa declaração resolve a escolha de roteamento desta entrega. A verificação HTTP real permanece como evidência da implementação, não como decisão de produto pendente.
 
-Spec preparada e decisões concluídas, sem pontos em aberto conhecidos. Pronta para implementação futura; esta entrega continua restrita à documentação. Nenhum código de produção ou teste alterado. Testes de aplicação não executados nesta entrega documental. Evidências de AC-01 a AC-12 devem ser preenchidas na implementação. Qualquer nova decisão em aberto descoberta deve voltar a bloquear a implementação conforme a regra obrigatória acima.
+### Entrega da implementação — 16/10/2026
+
+Todas as decisões foram concluídas antes de implementar. Entregues operação de logout com captura privada e tentativa única, timeout HTTP total de 10 segundos, limpeza local independente da rede, bloqueio por geração, recuperação local, diálogos acessíveis, navegação para Login com limpeza da pilha e limpeza da identidade/conversa legadas. O transporte também bloqueia follow-ups HTTP de logout, inclusive eventual 503 com Retry-After: 0, sem alterar o tratamento das outras operações.
+
+Os testes foram escritos, mas não executados. A restrição explícita do solicitante impediu executar a fase Red/Green e as verificações via Gradle; não há evidência de compilação, aprovação de testes, cobertura ou gates. Nenhum gate foi alterado. Revisão estática, `git diff --check` e leitura XML dos recursos foram as verificações realizadas.
+
+| Critérios | Cobertura adicionada ou referência | Estado da evidência |
+| --- | --- | --- |
+| AC-01, AC-08 | `ProfileLogoutTests` (instrumentado), `SessionLogoutNavigationTests` | Escritos, não executados; cancelamento, recriação, aviso remoto e pilha. |
+| AC-02, AC-03, AC-04, AC-05, AC-11 | `LogoutTransportTests`, `AuthCookieCustodyTests`, `SessionLogoutTests` | Escritos, não executados; rota/origem, cookies, 204, ausência/expiração, 429/503, timeout, concorrência e limpeza independente. |
+| AC-06, AC-12 | `LogoutPersistenceTests` (instrumentado), `SessionLogoutTests`, `ChatbotViewModelTests` | Escritos, não executados; recriação do armazenamento, remoção seletiva, falhas e cancelamento. Reinício real do processo ainda exige verificação em dispositivo. |
+| AC-07 | `SessionLogoutTests`, `LogoutTransportTests`, testes existentes `CoreSessionInterceptorTests` | Não executados; respostas antigas de login/refresh/logout e isolamento de credenciais. Concorrência real com DS_Auth ainda exige smoke. |
+| AC-09 | Implementação de foco/anúncios em `LogoutDialogs`; roteiro manual com TalkBack/teclado | Não executado; comportamento de acessibilidade requer dispositivo, não comprovado por inspeção estática. |
+| AC-10 | Smoke login → logout → refresh recusado e sessão independente preservada | Não executado; exige ambiente DS_Auth e contas de teste, sem registrar credenciais. |
+
+O status Complete descreve a entrega do código, não aprovação das verificações pendentes. Qualquer nova decisão em aberto descoberta deve voltar a bloquear implementação adicional conforme a regra obrigatória acima.
