@@ -14,6 +14,7 @@ The application requires map visualization capabilities (`MapsFragment` / `fragm
 - Integration of Google Maps Platform SDK and Secrets Gradle Plugin.
 - Fragment container layout (`fragment_maps.xml`) hosting `SupportMapFragment`.
 - `MapsFragment.kt` implementing `OnMapReadyCallback` formatted according to Spotless rules.
+- Custom dark purple map theme styling JSON (`map_style_dark_purple.json`) adhering to the app brand palette.
 
 **Out of scope:**
 - Dynamic route calculation and GPS background tracking services (to be defined in subsequent feature tasks).
