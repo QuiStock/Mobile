@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="12dp"
-    android:paddingEnd="12dp">
+    android:paddingEnd="12dp"
+    tools:background="@drawable/bg_popup_success">
     <ImageView
         android:id="@+id/statusPopupIcon"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"
+        tools:src="@drawable/ic_success" />
     <TextView
         android:id="@+id/statusPopupMessage"
         android:layout_width="0dp"
@@ -20,5 +23,6 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:textColor="#FFFFFF"
-        android:textSize="11sp" />
+        android:textSize="11sp"
+        tools:text="@string/popup_info_updated" />
 </LinearLayout>
