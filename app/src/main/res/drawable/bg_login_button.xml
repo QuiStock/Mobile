@@ -1,4 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/login_primary" />
-    <corners android:radius="8dp" />
+    <solid android:color="@color/color_violeta" />
+    <corners android:radius="@dimen/corner_radius_button_primary" />
 </shape>
