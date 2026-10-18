@@ -1,19 +1,59 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme (Dark Theme padrão QuiStock). -->
     <style name="Theme.QuiStock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar and navigation bar background and colors. -->
-        <item name="android:windowBackground">@color/login_background</item>
-        <item name="android:statusBarColor">@color/login_background</item>
-        <item name="android:navigationBarColor">@color/login_background</item>
+        <!-- Paleta da Marca -->
+        <item name="colorPrimary">@color/color_violeta</item>
+        <item name="colorPrimaryVariant">@color/color_petrolhinho</item>
+        <item name="colorOnPrimary">@color/color_branco</item>
+
+        <item name="colorSecondary">@color/color_limao</item>
+        <item name="colorSecondaryVariant">@color/color_lavana</item>
+        <item name="colorOnSecondary">@color/color_petroleo</item>
+
+        <!-- Superfícies e Janelas em Tema Escuro -->
+        <item name="android:windowBackground">@color/color_petroleo</item>
+        <item name="android:colorBackground">@color/color_petroleo</item>
+        <item name="colorSurface">@color/color_petrolhinho</item>
+        <item name="colorOnSurface">@color/color_branco</item>
+
+        <!-- Barra de Status e Navegação -->
+        <item name="android:statusBarColor">@color/color_petroleo</item>
+        <item name="android:navigationBarColor">@color/color_petroleo</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+
+        <!-- Tipografia Padrão Montserrat -->
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:fontFamily">@font/montserrat</item>
+    </style>
+
+    <!-- ================================================================= -->
+    <!-- Estilos Reutilizáveis do Design System                             -->
+    <!-- ================================================================= -->
+
+    <!-- Botão Primário Violeta (398dp max width, min 48dp, corner 17dp) -->
+    <style name="Widget.QuiStock.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/color_violeta</item>
+        <item name="android:textColor">@color/color_branco</item>
+        <item name="android:textSize">@dimen/text_size_button</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">@dimen/corner_radius_button_primary</item>
+        <item name="android:minHeight">@dimen/button_min_height</item>
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:fontFamily">@font/montserrat</item>
+    </style>
+
+    <!-- Botão de Ação nos Cards de Alertas (Corner 12dp) -->
+    <style name="Widget.QuiStock.Button.AlertAction" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/color_branco</item>
+        <item name="android:textSize">@dimen/text_size_caption</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">@dimen/corner_radius_alert_button</item>
+        <item name="strokeColor">@color/color_branco</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:minHeight">@dimen/button_alert_height</item>
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:fontFamily">@font/montserrat</item>
     </style>
 </resources>
