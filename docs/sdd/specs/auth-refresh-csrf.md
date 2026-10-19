@@ -164,3 +164,13 @@ O solicitante executou validações e informou falha. O relatório `app/build/re
 A execução de uma tentativa foi extraída para `AuthRequest`, com preparação CSRF, validação, POST e commit divididos em funções pequenas. O repositório mantém coordenação e bloqueio por Retry-After. Limites de caracteres de header receberam constantes nomeadas. Nenhuma regra de qualidade foi alterada ou suprimida para os apontamentos; o contrato HTTP e as garantias de geração/persistência foram preservados. Ajustes locais de formatação existentes foram preservados nos commits correspondentes.
 
 As correções foram incorporadas com `--amend` nos commits originais, reaplicando os descendentes. Não foram executadas novas validações ou testes nesta revisão; a ausência dos apontamentos após a refatoração ainda precisa ser confirmada por nova execução autorizada.
+
+### Ajuste após relatório instrumentado — 2026-10-19
+
+O relatório XML produzido pelo solicitante em `app/build/outputs/androidTest-results/connected/debug/` registra 30 testes, nove falhas e zero entradas `error` no XML. Cinco falhas estão em `ChatbotFragmentTests`, três em `OrderAndPromotionFragmentTests` e uma em `SessionNavigationTests`.
+
+O teste de recuperação usava apenas `withId(nav_host_fragment)`, que corresponde ao container externo da Activity e ao container interno criado pelo Navigation. O seletor agora exige também o pai `main`, preservando a asserção de conteúdo oculto antes/depois da recriação. Os overrides Koin de sessão e LoginViewModel são restaurados após cada teste de navegação.
+
+As suítes de chatbot/formulários abriam destinos protegidos sem preparar sessão. O log disponível mostra refresh real durante teste de chatbot; as falhas de interação/scroll reportam ausência de visibilidade efetiva. Uma regra compartilhada agora instala sessão sintética Active antes de abrir a Activity e restaura a instância anterior ao terminar, sem ler credenciais do aparelho nem chamar a API. As restrições Espresso e a proteção de conteúdo da aplicação permanecem intactas; layouts de produção não foram alterados.
+
+Correção restrita ao ambiente/seletor de testes, sem mudança de comportamento de produto ou contrato API. Não foi feita nova execução de testes, compilação ou outras validações por instrução do solicitante. A eliminação das nove falhas permanece não comprovada até uma próxima execução autorizada.
