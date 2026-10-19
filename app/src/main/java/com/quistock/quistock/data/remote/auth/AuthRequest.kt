@@ -84,12 +84,16 @@ internal class AuthRequest(
         )
         return when {
             !context.custody.isCurrent(generation) -> AuthOutcome.PROTOCOL to null
+
             response.code() == HTTP_TOO_MANY_REQUESTS -> {
                 context.rateLimited(response)
                 AuthOutcome.LIMIT to null
             }
+
             response.code() >= HttpURLConnection.HTTP_INTERNAL_ERROR -> AuthOutcome.SERVER to null
+
             response.code() != HttpURLConnection.HTTP_OK -> AuthOutcome.PROTOCOL to null
+
             else -> validatePreparation(response.body())
         }
     }
@@ -173,13 +177,19 @@ internal class AuthRequest(
         }.getOrNull()
         return when {
             response.code() == HttpURLConnection.HTTP_OK -> AuthOutcome.SUCCESS
+
             response.code() == HTTP_TOO_MANY_REQUESTS -> AuthOutcome.LIMIT
+
             response.code() >= HttpURLConnection.HTTP_INTERNAL_ERROR -> AuthOutcome.SERVER
+
             response.code() == HttpURLConnection.HTTP_UNAUTHORIZED &&
                 code == (if (login != null) "invalid_credentials" else "invalid_refresh_token") -> AuthOutcome.INVALID
+
             login != null && response.code() == HttpURLConnection.HTTP_FORBIDDEN &&
                 code == "platform_not_allowed" -> AuthOutcome.PLATFORM
+
             login == null -> AuthOutcome.PROTOCOL
+
             else -> AuthOutcome.UNEXPECTED
         }
     }

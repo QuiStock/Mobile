@@ -94,7 +94,6 @@ class RetrofitAuthRepository(
     companion object {
         private const val MILLIS_PER_SECOND = 1000L
     }
-
 }
 
 internal fun transportFailureCategory(error: IOException): String = when (error) {
