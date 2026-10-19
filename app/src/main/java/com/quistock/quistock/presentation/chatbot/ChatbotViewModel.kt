@@ -55,12 +55,12 @@ class ChatbotViewModel(
     fun sendMessage(message: String) {
         if (_uiState.value == ChatbotUiState.Loading) return
         val generation = session?.snapshot()?.generation
-        if (session != null && session.state.value != SessionState.Active) {
-            _uiState.value = ChatbotUiState.Error.NOT_LOGGED_IN
-            return
+        val userId = if (session == null || session.state.value == SessionState.Active) {
+            userPreferences.getUserId()
+        } else {
+            null
         }
-
-        val userId = userPreferences.getUserId() ?: run {
+        if (userId == null) {
             _uiState.value = ChatbotUiState.Error.NOT_LOGGED_IN
             return
         }

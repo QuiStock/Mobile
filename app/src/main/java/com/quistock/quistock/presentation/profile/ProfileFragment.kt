@@ -12,9 +12,10 @@ import com.quistock.quistock.databinding.FragmentProfileBinding
 class ProfileFragment : Fragment() {
     private var binding: FragmentProfileBinding? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return FragmentProfileBinding.inflate(inflater, container, false).also { binding = it }.root
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        FragmentProfileBinding.inflate(inflater, container, false).also {
+            binding = it
+        }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

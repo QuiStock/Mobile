@@ -17,22 +17,27 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class SessionUseCase(private val auth: AuthRepository, private val preferences: UserPreferences? = null) {
+class SessionUseCase(private val auth: AuthRepository, preferences: UserPreferences? = null) {
     private val mutex = Mutex()
-    private val mutableState = MutableStateFlow<SessionState>(SessionState.Restoring)
+    private val lifecycle = SessionLifecycle(auth, preferences)
+    private val mutableState get() = lifecycle.state
     val state = mutableState.asStateFlow()
 
-    @Volatile private var current = SessionSnapshot(0, false)
+    private var current: SessionSnapshot
+        get() = lifecycle.current
+        set(value) {
+            lifecycle.current = value
+        }
+
     private var pending: Pair<Long, CompletableDeferred<SessionSnapshot>>? = null
     private var logoutPending: CompletableDeferred<Unit>? = null
 
-    private fun logoutBlocked() = state.value == SessionState.LoggingOut || state.value is SessionState.LogoutFailed
+    private val logoutBlocked get() = state.value.blocksLogout
 
     @Suppress("TooGenericExceptionCaught")
     suspend fun logout() = withContext(NonCancellable) {
@@ -62,7 +67,7 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
             val generation = current.generation
             coroutineScope {
                 // Both operations start independently: disk revocation never waits for the network.
-                val local = async { clearLogoutData(generation) }
+                val local = async { lifecycle.clearLogoutData(generation) }
                 val remote = async { runCatching { operation?.execute() == true }.getOrDefault(false) }
                 val cleared = local.await()
                 val confirmed = remote.await()
@@ -90,7 +95,7 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
             mutableState.value = SessionState.LoggingOut
             current.generation to failure.remoteConfirmed
         } ?: return@withContext
-        val cleared = clearLogoutData(retry.first)
+        val cleared = lifecycle.clearLogoutData(retry.first)
         mutex.withLock {
             if (current.generation == retry.first) {
                 mutableState.value = if (cleared) {
@@ -100,14 +105,6 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
                 }
             }
         }
-    }
-
-    private suspend fun clearLogoutData(generation: Long): Boolean {
-        // Advance custody before deleting disk data so stale commits cannot repopulate it.
-        val fenced = runCatching { auth.begin(generation) }.isSuccess
-        val cleared = runCatching { auth.clear(generation) }.isSuccess
-        val identity = runCatching { preferences?.clearUserId() }.isSuccess
-        return fenced && cleared && identity
     }
 
     val retryDelayMillis get() = auth.retryDelayMillis()
@@ -120,20 +117,20 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
     @Suppress("TooGenericExceptionCaught")
     suspend fun login(email: String, password: String): LoginResult {
         val expected = mutex.withLock {
-            if (logoutBlocked()) return LoginError.UnexpectedError
+            if (logoutBlocked) return@withLock null
             current = SessionSnapshot(current.generation + 1, false)
             try {
                 auth.begin(current.generation)
                 auth.clear(current.generation)
                 mutableState.value = SessionState.SignedOut
+                current
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
                 mutableState.value = SessionState.LocalFailure
-                return LoginError.UnexpectedError
+                null
             }
-            current
-        }
+        } ?: return LoginError.UnexpectedError
         val result = try {
             auth.login(email, password, expected.generation)
         } catch (e: CancellationException) {
@@ -145,10 +142,10 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
             mutex.withLock {
                 if (current.generation != expected.generation) return@withLock LoginError.UnexpectedError
                 if (result == AuthResult.Success && auth.hasAccess(expected.generation)) {
-                    activate()
+                    lifecycle.activate()
                     result
                 } else if (result == LoginError.UnexpectedError || result == AuthResult.Success) {
-                    localFailure()
+                    lifecycle.localFailure()
                     LoginError.UnexpectedError
                 } else {
                     result
@@ -166,7 +163,7 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
                 auth.begin(current.generation)
                 when (auth.restore(current.generation)) {
                     StoredSession.MISSING -> mutableState.value = SessionState.SignedOut
-                    StoredSession.EXPIRED -> expireLocked()
+                    StoredSession.EXPIRED -> lifecycle.expire()
                     StoredSession.AVAILABLE -> return@withLock current
                 }
             } catch (e: CancellationException) {
@@ -184,14 +181,7 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
     suspend fun refresh(expected: SessionSnapshot): SessionSnapshot {
         var owner = false
         val task = mutex.withLock {
-            if (logoutBlocked() || state.value is SessionState.LoggedOut || state.value == SessionState.SignedOut ||
-                state.value == SessionState.Expired || state.value == SessionState.LocalFailure
-            ) {
-                return snapshot()
-            }
-            if (expected.generation != current.generation ||
-                (auth.hasAccess(current.generation) && current.revision != expected.revision)
-            ) {
+            if (!state.value.canRefresh || refreshObsolete(expected)) {
                 return snapshot()
             }
             pending?.takeIf { it.first == current.generation }?.second ?: CompletableDeferred<SessionSnapshot>().also {
@@ -214,7 +204,7 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
             } catch (_: Exception) {
                 withContext(NonCancellable) {
                     mutex.withLock {
-                        if (current.generation == expected.generation) localFailure()
+                        if (current.generation == expected.generation) lifecycle.localFailure()
                         task.complete(snapshot())
                     }
                 }
@@ -225,49 +215,35 @@ class SessionUseCase(private val auth: AuthRepository, private val preferences: 
         return task.await()
     }
 
+    private fun refreshObsolete(expected: SessionSnapshot): Boolean = expected.generation != current.generation ||
+        (auth.hasAccess(current.generation) && current.revision != expected.revision)
+
     private suspend fun applyRefresh(result: AuthRefreshResult) {
         when (result) {
-            AuthResult.Success -> if (auth.hasAccess(current.generation)) activate() else localFailure()
-            AuthRefreshError.InvalidToken -> expireLocked()
-            AuthRefreshError.UnexpectedError -> localFailure()
+            AuthResult.Success -> if (auth.hasAccess(current.generation)) {
+                lifecycle.activate()
+            } else {
+                lifecycle.localFailure()
+            }
+
+            AuthRefreshError.InvalidToken -> lifecycle.expire()
+
+            AuthRefreshError.UnexpectedError -> lifecycle.localFailure()
+
             AuthRefreshError.ProtocolError -> mutableState.value = SessionState.Failure(SessionFailure.PROTOCOL)
+
             AuthRefreshError.NetworkError -> mutableState.value = SessionState.Failure(SessionFailure.NETWORK)
+
             AuthRefreshError.Timeout -> mutableState.value = SessionState.Failure(SessionFailure.TIMEOUT)
+
             AuthRefreshError.ServerError -> mutableState.value = SessionState.Failure(SessionFailure.SERVER)
+
             AuthRefreshError.RateLimited -> mutableState.value = SessionState.Failure(SessionFailure.RATE_LIMIT)
         }
     }
 
-    private fun activate() {
-        current = current.copy(hasAccess = true, revision = current.revision + 1)
-        mutableState.value = SessionState.Active
-    }
-
-    @Suppress("TooGenericExceptionCaught")
-    private suspend fun localFailure() {
-        current = current.copy(hasAccess = false)
-        try {
-            auth.clear(current.generation)
-        } catch (_: Exception) { /* Access remains blocked by state. */ }
-        mutableState.value = SessionState.LocalFailure
-    }
-
     suspend fun expire(expected: SessionSnapshot) = withContext(NonCancellable) {
-        mutex.withLock { if (current.generation == expected.generation && !logoutBlocked()) expireLocked() }
-    }
-
-    @Suppress("TooGenericExceptionCaught")
-    private suspend fun expireLocked() = withContext(NonCancellable) {
-        val previous = current.generation
-        current = SessionSnapshot(previous + 1, false)
-        val cleared = runCatching { auth.clear(previous) }
-        // Advance custody even when deletion fails, so an old response cannot recreate the credential.
-        val fenced = runCatching { auth.begin(current.generation) }
-        mutableState.value = if (cleared.isSuccess && fenced.isSuccess) {
-            SessionState.Expired
-        } else {
-            SessionState.LocalFailure
-        }
+        mutex.withLock { if (current.generation == expected.generation && !logoutBlocked) lifecycle.expire() }
     }
 
     suspend fun <T> withCurrentSession(expected: SessionSnapshot, action: suspend () -> T): T = mutex.withLock {
