@@ -21,6 +21,9 @@ class CoreSessionInterceptor(
         if (url.scheme != origin.scheme || url.host != origin.host || url.port != origin.port) {
             return@runBlocking chain.proceed(request)
         }
+        // A failed renewal waits for explicit recovery; background calls cannot retry it.
+        val failure = session.state.value as? SessionState.Failure
+        if (failure != null) throw SessionException(failure.reason)
         val initial = session.snapshot()
         val recovered = if (!initial.hasAccess ||
             session.state.value is SessionState.Failure

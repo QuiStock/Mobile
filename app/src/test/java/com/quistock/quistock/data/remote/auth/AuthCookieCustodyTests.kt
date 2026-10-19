@@ -12,6 +12,31 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AuthCookieCustodyTests {
+    @Test fun csrfStaysInTheAttemptAndCannotInstallAuthenticationCookies() = runBlocking {
+        custody.begin(1)
+        custody.commit(1, pair(), true)
+        val jar = custody.requestJar(1, true)
+        val csrf = Cookie.Builder().name(AuthCookieCustody.CSRF).value("synthetic-csrf")
+            .hostOnlyDomain(origin.host).path("/").secure().httpOnly().build()
+        jar.saveFromResponse(origin.resolve("/csrf")!!, listOf(csrf) + pair())
+        assertTrue(jar.hasCsrf(origin.resolve("/refresh")!!))
+        assertTrue(jar.received().isEmpty())
+        assertEquals(2, jar.loadForRequest(origin.resolve("/refresh")!!).size)
+        for (url in listOf(
+            origin.resolve("/csrf")!!,
+            origin.resolve("/login")!!,
+            origin.resolve("/logout")!!,
+            "https://auth.example.test:444/refresh".toHttpUrl(),
+            "http://auth.example.test/refresh".toHttpUrl(),
+        )) {
+            assertTrue(jar.loadForRequest(url).isEmpty())
+        }
+        assertEquals(listOf("refresh_token"), store.records.map { it.name })
+        assertFalse(custody.requestJar(1, true).hasCsrf(origin.resolve("/refresh")!!))
+        jar.discardCsrf()
+        assertFalse(jar.hasCsrf(origin.resolve("/refresh")!!))
+    }
+
     private val origin = "https://auth.example.test/".toHttpUrl()
     private var time = 1000L
     private val store = MemoryCookieStore()

@@ -56,6 +56,8 @@ class AuthCookieCustody(
         }
     }
 
+    fun isCurrent(expected: Long): Boolean = generation == expected
+
     fun requestJar(expected: Long, refresh: Boolean): StagedAuthCookieJar {
         val captured = state
         return StagedAuthCookieJar(
@@ -127,6 +129,8 @@ class AuthCookieCustody(
         const val ACCESS = "access_token"
         const val REFRESH = "refresh_token"
         const val REFRESH_PATH = "/refresh"
+        const val CSRF_PATH = "/csrf"
+        const val CSRF = "AUTH-XSRF-TOKEN"
     }
 }
 
@@ -138,23 +142,37 @@ class StagedAuthCookieJar(
     private val now: () -> Long,
 ) : CookieJar {
     private val received = mutableListOf<Cookie>()
+    private val csrf = mutableListOf<Cookie>()
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         if (sameOrigin(url)) {
             synchronized(received) {
-                received.addAll(
-                    cookies.filter { it.name in listOf(AuthCookieCustody.ACCESS, AuthCookieCustody.REFRESH) },
-                )
+                if (url.encodedPath == AuthCookieCustody.CSRF_PATH) {
+                    csrf.addAll(cookies.filter { it.name == AuthCookieCustody.CSRF })
+                } else {
+                    received.addAll(
+                        cookies.filter { it.name in listOf(AuthCookieCustody.ACCESS, AuthCookieCustody.REFRESH) },
+                    )
+                }
             }
         }
     }
     override fun loadForRequest(url: HttpUrl): List<Cookie> =
         if (sameOrigin(url) && url.encodedPath == origin.resolve(AuthCookieCustody.REFRESH_PATH)?.encodedPath) {
-            initial.filter { it.expiresAt > now() && it.matches(url) }
+            initial.filter { it.expiresAt > now() && it.matches(url) } +
+                synchronized(received) { csrf.filter { eligibleCsrf(it, url) }.takeIf { it.size == 1 }.orEmpty() }
         } else {
             emptyList()
         }
 
     fun received(): List<Cookie> = synchronized(received) { received.toList() }
+    fun hasRefresh(url: HttpUrl): Boolean = loadForRequest(url).any { it.name == AuthCookieCustody.REFRESH }
+    fun hasCsrf(url: HttpUrl): Boolean = synchronized(received) {
+        sameOrigin(url) && url.encodedPath == AuthCookieCustody.REFRESH_PATH &&
+            csrf.size == 1 && eligibleCsrf(csrf.single(), url)
+    }
+    fun discardCsrf() = synchronized(received) { csrf.clear() }
+    private fun eligibleCsrf(cookie: Cookie, url: HttpUrl) = cookie.httpOnly &&
+        cookie.value.isNotEmpty() && cookie.expiresAt > now() && cookie.matches(url)
     private fun sameOrigin(url: HttpUrl) =
         url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port
 }
