@@ -13,16 +13,20 @@ import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.presentation.activity.MainActivity
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class OrderAndPromotionFragmentTests {
+    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
+
     @Test
     fun orderForm_shouldShowValidationForEachMissingFieldAndConfirmSubmission() =
         runInstrumented(NavGraph.Destinations.ORDER) { navController ->

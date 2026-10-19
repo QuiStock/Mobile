@@ -10,6 +10,7 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.quistock.quistock.R
@@ -23,7 +24,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.launch
+import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.not
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
@@ -38,10 +41,12 @@ class SessionNavigationTests {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             onView(withId(R.id.session_recovery_message)).check(matches(withText(R.string.session_renewal_failed)))
             onView(withId(R.id.session_recovery)).check(matches(isDisplayed()))
-            onView(withId(R.id.nav_host_fragment)).check(matches(not(isDisplayed())))
+            onView(allOf(withId(R.id.nav_host_fragment), withParent(withId(R.id.main))))
+                .check(matches(not(isDisplayed())))
             scenario.recreate()
             onView(withId(R.id.session_recovery)).check(matches(isDisplayed()))
-            onView(withId(R.id.nav_host_fragment)).check(matches(not(isDisplayed())))
+            onView(allOf(withId(R.id.nav_host_fragment), withParent(withId(R.id.main))))
+                .check(matches(not(isDisplayed())))
             coVerify(exactly = 1) { auth.refresh(any()) }
             coEvery { auth.refresh(any()) } returns AuthResult.Success
             onView(withId(R.id.session_recovery_retry)).perform(click())
@@ -52,8 +57,12 @@ class SessionNavigationTests {
 
     private val auth = mockk<AuthRepository>(relaxed = true)
     private lateinit var session: SessionUseCase
+    private lateinit var previousSession: SessionUseCase
+    private lateinit var previousLoginViewModel: LoginViewModel
 
     @Before fun setup() {
+        previousSession = GlobalContext.get().get()
+        previousLoginViewModel = GlobalContext.get().get()
         coEvery { auth.restore(any()) } returns com.quistock.quistock.domain.port.StoredSession.AVAILABLE
         io.mockk.every { auth.hasAccess(any()) } returns true
         coEvery { auth.refresh(any()) } returns AuthResult.Success
@@ -63,6 +72,11 @@ class SessionNavigationTests {
             LoginViewModel(LoginUseCase(session, GlobalContext.get().get())),
             allowOverride = true,
         )
+    }
+
+    @After fun restoreDependencies() {
+        GlobalContext.get().declare(previousSession, allowOverride = true)
+        GlobalContext.get().declare(previousLoginViewModel, allowOverride = true)
     }
 
     @Test fun recoveryOpensHomeAndExpirationRemovesProtectedBackStack() {
