@@ -1,6 +1,6 @@
 # Correção de CSRF no refresh da Auth
 
-**Status:** Ready for implementation — decisões resolvidas em 2026-10-19
+**Status:** Complete — implementação entregue; testes e validações pendentes por instrução do solicitante
 **Issue:** none
 **Product decision owner:** Solicitante
 **Data da análise:** 2026-10-19
@@ -9,7 +9,7 @@
 
 O Mobile envia `refresh_token` para DS_Auth sem o par CSRF exigido pela API. A API rejeita a chamada com 403 antes de rotacionar a sessão. O cliente classifica esse status como `UnexpectedError`; `SessionUseCase.localFailure()` remove as credenciais, embora a rejeição CSRF não estabeleça que o refresh seja inválido.
 
-O objetivo é permitir a renovação e restauração da sessão pelo contrato atual de DS_Auth, preservando isolamento, validade e armazenamento protegido das credenciais. Requisito: solicitação do usuário nesta conversa. Esta entrega prepara somente a spec; não autoriza implementação enquanto existir qualquer ponto Open.
+O objetivo é permitir a renovação e restauração da sessão pelo contrato atual de DS_Auth, preservando isolamento, validade e armazenamento protegido das credenciais. Requisito: solicitação do usuário nesta conversa. A implementação foi autorizada após resolução dos pontos Open; novas dúvidas de produto/contrato continuam bloqueando implementação adicional até resolução.
 
 Base inspecionada: branch `fix/login-csrf-token`, commit `d8d74af`, igual à referência local `origin/main` na análise. Essa base não implementa logout remoto em `AuthApi`, `AuthRepository` ou `SessionUseCase`.
 
@@ -46,7 +46,7 @@ O filtro exige CSRF em `POST /refresh` e `POST /logout` quando existe cookie cha
 
 O DTO de CSRF deve corresponder aos nomes reais `headerName` e `token` (camelCase). Validar header esperado `X-CSRF-TOKEN` e token não vazio; não transformar um nome arbitrário retornado em header sensível. Nunca copiar o valor do cookie para o header.
 
-### Sequência proposta do Mobile
+### Sequência do Mobile
 
 1. Respeitar o bloqueio existente de `Retry-After` e verificar refresh elegível para a rota de destino. Sem refresh ou com refresh expirado, preservar o comportamento existente sem consultar CSRF nem enviar POST.
 2. Criar contexto privado da tentativa, associado à geração e à captura de refresh. Fazer `GET /csrf` na origem Auth, sem Bearer, access cookie ou refresh cookie e sem reaproveitar par anterior.
@@ -117,7 +117,7 @@ Critérios com decisões O-01/O-02 resolvidas pelo solicitante em 2026-10-19. Pa
 
 ### Plano de verificação após desbloqueio
 
-Seguir Red–Green–Refactor: primeiro reproduzir ausência do GET/par, preservação em 403 e isolamento com testes comportamentais; implementar somente após falhas esperadas observadas; depois executar regressões relevantes.
+O plano original exige Red–Green–Refactor. Em 2026-10-19, o solicitante autorizou implementar e criar commits, mas proibiu executar testes ou validações nesta etapa. Essa instrução prevalece: testes comportamentais foram escritos/adaptados, sem observar Red/Green e sem alegar aprovação. Executar o plano abaixo somente quando autorizado.
 
 Executar `testDebugUnitTest`, `spotlessCheck`, `detekt`, `lintDebug` e `assembleRelease`; `connectedDebugAndroidTest` quando houver dispositivo/emulador. Reportar cada execução e limitação. O gate CI combinado continua 80% de linhas e 70% de branches; testes JVM locais não demonstram essa cobertura combinada.
 
@@ -138,6 +138,29 @@ Não há decisões em aberto nesta revisão. Se surgir nova dúvida de produto o
 
 ## Implementation outcome
 
-Somente spec preparada em 2026-10-19. Nenhum código, teste ou configuração implementado. Nenhum teste Gradle, instrumentado ou smoke executado. Evidência atual: leitura do workspace e das fontes locais DS_Auth. Critérios planejados não são critérios comprovados.
+Implementação autorizada e entregue em 2026-10-19. Nenhum novo ponto de produto/contrato foi aberto. O status Complete descreve entrega de código, não aprovação de testes, build ou gates.
 
-Spec atualizada para Ready for implementation após as duas respostas do solicitante em 2026-10-19. A resolução das decisões não comprova testes ou integração real; implementação ainda não iniciada.
+- Transporte: GET CSRF cancelável antes de POST, DTO camelCase com representação redigida, validação de header/token e cookie de sessão, par em memória por tentativa, revalidação de geração/expiração e descarte no término.
+- Custódia: CSRF separado do commit/store, cookies inesperados de autenticação em `/csrf` ignorados e metadados de refresh preservados. O sucessor continua sujeito ao commit durável por geração.
+- Falhas: protocolo separado de armazenamento, preservação de refresh elegível em 403/preparação inválida e ausência de retries automáticos de conexão ou follow-ups HTTP. Expiração/remoção legítimas continuam prevalecendo.
+- Recuperação: camada de recuperação na Activity, com mensagem aprovada, botão manual, progresso, bloqueio de navegação/conteúdo protegido e acessibilidade. ViewModel mantém a tentativa em recriação e reabilita retry após Retry-After sem disparar rede. Estados de rede/timeout/servidor/limite usam suas mensagens existentes.
+- Documentação: README, contexto e spec de custódia atualizados para descrever o par CSRF.
+
+| Critérios | Testes escritos/adaptados | Evidência nesta entrega |
+| --- | --- | --- |
+| AC-01/02/03/05/06/09 | `AuthCsrfTests`, `AuthCookieCustodyTests` | Não executados; par JSON/cookie, invalidez, memória/store, expiração na preparação, geração, cancelamento e falhas. |
+| AC-04/07 | `RetrofitAuthRepositoryTests`, `SessionUseCaseTests` e testes existentes de store | Transporte/sessão adaptados ou ampliados; nenhum teste executado, inclusive persistência Android. |
+| AC-08/10 | `CoreSessionInterceptorTests`, testes existentes de custódia/DI e novos testes de jar CSRF | Não executados; sequência compartilhada, retry da Core e isolamento. |
+| AC-11/12 | Teste de cancelamento em `AuthCsrfTests`, regressões existentes de commit/diagnósticos, DTO redigido | Não executados. Liberação de recursos e ausência de vazamentos não foram validadas em execução. |
+| AC-14 | `SessionRecoveryTests`, `SessionNavigationTests` instrumentado | Não executados; retry explícito, bloqueio por prazo, conteúdo oculto e recriação. Acessibilidade em dispositivo permanece pendente. |
+| AC-13 | Smoke em ambiente/dispositivo | Não executado; nenhuma chamada à API real. |
+
+Não foram executados testes, compilação, formatação automática, lint, detekt, análise de cobertura ou outras validações nesta entrega, por instrução explícita do solicitante. Não há comprovação Red–Green, compilação, aprovação dos critérios ou cobertura. Gates/configuração de qualidade não foram alterados. Os commits foram criados sem push.
+
+### Ajuste após relatório detekt — 2026-10-19
+
+O solicitante executou validações e informou falha. O relatório `app/build/reports/detekt/detekt.md`, gerado em 2026-10-19, registra nove apontamentos em `RetrofitAuthRepository`: ComplexCondition, CyclomaticComplexMethod (2), LongMethod, TooManyFunctions, MagicNumber (2), ReturnCount e ThrowsCount. Os relatórios debug/release disponíveis são históricos, de agosto, e não constituem evidência desta correção.
+
+A execução de uma tentativa foi extraída para `AuthRequest`, com preparação CSRF, validação, POST e commit divididos em funções pequenas. O repositório mantém coordenação e bloqueio por Retry-After. Limites de caracteres de header receberam constantes nomeadas. Nenhuma regra de qualidade foi alterada ou suprimida para os apontamentos; o contrato HTTP e as garantias de geração/persistência foram preservados. Ajustes locais de formatação existentes foram preservados nos commits correspondentes.
+
+As correções foram incorporadas com `--amend` nos commits originais, reaplicando os descendentes. Não foram executadas novas validações ou testes nesta revisão; a ausência dos apontamentos após a refatoração ainda precisa ser confirmada por nova execução autorizada.

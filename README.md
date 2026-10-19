@@ -111,13 +111,22 @@ Domain models expose generation/revision and availability, never credential valu
 retries, cache writes and rendering by generation. The Core client extracts a valid access
 cookie privately in data and sends Bearer to the exact configured Core origin. It sends no
 authentication cookies; the independent legacy chatbot client receives no Core credentials.
-Auth sends only refresh cookies to the configured refresh route; login sends no stored cookies.
+Auth obtains a fresh CSRF pair from `GET /csrf` before each renewal. The GET sends no
+stored credentials; `POST /refresh` sends only the refresh cookie, the temporary
+`AUTH-XSRF-TOKEN` cookie and the masked JSON token in `X-CSRF-TOKEN`. CSRF stays in
+memory for that attempt and is never persisted. Login sends no stored cookies.
+A protocol/CSRF failure preserves eligible refresh credentials, blocks protected content
+and offers manual recovery; no automatic renewal retry follows a failure. Auth calls
+also block HTTP follow-ups, including an immediate retry requested by a 503 response.
+See [the CSRF specification](docs/sdd/specs/auth-refresh-csrf.md); execution checks for
+this implementation are deferred at the requester's instruction.
 Both clients disable redirects and connection retries. Renewal happens on demand, without timers.
 
 Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
 CORE_BASE_URL remains a build environment variable with an invalid dummy default.
 Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
-the cookie jar authorizes only /refresh on the configured Auth origin. Cookie path metadata remains unchanged.
+the cookie jar authorizes credential sending only to /refresh on the configured Auth origin.
+CSRF is received only from /csrf on that origin. Cookie path metadata remains unchanged.
 
 Local revocation destroys a dedicated Keystore key before removing the encrypted refresh
 record. Disk removal is attempted even if key destruction fails. If both fail, the app reports
