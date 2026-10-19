@@ -131,11 +131,11 @@ internal fun sessionFailureMessage(reason: SessionFailure?): Int = when (reason)
 internal fun sessionDestination(state: SessionState, current: Int?): Int? = when (state) {
     SessionState.LoggingOut, is SessionState.LogoutFailed -> null
 
-    is SessionState.LoggedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+    is SessionState.LoggedOut -> loginDestination(current)
 
     SessionState.Restoring -> null
 
-    SessionState.SignedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+    SessionState.SignedOut -> loginDestination(current)
 
     SessionState.Active -> if (current == R.id.loginFragment || current == R.id.splashFragment) {
         R.id.homeFragment
@@ -150,3 +150,5 @@ internal fun sessionDestination(state: SessionState, current: Int?): Int? = when
         else -> null
     }
 }
+
+private fun loginDestination(current: Int?): Int? = if (current == R.id.loginFragment) null else R.id.loginFragment

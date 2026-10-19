@@ -123,3 +123,7 @@ Os testes foram escritos, mas não executados. A restrição explícita do solic
 | AC-10 | Smoke login → logout → refresh recusado e sessão independente preservada | Não executado; exige ambiente DS_Auth e contas de teste, sem registrar credenciais. |
 
 O status Complete descreve a entrega do código, não aprovação das verificações pendentes. Qualquer nova decisão em aberto descoberta deve voltar a bloquear implementação adicional conforme a regra obrigatória acima.
+
+### Manutenção de qualidade — 19/10/2026
+
+Refatoração sem mudança de comportamento para os oito apontamentos do relatório Detekt de 19/10/2026: transições e limpeza de sessão agrupadas em `SessionLifecycle`, diagnóstico de transporte em `AuthTransportDiagnostics`, condições de renovação e navegação simplificadas e retornos de login/chatbot reduzidos. Preservados mutex, geração, cancelamento, ordem de revogação e campos dos logs. Incluída a formatação já presente no workspace em `ProfileFragment`, conforme autorização do solicitante. Não foi criada nova spec porque a alteração é interna e preserva os critérios existentes. Nenhuma regra, limite ou exclusão de qualidade foi alterada. Verificação por inspeção do diff e `git diff --check`; testes, Gradle e regeneração do relatório não executados conforme restrição vigente.
