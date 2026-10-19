@@ -117,4 +117,7 @@
     <string name="session_server">Ocorreu um erro interno. Tente novamente mais tarde.</string>
     <string name="session_rate_limit">Limite de tentativas ultrapassado. Aguarde e tente novamente.</string>
     <string name="login_platform_not_allowed">Este perfil não pode acessar esta plataforma.</string>
+    <string name="session_renewal_failed">Não foi possível renovar sua sessão. Tente novamente.</string>
+    <string name="session_renewal_retry">Tentar novamente</string>
+    <string name="session_renewal_loading">Renovando sessão…</string>
 </resources>
