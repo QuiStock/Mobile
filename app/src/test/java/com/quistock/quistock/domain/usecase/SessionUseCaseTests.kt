@@ -23,6 +23,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SessionUseCaseTests {
+    @Test fun protocolFailureDuringRestorePreservesRefreshAndBlocksProtectedActions() = runTest {
+        coEvery { auth.restore(any()) } returns StoredSession.AVAILABLE
+        coEvery { auth.refresh(any()) } returns AuthRefreshError.ProtocolError
+        assertEquals(SessionState.Failure(SessionFailure.PROTOCOL), session.restore())
+        coVerify(exactly = 0) { auth.clear(any()) }
+        assertTrue(runCatching { session.requireAccess(session.snapshot()) }.isFailure)
+    }
+
     private val auth = mockk<AuthRepository>(relaxed = true)
     private val session = SessionUseCase(auth)
     private fun active() {

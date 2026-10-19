@@ -23,6 +23,21 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CoreSessionInterceptorTests {
+    @Test fun failedRenewalCannotBeRetriedByAnotherProtectedRequest() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(csrfResponse())
+            f.auth.enqueue(MockResponse().setResponseCode(403))
+            f.core.enqueue(MockResponse().setResponseCode(401))
+            assertTrue(runCatching { f.execute().close() }.isFailure)
+            assertEquals(SessionState.Failure(SessionFailure.PROTOCOL), f.session.state.value)
+            assertTrue(runCatching { f.execute().close() }.isFailure)
+            assertEquals(3, f.auth.requestCount)
+            assertEquals(1, f.core.requestCount)
+            assertNotNull(f.store.record)
+        }
+    }
+
     @Test fun expiredAccessRenewsBeforeFirstProtectedRequestWithoutIdleCalls() = runBlocking {
         var now = System.currentTimeMillis()
         AuthHttpFixture { now }.use { f ->
@@ -30,18 +45,20 @@ class CoreSessionInterceptorTests {
             now += 301000
             assertEquals(1, f.auth.requestCount)
             assertFalse(f.session.snapshot().hasAccess)
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("renewed", 600))
             f.core.enqueue(MockResponse())
             f.execute().close()
             assertEquals(1, f.core.requestCount)
             assertTrue(f.core.takeRequest().getHeader("Authorization") == "Bearer renewed")
-            assertEquals(2, f.auth.requestCount)
+            assertEquals(3, f.auth.requestCount)
         }
     }
 
     @Test fun unauthorizedRefreshesAndRetriesWithoutSendingCookiesToCore() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("new"))
             f.core.enqueue(MockResponse().setResponseCode(401))
             f.core.enqueue(MockResponse().setBody("ok"))
@@ -50,17 +67,20 @@ class CoreSessionInterceptorTests {
             val retried = f.core.takeRequest()
             assertEquals("Bearer new", retried.getHeader("Authorization"))
             assertNull(retried.getHeader("Cookie"))
+            assertEquals("/csrf", f.auth.takeRequest().path)
             val refresh = f.auth.takeRequest()
             assertEquals("/refresh", refresh.path)
-            assertEquals("refresh_token=old-refresh", refresh.getHeader("Cookie"))
+            assertEquals("refresh_token=old-refresh; AUTH-XSRF-TOKEN=raw-synthetic", refresh.getHeader("Cookie"))
+            assertEquals("masked-synthetic", refresh.getHeader("X-CSRF-TOKEN"))
             assertNull(refresh.getHeader("Authorization"))
-            assertEquals(0, refresh.bodySize)
+            assertEquals(0L, refresh.bodySize)
         }
     }
 
     @Test fun secondUnauthorizedExpiresAndRevokesCredentialsWithoutLoop() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("new"))
             repeat(2) { f.core.enqueue(MockResponse().setResponseCode(401)) }
             assertTrue(runCatching { f.execute().close() }.isFailure)
@@ -100,6 +120,7 @@ class CoreSessionInterceptorTests {
     @Test fun transientRefreshPreservesSessionWithoutRetryingCore() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(MockResponse().setResponseCode(503))
             f.core.enqueue(MockResponse().setResponseCode(401))
             assertTrue(runCatching { f.execute().close() }.isFailure)
@@ -112,6 +133,7 @@ class CoreSessionInterceptorTests {
     @Test fun concurrentUnauthorizedRequestsShareRefreshAndEachRetryOnce() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("new"))
             val barrier = CyclicBarrier(2)
             f.core.dispatcher = object : Dispatcher() {
@@ -127,7 +149,7 @@ class CoreSessionInterceptorTests {
             try {
                 val calls = List(2) { executor.submit<Int> { f.execute().use { it.code } } }
                 calls.forEach { assertEquals(200, it.get(15, TimeUnit.SECONDS)) }
-                assertEquals(2, f.auth.requestCount)
+                assertEquals(3, f.auth.requestCount)
                 assertEquals(4, f.core.requestCount)
             } finally {
                 executor.shutdownNow()

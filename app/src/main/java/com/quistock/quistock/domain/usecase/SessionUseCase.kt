@@ -142,6 +142,7 @@ class SessionUseCase(private val auth: AuthRepository) {
             AuthResult.Success -> if (auth.hasAccess(current.generation)) activate() else localFailure()
             AuthRefreshError.InvalidToken -> expireLocked()
             AuthRefreshError.UnexpectedError -> localFailure()
+            AuthRefreshError.ProtocolError -> mutableState.value = SessionState.Failure(SessionFailure.PROTOCOL)
             AuthRefreshError.NetworkError -> mutableState.value = SessionState.Failure(SessionFailure.NETWORK)
             AuthRefreshError.Timeout -> mutableState.value = SessionState.Failure(SessionFailure.TIMEOUT)
             AuthRefreshError.ServerError -> mutableState.value = SessionState.Failure(SessionFailure.SERVER)

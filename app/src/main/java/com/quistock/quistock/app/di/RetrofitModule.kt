@@ -5,6 +5,7 @@ import com.quistock.quistock.R
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
+import com.quistock.quistock.data.remote.auth.AuthHttpAttempt
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
 import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
@@ -109,6 +110,16 @@ internal fun createAuthApi(baseUrl: HttpUrl, jar: CookieJar, client: OkHttpClien
         .baseUrl(baseUrl)
         .client(
             client.newBuilder().cookieJar(jar).retryOnConnectionFailure(false)
+                .addInterceptor { chain ->
+                    chain.proceed(
+                        chain.request().newBuilder().tag(AuthHttpAttempt::class.java, AuthHttpAttempt()).build(),
+                    )
+                }
+                .addNetworkInterceptor { chain ->
+                    val attempt = requireNotNull(chain.request().tag(AuthHttpAttempt::class.java))
+                    attempt.claim()
+                    chain.proceed(chain.request()).also { attempt.status = it.code }
+                }
                 .followRedirects(false).followSslRedirects(false).build(),
         )
         .addConverterFactory(
