@@ -29,7 +29,7 @@ internal class LogoutExchange(
         val deadline = started + TimeUnit.SECONDS.toNanos(TIMEOUT_SECONDS)
         return try {
             val token = if (requiresCsrf) prepare(deadline) else null
-            if (requiresCsrf && (token == null || !jar.hasRefresh(logoutUrl) || !jar.hasCsrf(logoutUrl))) {
+            if (requiresCsrf && !hasValidCredentials(token)) {
                 false
             } else {
                 stage = "logout"
@@ -51,6 +51,9 @@ internal class LogoutExchange(
             jar.discardCsrf()
         }
     }
+
+    private fun hasValidCredentials(token: String?): Boolean =
+        token != null && jar.hasRefresh(logoutUrl) && jar.hasCsrf(logoutUrl)
 
     private fun prepare(deadline: Long): String? {
         stage = "csrf"
