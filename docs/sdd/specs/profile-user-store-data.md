@@ -157,3 +157,9 @@ Testes adicionados: `ProfileUseCaseTests`, `RetrofitProfileRepositoryTests` e `P
 Não foram executados testes, builds, lint, formatadores/checks, validações de cobertura, simulações, chamadas reais de API ou verificação visual/instrumentada. Essas verificações ficam para o solicitante. O vínculo de loja de gerentes no ambiente real continua sendo o risco de integração registrado acima.
 
 
+
+### Correção dos apontamentos do Detekt
+
+Refatoração mecânica baseada nos 18 apontamentos de `app/build/reports/detekt/detekt.md`, gerado em 20/10/2026: separar validação do perfil, leitura limitada de imagem, binding de campos/fotos, renderização/navegação da barreira e recuperação de sessão; reduzir retornos antecipados; nomear códigos HTTP e conversão de tempo; quebrar linhas longas nos testes. Sem alteração de comportamento ou do contrato aprovado, portanto não exige nova spec. Não foram adicionadas supressões, alteradas regras ou exclusões de qualidade. Os relatórios debug/release disponíveis são históricos de 05/08/2026 e não representam esta implementação.
+
+Detekt, testes e demais validações não foram executados nesta correção, conforme instrução do solicitante; é necessário regenerar o relatório para confirmar o resultado.

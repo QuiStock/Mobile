@@ -33,7 +33,7 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
         var owner = false
         val task = try {
             mutex.withLock {
-                if (session.state.value != SessionState.Active) return
+                if (session.state.value != SessionState.Active) return@withLock null
                 session.withCurrentSession(expected) {
                     val cached = state.value as? ProfileState.Ready
                     if (cached?.generation == expected.generation) {
@@ -50,12 +50,16 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
                 }
             }
         } catch (_: SessionException) {
-            return
+            null
         } ?: return
-        if (!owner) {
+        if (owner) {
+            completeLoad(expected, task)
+        } else {
             task.await()
-            return
         }
+    }
+
+    private suspend fun completeLoad(expected: SessionSnapshot, task: CompletableDeferred<Unit>) {
         try {
             read(expected)
             task.complete(Unit)
