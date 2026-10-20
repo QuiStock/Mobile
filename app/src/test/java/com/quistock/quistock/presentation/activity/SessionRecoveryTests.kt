@@ -42,7 +42,11 @@ class SessionRecoveryTests {
             SessionSnapshot(1, true, 1)
         }
         val profile = ProfileUseCase(mockk(relaxed = true), session)
-        val viewModel = SessionViewModel(session, profile, LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session))
+        val viewModel = SessionViewModel(
+            session,
+            profile,
+            LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session),
+        )
         runCurrent()
         coVerify(exactly = 0) { session.refresh(any()) }
         viewModel.retrySession()
@@ -64,7 +68,11 @@ class SessionRecoveryTests {
         every { session.retryDelayMillis } returns 1000L
         coEvery { session.restore() } returns state.value
         val profile = ProfileUseCase(mockk(relaxed = true), session)
-        val viewModel = SessionViewModel(session, profile, LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session))
+        val viewModel = SessionViewModel(
+            session,
+            profile,
+            LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session),
+        )
         runCurrent()
         assertTrue(viewModel.recovery.value.retryBlocked)
         viewModel.retrySession()

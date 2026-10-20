@@ -29,15 +29,20 @@ class SessionViewModel(
 
     fun retrySession() {
         if (session.state.value == SessionState.Active && profile.state.value is ProfileState.Failure) {
-            if (mutableRecovery.value.retryBlocked || mutableRecovery.value.retrying) return
+            retryProfile()
+        } else if (session.state.value is SessionState.Failure) {
+            retryAuthentication()
+        }
+    }
+
+    private fun retryProfile() {
+        if (!mutableRecovery.value.retryBlocked && !mutableRecovery.value.retrying) {
             viewModelScope.launch { profile.load() }
-            return
         }
-        if (session.state.value !is SessionState.Failure || mutableRecovery.value.retrying ||
-            session.retryDelayMillis > 0
-        ) {
-            return
-        }
+    }
+
+    private fun retryAuthentication() {
+        if (mutableRecovery.value.retrying || session.retryDelayMillis > 0) return
         mutableRecovery.value = mutableRecovery.value.copy(retrying = true)
         viewModelScope.launch {
             try {

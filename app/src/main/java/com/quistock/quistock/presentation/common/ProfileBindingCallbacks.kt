@@ -1,5 +1,6 @@
 package com.quistock.quistock.presentation.common
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.TextUtils
@@ -10,10 +11,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.navigation.fragment.NavHostFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.NavHostFragment
 import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionState
@@ -63,39 +64,55 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
     }
 
     private fun bind(view: View, ready: ProfileState.Ready?) {
-        val profile = ready?.profile
-        val tag = view.tag as String
-        if (view is ImageView) {
-            view.setImageResource(R.drawable.ic_profile)
-            view.contentDescription = profile?.name ?: view.context.getString(R.string.profile_title)
-            return
+        when (view) {
+            is ImageView -> {
+                view.setImageResource(R.drawable.ic_profile)
+                view.contentDescription = ready?.profile?.name ?: view.context.getString(R.string.profile_title)
+            }
+            is TextView -> bindText(view, ready)
         }
-        if (view !is TextView) return
-        val value = when (tag) {
+    }
+
+    private fun profileText(view: TextView, ready: ProfileState.Ready?): String {
+        val profile = ready?.profile
+        return when (view.tag) {
             "current_profile_store" -> profile?.storeName
             "current_profile_role" -> profile?.let {
-                view.context.getString(if (it.role == "GERENTE") R.string.profile_role_manager else R.string.profile_role_employee)
+                val label = if (it.role == "GERENTE") {
+                    R.string.profile_role_manager
+                } else {
+                    R.string.profile_role_employee
+                }
+                view.context.getString(label)
             }
             "current_profile_email_input" -> profile?.email
             else -> profile?.name
         }.orEmpty()
+    }
+
+    private fun bindText(view: TextView, ready: ProfileState.Ready?) {
+        val value = profileText(view, ready)
         if (view is EditText) {
-            val marker = view.getTag(R.id.profile_prefill_generation) as? Long
-            if (ready == null) {
-                view.setText("")
-                view.setTag(R.id.profile_prefill_generation, null)
-            } else if (marker != ready.generation) {
-                // Keep edits in the current view when the shared state is rendered again.
-                view.setText(value)
-                view.setTag(R.id.profile_prefill_generation, ready.generation)
-            }
+            bindInput(view, value, ready?.generation)
         } else {
             view.text = value
             view.contentDescription = value
-            if (tag != "current_profile_name" && tag != "current_profile_role") {
+            if (view.tag != "current_profile_name" && view.tag != "current_profile_role") {
                 view.maxLines = 1
                 view.ellipsize = TextUtils.TruncateAt.END
             }
+        }
+    }
+
+    private fun bindInput(view: EditText, value: String, generation: Long?) {
+        val marker = view.getTag(R.id.profile_prefill_generation) as? Long
+        if (generation == null) {
+            view.setText("")
+            view.setTag(R.id.profile_prefill_generation, null)
+        } else if (marker != generation) {
+            // Keep edits in the current view when the shared state is rendered again.
+            view.setText(value)
+            view.setTag(R.id.profile_prefill_generation, generation)
         }
     }
 
@@ -103,22 +120,34 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
     private suspend fun bindPhotos(images: List<ImageView>, ready: ProfileState.Ready) {
         if (images.isEmpty()) return
         try {
-            val bytes = model.photoBytes() ?: return
-            val bitmap = withContext(Dispatchers.Default) {
-                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                var sample = 1
-                while (bounds.outWidth / sample > 512 || bounds.outHeight / sample > 512) sample *= 2
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
-            } ?: return
-            if (model.profile.state.value !== ready || model.session.state.value != SessionState.Active ||
-                model.session.snapshot().generation != ready.generation
-            ) return
-            images.forEach { it.setImageBitmap(bitmap) }
+            val bitmap = model.photoBytes()?.let { decodePhoto(it) }
+            if (bitmap != null && isCurrentProfile(ready)) {
+                images.forEach { it.setImageBitmap(bitmap) }
+            }
         } catch (error: CancellationException) {
             throw error
         } catch (_: Exception) {
             // Invalid/unavailable image keeps the placeholder; profile navigation is independent.
         }
     }
+
+    private fun isCurrentProfile(ready: ProfileState.Ready): Boolean =
+        model.profile.state.value === ready && model.session.state.value == SessionState.Active &&
+            model.session.snapshot().generation == ready.generation
+
+    private suspend fun decodePhoto(bytes: ByteArray): Bitmap? = withContext(Dispatchers.Default) {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        var sample = 1
+        while (bounds.outWidth / sample > MAX_PHOTO_DIMENSION || bounds.outHeight / sample > MAX_PHOTO_DIMENSION) {
+            sample *= 2
+        }
+        val options = BitmapFactory.Options().apply { inSampleSize = sample }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    }
+
+    private companion object {
+        const val MAX_PHOTO_DIMENSION = 512
+    }
+
 }

@@ -3,8 +3,10 @@ package com.quistock.quistock.data.remote.core
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.port.ProfileRepository
+import java.net.HttpURLConnection
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -42,7 +44,7 @@ class RetrofitProfileRepository(private val api: ProfileApi) : ProfileRepository
     override suspend fun read(): ProfileResult = try {
         val response = api.read()
         when {
-            response.code() == 403 -> {
+            response.code() == HttpURLConnection.HTTP_FORBIDDEN -> {
                 response.errorBody()?.close()
                 ProfileResult.Forbidden
             }
@@ -51,7 +53,7 @@ class RetrofitProfileRepository(private val api: ProfileApi) : ProfileRepository
             else -> {
                 response.errorBody()?.close()
                 ProfileResult.Failure(
-                    if (response.code() == 429) retryAfterMillis(response.headers()["Retry-After"]) else 0,
+                    if (response.code() == HTTP_TOO_MANY_REQUESTS) retryAfterMillis(response.headers()["Retry-After"]) else 0,
                 )
             }
         }
@@ -63,13 +65,17 @@ class RetrofitProfileRepository(private val api: ProfileApi) : ProfileRepository
     }
 }
 
+private const val HTTP_TOO_MANY_REQUESTS = 429
+
 internal fun retryAfterMillis(value: String?, nowMillis: Long = System.currentTimeMillis()): Long {
-    val text = value?.trim() ?: return 0
-    text.toLongOrNull()?.let {
-        return if (it >= 0) it.coerceAtMost(Long.MAX_VALUE / 1000) * 1000 else 0
+    val text = value?.trim().orEmpty()
+    val seconds = text.toLongOrNull()
+    return if (seconds != null) {
+        seconds.coerceIn(0, Long.MAX_VALUE / TimeUnit.SECONDS.toMillis(1)) * TimeUnit.SECONDS.toMillis(1)
+    } else {
+        runCatching {
+            (ZonedDateTime.parse(text, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli() - nowMillis)
+                .coerceAtLeast(0)
+        }.getOrDefault(0)
     }
-    return runCatching {
-        (ZonedDateTime.parse(text, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli() - nowMillis)
-            .coerceAtLeast(0)
-    }.getOrDefault(0)
 }
