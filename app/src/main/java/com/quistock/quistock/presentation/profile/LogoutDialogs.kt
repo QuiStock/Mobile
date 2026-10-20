@@ -11,7 +11,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.presentation.activity.SessionViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
@@ -42,7 +41,6 @@ class LogoutConfirmationDialog : DialogFragment() {
 /** Activity-owned so no authenticated destination remains usable during local recovery. */
 class LogoutProgressDialog : DialogFragment() {
     private val viewModel: SessionViewModel by activityViewModel()
-    private var renderingJob: Job? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
@@ -52,13 +50,10 @@ class LogoutProgressDialog : DialogFragment() {
             .create()
     }
 
-    override fun onStart() {
-        super.onStart()
-        (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            viewModel.retryLogoutCleanup()
-        }
-        renderingJob?.cancel()
-        renderingJob = lifecycleScope.launch {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // This DialogFragment has no fragment View; observe its lifecycle once per instance.
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.session.state.collect { state ->
                     val alert = dialog as? AlertDialog ?: return@collect
@@ -78,10 +73,11 @@ class LogoutProgressDialog : DialogFragment() {
         }
     }
 
-    override fun onStop() {
-        renderingJob?.cancel()
-        renderingJob = null
-        super.onStop()
+    override fun onStart() {
+        super.onStart()
+        (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            viewModel.retryLogoutCleanup()
+        }
     }
 
     companion object {
