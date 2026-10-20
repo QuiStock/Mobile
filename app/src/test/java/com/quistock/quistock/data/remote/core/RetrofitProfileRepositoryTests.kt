@@ -3,7 +3,6 @@ package com.quistock.quistock.data.remote.core
 import com.quistock.quistock.domain.model.ProfileResult
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import okhttp3.Headers
@@ -14,6 +13,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Response
+import java.io.IOException
 
 class RetrofitProfileRepositoryTests {
     private val api = mockk<ProfileApi>()

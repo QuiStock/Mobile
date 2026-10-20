@@ -45,7 +45,9 @@ class CoreSessionInterceptorTests {
         val chain = mockk<Interceptor.Chain>()
         every { chain.request() } returns Request.Builder().url(origin).build()
 
-        val failure = runCatching { CoreSessionInterceptor(origin, session, custody).intercept(chain) }.exceptionOrNull()
+        val failure = runCatching {
+            CoreSessionInterceptor(origin, session, custody).intercept(chain)
+        }.exceptionOrNull()
 
         assertTrue(failure is SessionException)
         verify(exactly = 0) { chain.proceed(any()) }
@@ -66,7 +68,9 @@ class CoreSessionInterceptorTests {
             .request(request).protocol(Protocol.HTTP_1_1).code(401).message("fixture")
             .body("".toResponseBody()).build()
 
-        val failure = runCatching { CoreSessionInterceptor(origin, session, custody).intercept(chain) }.exceptionOrNull()
+        val failure = runCatching {
+            CoreSessionInterceptor(origin, session, custody).intercept(chain)
+        }.exceptionOrNull()
 
         assertTrue(failure is SessionException)
         verify(exactly = 1) { chain.proceed(any()) }

@@ -1,9 +1,6 @@
 package com.quistock.quistock.data.remote.core
 
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,6 +9,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 class HttpProfilePhotoRepository : ProfilePhotoRepository {
     // No Core interceptor, cookies, redirects, diagnostics, or disk cache on external photo requests.
@@ -31,8 +31,7 @@ class HttpProfilePhotoRepository : ProfilePhotoRepository {
         }
     }
 
-    private fun HttpUrl.isPublicPhotoUrl(): Boolean =
-        isHttps && username.isEmpty() && password.isEmpty()
+    private fun HttpUrl.isPublicPhotoUrl(): Boolean = isHttps && username.isEmpty() && password.isEmpty()
 
     private fun download(target: HttpUrl): ByteArray? =
         client.newCall(Request.Builder().url(target).build()).execute().use { response ->

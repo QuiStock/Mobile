@@ -3,15 +3,15 @@ package com.quistock.quistock.data.remote.core
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.port.ProfileRepository
-import java.net.HttpURLConnection
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.Response
 import retrofit2.http.GET
+import java.net.HttpURLConnection
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 interface ProfileApi {
     @GET("profile")
@@ -48,12 +48,20 @@ class RetrofitProfileRepository(private val api: ProfileApi) : ProfileRepository
                 response.errorBody()?.close()
                 ProfileResult.Forbidden
             }
+
             response.isSuccessful -> response.body()?.let { ProfileResult.Success(it.toDomain()) }
                 ?: ProfileResult.Failure()
+
             else -> {
                 response.errorBody()?.close()
                 ProfileResult.Failure(
-                    if (response.code() == HTTP_TOO_MANY_REQUESTS) retryAfterMillis(response.headers()["Retry-After"]) else 0,
+                    if (response.code() ==
+                        HTTP_TOO_MANY_REQUESTS
+                    ) {
+                        retryAfterMillis(response.headers()["Retry-After"])
+                    } else {
+                        0
+                    },
                 )
             }
         }
