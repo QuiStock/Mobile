@@ -169,3 +169,13 @@ Detekt, testes e demais validações não foram executados nesta correção, con
 O relatório fornecido de `testDebugUnitTest` registra `ClassCastException` em `SessionRecoveryTests.protocolRecoveryOnlyStartsOnClickAndRejectsDuplicateClicks`: o teste combinava `ProfileUseCase` real com `SessionUseCase` relaxado, cuja operação genérica não executava a ação e retornava um objeto incompatível com `CompletableDeferred`.
 
 A fixture do teste de recuperação agora usa `ProfileUseCase` explicitamente configurado, isolando a coordenação da ViewModel. As asserções também verificam que recuperação bem-sucedida solicita o perfil uma vez e que expiração de Retry-After sem ação manual não solicita o perfil. Os testes de integração entre sessão e perfil reais permanecem em `ProfileRecoveryTests` e `ProfileUseCaseTests`. Sem mudança de comportamento de produção ou contrato; correção mecânica da fixture dentro desta spec. Testes e validações não foram executados nesta correção, conforme instrução do solicitante.
+
+### Correção da execução instrumentada interrompida
+
+A saída de `connectedDebugAndroidTest` fornecida pelo solicitante indica queda do processo no primeiro teste de Chatbot: `AuthenticatedSessionRule` publicava sessão simulada ativa, enquanto a consulta de perfil ainda usava cliente Core/custódia reais sem access cookie correspondente. A falha de coleta de `coverage.ec` ocorreu após a queda; não comprova problema independente de cobertura nem falha nos outros 29 testes planejados, que não terminaram de executar.
+
+As fixtures de telas autenticadas, navegação de sessão e formulário de login agora instalam perfil/foto locais vinculados à mesma sessão e restauram as dependências anteriores ao terminar, sem acesso ao Core, fotos externas ou credenciais do aparelho. O teste antigo que navegava à Home apenas ao emitir `LoginUiState.Authenticated` foi atualizado para verificar a barreira de perfil; uma consulta suspensa controlável comprova a expectativa de permanecer no carregamento até disponibilizar o perfil.
+
+Na custódia Core, ausência do access cookie antes do envio ou da repetição passa a lançar `SessionException` (IOException recuperável), sem `IllegalArgumentException` em thread do OkHttp. A operação não é enviada sem credencial. Essa correção mantém a exigência de acesso válido e os limites de renovação existentes. Dois testes unitários de regressão foram escritos para ausência inicial e ausência após renovação.
+
+Testes unitários/instrumentados, builds e demais validações não foram executados nesta correção, conforme orientação do solicitante. O resultado requer nova execução pelo solicitante; não há evidência de que os testes restantes da execução abortada tenham passado.

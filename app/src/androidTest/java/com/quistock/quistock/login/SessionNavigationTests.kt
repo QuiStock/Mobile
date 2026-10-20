@@ -13,6 +13,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.quistock.quistock.ProfileTestDependencies
 import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.port.AuthRepository
@@ -58,6 +59,7 @@ class SessionNavigationTests {
     private val auth = mockk<AuthRepository>(relaxed = true)
     private lateinit var session: SessionUseCase
     private lateinit var previousSession: SessionUseCase
+    private lateinit var profileDependencies: ProfileTestDependencies
     private lateinit var previousLoginViewModel: LoginViewModel
 
     @Before fun setup() {
@@ -67,7 +69,9 @@ class SessionNavigationTests {
         io.mockk.every { auth.hasAccess(any()) } returns true
         coEvery { auth.refresh(any()) } returns AuthResult.Success
         session = SessionUseCase(auth)
+        profileDependencies = ProfileTestDependencies(session)
         GlobalContext.get().declare(session, allowOverride = true)
+        profileDependencies.install()
         GlobalContext.get().declare(
             LoginViewModel(LoginUseCase(session, GlobalContext.get().get())),
             allowOverride = true,
@@ -75,6 +79,7 @@ class SessionNavigationTests {
     }
 
     @After fun restoreDependencies() {
+        profileDependencies.restore()
         GlobalContext.get().declare(previousSession, allowOverride = true)
         GlobalContext.get().declare(previousLoginViewModel, allowOverride = true)
     }
