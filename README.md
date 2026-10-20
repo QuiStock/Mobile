@@ -109,8 +109,9 @@ Domain models expose generation/revision and availability, never credential valu
 
 `SessionUseCase` restores sessions, shares refresh attempts, and fences response commits,
 retries, cache writes and rendering by generation. The Core client extracts a valid access
-cookie privately in data and sends Bearer to the exact configured Core origin. It sends no
-authentication cookies; the independent legacy chatbot client receives no Core credentials.
+cookie privately in data and sends Bearer to the exact configured Core origin. Core uses an
+empty CookieJar and strips Cookie and CSRF headers; Bearer calls do not require Core CSRF.
+It sends no authentication cookies; the independent legacy chatbot client receives no Core credentials.
 Auth obtains a fresh CSRF pair from `GET /csrf` before each renewal. The GET sends no
 stored credentials; `POST /refresh` sends only the refresh cookie, the temporary
 `AUTH-XSRF-TOKEN` cookie and the masked JSON token in `X-CSRF-TOKEN`. CSRF stays in

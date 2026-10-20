@@ -1,6 +1,6 @@
 # Project context for AI-assisted development
 
-Updated on 2026-10-16 from repository files. This document guides discovery; confirm details in the code before changing behavior.
+Updated on 2026-10-20 from repository files. This document guides discovery; confirm details in the code before changing behavior.
 
 ## Known state
 
@@ -16,6 +16,8 @@ Updated on 2026-10-16 from repository files. This document guides discovery; con
 - Auth refresh now obtains an isolated, memory-only CSRF pair from `/csrf` and sends the JSON token in `X-CSRF-TOKEN` with refresh/CSRF cookies to `/refresh`. Protocol failures preserve eligible refresh and present manual recovery while protected navigation is hidden. HTTP follow-ups are blocked. See `specs/auth-refresh-csrf.md`; tests were written but execution/validation is deferred by the requester. Logout now has its own isolated CSRF exchange with one shared ten-second deadline; see `specs/profile-logout-csrf.md`. Execution checks remain deferred.
 
 - Perfil agora tem implementação de consulta Core em `GET profile`, estado somente em memória por sessão e barreira de entrada coordenada por `SessionViewModel`/`MainActivity`. Home só é liberada para Repositor (`FUNCIONARIO`) ou Gerente (`GERENTE`) com loja vinculada. Headers, Editar perfil e Contato consomem o mesmo resultado. Sem recarga ao voltar do background; foto independente não bloqueia entrada. Ver `specs/profile-user-store-data.md`. Testes foram escritos, mas execução e validações foram delegadas ao solicitante; compatibilidade do vínculo de loja de gerentes no backend real não foi verificada.
+
+- Rebase de perfil sobre CSRF/logout concluído: perfil e foto são descartados no início do logout, mantendo a barreira do perfil e a recuperação/diálogos de logout. Core usa apenas Bearer derivado do access cookie privado, com CookieJar vazio e remoção de headers Cookie/CSRF. O binding do chatbot legado foi renomeado para deixar explícito que não é o cliente Core autenticado. Testes de regressão foram escritos/adaptados, sem nova execução ou validação após o rebase por orientação do solicitante.
 
 ## Sources of truth
 

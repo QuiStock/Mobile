@@ -21,9 +21,9 @@ import com.quistock.quistock.domain.model.ProfileRejection
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
-import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
     override fun onResumeFragments() {
         super.onResumeFragments()
         val state = sessionViewModel.session.state.value

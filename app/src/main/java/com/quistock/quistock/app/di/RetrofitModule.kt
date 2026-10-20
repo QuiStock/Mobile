@@ -34,34 +34,22 @@ import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
-private sealed interface ApiQualifier : Qualifier {
-    object Core : ApiQualifier {
-        override val value: QualifierValue get() = "api-core"
-    }
-
-    object Auth : ApiQualifier {
-        override val value: QualifierValue get() = "api-auth"
-    }
+private object LegacyChatbotApi : Qualifier {
+    override val value: QualifierValue get() = "api-legacy-chatbot"
 }
 
 val retrofitSdkModule = module {
     single { createJson() }
 
-    single(qualifier = ApiQualifier.Auth) {
-        createRetrofit(
-            baseUrl = get<Context>().getString(R.string.core_base_url),
-            json = get(),
-        )
-    }
-
-    single(qualifier = ApiQualifier.Core) {
+    // Keep the legacy chatbot transport independent from the authenticated Core client.
+    single(qualifier = LegacyChatbotApi) {
         createRetrofit(
             baseUrl = get<Context>().getString(R.string.auth_base_url),
             json = get(),
         )
     }
 
-    single<ChatbotApi> { createChatbotApi(get(qualifier = ApiQualifier.Core)) }
+    single<ChatbotApi> { createChatbotApi(get(qualifier = LegacyChatbotApi)) }
 }
 
 val retrofitModule = module {
@@ -113,6 +101,7 @@ internal fun createChatbotApi(retrofit: Retrofit): ChatbotApi = retrofit.create(
 
 internal fun createCoreHttpClient(baseUrl: String, session: SessionUseCase, custody: AuthCookieCustody): OkHttpClient =
     OkHttpClient.Builder()
+        .cookieJar(CookieJar.NO_COOKIES)
         .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody))
         .retryOnConnectionFailure(false)
         .followRedirects(false)
