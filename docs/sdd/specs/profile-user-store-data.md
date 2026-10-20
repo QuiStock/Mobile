@@ -163,3 +163,9 @@ Não foram executados testes, builds, lint, formatadores/checks, validações de
 Refatoração mecânica baseada nos 18 apontamentos de `app/build/reports/detekt/detekt.md`, gerado em 20/10/2026: separar validação do perfil, leitura limitada de imagem, binding de campos/fotos, renderização/navegação da barreira e recuperação de sessão; reduzir retornos antecipados; nomear códigos HTTP e conversão de tempo; quebrar linhas longas nos testes. Sem alteração de comportamento ou do contrato aprovado, portanto não exige nova spec. Não foram adicionadas supressões, alteradas regras ou exclusões de qualidade. Os relatórios debug/release disponíveis são históricos de 05/08/2026 e não representam esta implementação.
 
 Detekt, testes e demais validações não foram executados nesta correção, conforme instrução do solicitante; é necessário regenerar o relatório para confirmar o resultado.
+
+### Correção do teste de recuperação de sessão
+
+O relatório fornecido de `testDebugUnitTest` registra `ClassCastException` em `SessionRecoveryTests.protocolRecoveryOnlyStartsOnClickAndRejectsDuplicateClicks`: o teste combinava `ProfileUseCase` real com `SessionUseCase` relaxado, cuja operação genérica não executava a ação e retornava um objeto incompatível com `CompletableDeferred`.
+
+A fixture do teste de recuperação agora usa `ProfileUseCase` explicitamente configurado, isolando a coordenação da ViewModel. As asserções também verificam que recuperação bem-sucedida solicita o perfil uma vez e que expiração de Retry-After sem ação manual não solicita o perfil. Os testes de integração entre sessão e perfil reais permanecem em `ProfileRecoveryTests` e `ProfileUseCaseTests`. Sem mudança de comportamento de produção ou contrato; correção mecânica da fixture dentro desta spec. Testes e validações não foram executados nesta correção, conforme instrução do solicitante.

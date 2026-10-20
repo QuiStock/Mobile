@@ -2,6 +2,7 @@ package com.quistock.quistock.presentation.activity
 
 import com.quistock.quistock.MainDispatcherRule
 import com.quistock.quistock.R
+import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
@@ -41,7 +42,7 @@ class SessionRecoveryTests {
             state.value = SessionState.Active
             SessionSnapshot(1, true, 1)
         }
-        val profile = ProfileUseCase(mockk(relaxed = true), session)
+        val profile = profileFixture()
         val viewModel = SessionViewModel(
             session,
             profile,
@@ -58,6 +59,7 @@ class SessionRecoveryTests {
         runCurrent()
         assertFalse(viewModel.recovery.value.retrying)
         assertEquals(SessionState.Active, state.value)
+        coVerify(exactly = 1) { profile.load() }
         assertEquals(R.string.session_renewal_failed, sessionFailureMessage(SessionFailure.PROTOCOL))
     }
 
@@ -67,7 +69,7 @@ class SessionRecoveryTests {
         every { session.state } returns state
         every { session.retryDelayMillis } returns 1000L
         coEvery { session.restore() } returns state.value
-        val profile = ProfileUseCase(mockk(relaxed = true), session)
+        val profile = profileFixture()
         val viewModel = SessionViewModel(
             session,
             profile,
@@ -81,5 +83,15 @@ class SessionRecoveryTests {
         runCurrent()
         assertFalse(viewModel.recovery.value.retryBlocked)
         coVerify(exactly = 0) { session.refresh(any()) }
+        coVerify(exactly = 0) { profile.load() }
     }
+
+    private fun profileFixture(): ProfileUseCase {
+        val profile = mockk<ProfileUseCase>()
+        every { profile.state } returns MutableStateFlow<ProfileState>(ProfileState.Empty)
+        every { profile.clear() } returns Unit
+        coEvery { profile.load() } returns Unit
+        return profile
+    }
+
 }
