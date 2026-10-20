@@ -16,6 +16,7 @@ class SessionViewModel(val session: SessionUseCase) : ViewModel() {
     private val mutableRecovery = MutableStateFlow(SessionRecoveryUiState())
     val recovery = mutableRecovery.asStateFlow()
     private var retryTimer: Job? = null
+    private var logoutJob: Job? = null
 
     fun retrySession() {
         if (session.state.value !is SessionState.Failure || mutableRecovery.value.retrying ||
@@ -46,8 +47,6 @@ class SessionViewModel(val session: SessionUseCase) : ViewModel() {
         }
     }
 
-    private var logoutJob: Job? = null
-
     fun logout() {
         if (logoutJob?.isActive == true) return
         logoutJob = viewModelScope.launch { session.logout() }
@@ -57,6 +56,7 @@ class SessionViewModel(val session: SessionUseCase) : ViewModel() {
         if (logoutJob?.isActive == true) return
         logoutJob = viewModelScope.launch { session.retryLogoutCleanup() }
     }
+
     fun consumeNavigation(state: SessionState): Boolean {
         if (lastNavigationState == state) return false
         lastNavigationState = state

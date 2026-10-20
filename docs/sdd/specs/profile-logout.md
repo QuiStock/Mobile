@@ -4,6 +4,8 @@
 **Issue:** none  
 **Product decision owner:** Solicitante, conforme decisões registradas nesta conversa
 
+> Atualização de 2026-10-20: o rebase integrou CSRF no refresh, mas logout ainda não envia o par exigido pelo contrato atual de DS_Auth. Esta entrega histórica não comprova compatibilidade remota. A adaptação está planejada em [CSRF no logout](profile-logout-csrf.md), com aprovação pendente antes de implementar. O envio “apenas refresh” descrito abaixo precisa ser substituído nessa extensão.
+
 ## Problem and goal
 
 O perfil apresenta “Sair da conta” (`profile_sign_out_button`), mas `ProfileFragment` não trata esse clique. Permitir encerrar a sessão do aplicativo e solicitar a revogação remota conforme DS_Auth, sem permitir que respostas antigas restaurem a sessão encerrada.
