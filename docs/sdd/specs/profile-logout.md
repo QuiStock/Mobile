@@ -139,3 +139,9 @@ O job da PR #49 registrou sucesso em Check Formatting e falha em Android Lint po
 ### Reconciliação do diálogo após recriação — 20/10/2026
 
 Após a falha instrumentada na API 37, MainActivity reconcilia o diálogo em `onResumeFragments`, quando FragmentManager terminou a restauração e pode aceitar transações. A busca pela tag existente mantém a operação única; o estado da SessionViewModel continua sendo a fonte para exibir ou remover o diálogo. `ProfileLogoutTests` agora verifica a presença do fragmento restaurado antes da mensagem visível, delimitando o ponto que falhou na CI. Testes e Gradle não foram executados nesta correção por instrução do solicitante; compatibilidade/estabilidade precisa ser confirmada pela execução da CI.
+
+### Seleção de janela após novo relatório instrumentado — 20/10/2026
+
+O artefato `instrumentation-test-reports (1).zip` enviado pelo solicitante contém 35 testes e uma falha no mesmo teste de recriação, agora na linha 81. A nova asserção de existência do fragmento foi ultrapassada; a falha seguinte descreve uma hierarquia `BASE_APPLICATION` com navegação oculta e sem foco, em vez da janela do AlertDialog. Isso restringe o diagnóstico: a ausência de um fragmento restaurado não foi demonstrada; a seleção implícita da janela pelo Espresso é inadequada nessa transição.
+
+As interações com confirmação, progresso e aviso agora usam `inRoot(isDialog())`, permitindo a sincronização de raízes do próprio Espresso sem sleeps ou retries de asserções. Após recriação, o teste exige exatamente um LogoutProgressDialog e `requireDialog().isShowing` antes de verificar a mensagem na janela de diálogo. Falha de exibição real continua falhando. Não houve mudança adicional de produção, relaxamento de gates ou nova decisão de produto. Correção direcionada ao teste; nenhum teste ou comando Gradle executado localmente. A hipótese permanece sujeita à confirmação na API 37.
