@@ -3,11 +3,24 @@ package com.quistock.quistock.data.remote.auth
 import com.quistock.quistock.app.di.createAuthApi
 import com.quistock.quistock.app.di.createCoreHttpClient
 import com.quistock.quistock.domain.model.AuthResult
+import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionFailure
+import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.usecase.SessionUseCase
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Interceptor
+import okhttp3.Protocol
 import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -23,6 +36,51 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CoreSessionInterceptorTests {
+    @Test fun missingAccessCookieFailsAsSessionExceptionWithoutSendingRequest() {
+        val snapshot = SessionSnapshot(1, true)
+        val session = activeSession(snapshot)
+        val custody = mockk<AuthCookieCustody>()
+        every { custody.access(any()) } returns null
+        val origin = "https://core.example.test/".toHttpUrl()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns Request.Builder().url(origin).build()
+
+        val failure = runCatching { CoreSessionInterceptor(origin, session, custody).intercept(chain) }.exceptionOrNull()
+
+        assertTrue(failure is SessionException)
+        verify(exactly = 0) { chain.proceed(any()) }
+        coVerify(exactly = 0) { session.refresh(any()) }
+    }
+
+    @Test fun missingAccessCookieAfterRefreshDoesNotSendRetryOrCrashNetworkThread() {
+        val snapshot = SessionSnapshot(1, true)
+        val session = activeSession(snapshot)
+        coEvery { session.refresh(snapshot) } returns snapshot.copy(revision = 1)
+        val custody = mockk<AuthCookieCustody>()
+        every { custody.access(any()) } returnsMany listOf("fixture", null)
+        val origin = "https://core.example.test/".toHttpUrl()
+        val request = Request.Builder().url(origin).build()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns request
+        every { chain.proceed(any()) } returns Response.Builder()
+            .request(request).protocol(Protocol.HTTP_1_1).code(401).message("fixture")
+            .body("".toResponseBody()).build()
+
+        val failure = runCatching { CoreSessionInterceptor(origin, session, custody).intercept(chain) }.exceptionOrNull()
+
+        assertTrue(failure is SessionException)
+        verify(exactly = 1) { chain.proceed(any()) }
+        coVerify(exactly = 1) { session.refresh(snapshot) }
+    }
+
+    private fun activeSession(snapshot: SessionSnapshot): SessionUseCase {
+        val session = mockk<SessionUseCase>()
+        every { session.state } returns MutableStateFlow<SessionState>(SessionState.Active)
+        every { session.snapshot() } returns snapshot
+        coEvery { session.requireAccess(any()) } coAnswers { firstArg<SessionSnapshot>() }
+        return session
+    }
+
     @Test fun failedRenewalCannotBeRetriedByAnotherProtectedRequest() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()

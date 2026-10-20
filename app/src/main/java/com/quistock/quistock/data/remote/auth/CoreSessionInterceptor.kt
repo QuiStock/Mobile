@@ -36,7 +36,7 @@ class CoreSessionInterceptor(
         val current = session.requireAccess(recovered)
         fun authorized(token: String) =
             request.newBuilder().removeHeader("Cookie").header("Authorization", "Bearer $token").build()
-        val response = chain.proceed(authorized(requireNotNull(custody.access(current.generation))))
+        val response = chain.proceed(authorized(custody.access(current.generation) ?: throw SessionException()))
         if (session.snapshot().generation != current.generation) {
             response.close()
             throw SessionException()
@@ -46,7 +46,7 @@ class CoreSessionInterceptor(
         val updated = session.refresh(current)
         if (updated.generation != current.generation) throw SessionException()
         val valid = session.requireAccess(updated)
-        val retried = chain.proceed(authorized(requireNotNull(custody.access(valid.generation))))
+        val retried = chain.proceed(authorized(custody.access(valid.generation) ?: throw SessionException()))
         if (session.snapshot().generation != valid.generation) {
             retried.close()
             throw SessionException()
