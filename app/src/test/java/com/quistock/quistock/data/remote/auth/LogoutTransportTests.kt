@@ -17,13 +17,18 @@ class LogoutTransportTests {
             val request = f.repository.prepareLogout(f.session.snapshot().generation)
             f.repository.begin(100)
             f.repository.clear(100)
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("should-not-install").setResponseCode(204))
             assertTrue(request.execute())
+            val preparation = f.auth.takeRequest()
+            assertEquals("/csrf", preparation.path)
+            assertNull(preparation.getHeader("Cookie"))
             val sent = f.auth.takeRequest()
             assertEquals("POST", sent.method)
             assertEquals("/logout", sent.path)
             assertEquals(0L, sent.bodySize)
-            assertEquals("refresh_token=old-refresh", sent.getHeader("Cookie"))
+            assertEquals("refresh_token=old-refresh; AUTH-XSRF-TOKEN=raw-synthetic", sent.getHeader("Cookie"))
+            assertEquals("masked-synthetic", sent.getHeader("X-CSRF-TOKEN"))
             assertNull(sent.getHeader("Authorization"))
             assertFalse(f.repository.hasAccess(100))
         }
@@ -40,9 +45,10 @@ class LogoutTransportTests {
     @Test fun remoteFailureDoesNotInstallCookiesOrRetry() = runTest {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("rejected").setResponseCode(429).addHeader("Retry-After", "60"))
             assertFalse(f.repository.prepareLogout(f.session.snapshot().generation).execute())
-            assertEquals(2, f.auth.requestCount)
+            assertEquals(3, f.auth.requestCount)
         }
     }
 
@@ -85,6 +91,7 @@ class LogoutTransportTests {
             f.session.login("synthetic", "synthetic")
             f.auth.takeRequest()
             val replacement = f.session.snapshot()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(
                 MockResponse().setResponseCode(204)
                     .addHeader("Set-Cookie", "refresh_token=; Max-Age=0; Path=/; HttpOnly"),

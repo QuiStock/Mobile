@@ -1,6 +1,6 @@
 # CSRF da Auth no logout do perfil
 
-**Status:** Ready for implementation — sequência aprovada em 2026-10-20
+**Status:** Complete — implementação entregue; execução dos testes e validações pendente
 **Issue:** none
 **Product decision owner:** Solicitante
 **Data:** 2026-10-20
@@ -38,7 +38,7 @@ Sequência aprovada pelo solicitante em 2026-10-20:
 
 ## Acceptance criteria and evidence
 
-Todos os testes abaixo são planejados; não foram escritos/executados nesta extensão.
+A tabela descreve os critérios e o plano de evidência. Testes de transporte foram escritos/adaptados; nenhum teste foi executado. Veja o resultado abaixo.
 
 | ID | Observable given / when / then | Planned test or check |
 | --- | --- | --- |
@@ -73,10 +73,18 @@ Não é necessária migração de store, novo módulo ou alteração de contrato
 | D-02 — Limpeza independente, tentativa única, 10 segundos, aviso e retry apenas local. | Decidido | Aprovações anteriores da spec de logout. |
 | O-01 — Aprovar GET somente com refresh inicial elegível, orçamento único GET + POST, interromper sem POST se refresh expirar durante GET e tratar falhas da preparação com aviso remoto atual. | Decidido | Solicitante, aprovação explícita em 2026-10-20. |
 
-Enquanto O-01 ou nova dúvida genuína estiver Open, não implementar esta extensão. Resolução do rebase não representa aprovação desse plano.
+O-01 foi resolvido pela aprovação explícita do solicitante. Não há decisões Open nesta revisão; qualquer nova dúvida genuína deve ser resolvida antes de implementação adicional.
 
 ## Implementation outcome
 
-Rebase de `feat/logout` sobre `51bcdb6` concluído em 2026-10-20, preservando recuperação manual de refresh, bloqueio de follow-ups Auth, estados/diálogos de logout e refatorações de qualidade. Logout ainda não envia CSRF.
+Rebase de `feat/logout` sobre `51bcdb6` concluído em 2026-10-20, preservando recuperação manual de refresh, bloqueio de follow-ups Auth, estados/diálogos de logout e refatorações de qualidade. A extensão foi implementada após aprovação explícita do solicitante em 2026-10-20.
 
 Nenhum teste ou comando Gradle executado. Revisão estática não comprova compilação, qualidade, integração real ou cumprimento dos ACs.
+
+### Entrega autorizada
+
+- `LogoutExchange` prepara CSRF e faz POST em um contexto exclusivo, com prazo monotônico de dez segundos compartilhado e cancelamento da chamada ativa pelo timeout OkHttp. Não lê nem comita a geração corrente após a captura.
+- `AuthApi` recebe header explícito; o jar valida CSRF para a rota da própria tentativa; validação do DTO é compartilhada com refresh. CSRF é descartado no término e não entra no store.
+- `LogoutTransportTests` foi adaptado para GET + POST, header mascarado e resposta tardia sem alterar novo login. `LogoutCsrfTests` cobre preparação inválida, isolamento de rota/origem, descarte, expiração durante GET, limpeza local enquanto GET aguarda, 403, timeout no GET e orçamento compartilhado. `AuthTransportDiagnosticsTests` considera a etapa sanitizada.
+- AC-01 a AC-08 têm testes de transporte escritos/adaptados, sem execução. Testes de sessão existentes continuam necessários para a recuperação/UI de AC-07/09; instrumentados, acessibilidade e smoke AC-10 permanecem pendentes. Não se alega cobertura completa nem aprovação dos critérios.
+- Não houve Red/Green observado: o solicitante manteve a proibição de executar testes/Gradle. Nenhuma regra de qualidade foi alterada. Revisão estática e `git diff --check` não substituem compilação ou execução.
