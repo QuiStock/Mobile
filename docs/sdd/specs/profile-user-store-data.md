@@ -24,7 +24,7 @@ Documentação local consultada em `../DS_Backend/README.md` e `../DS_Backend/ap
 
 - `GET /profile`, sem corpo e sem ID informado pelo cliente, lê a conta identificada pelo `sub` do JWT.
 - HTTP 200 retorna `id`, `name`, `email`, `role`, `status`, `profile_photo_url`, `store_id`, `store_code`, `store_name`, `region_id`, `region_code`, `region_name`. `id` é string; `store_id` e `region_id` são números inteiros (`Long`) no DTO, embora o exemplo documental mostre esses vínculos nulos. Foto e vínculos podem ser nulos.
-- Cargos documentados: `ADMIN`, `GERENTE`, `GERENTE_REGIONAL`, `FUNCIONARIO`. Funcionário tem uma loja ativa; gerente regional tem região. Não se pode presumir uma loja para todo usuário.
+- Cargos documentados localmente: `ADMIN`, `GERENTE`, `GERENTE_REGIONAL`, `FUNCIONARIO`. A resposta do ambiente fornecida pelo solicitante em 20/10/2026 usa também `EMPLOYEE`; esse valor é convertido em `FUNCIONARIO` na fronteira data/Core. Funcionário tem uma loja ativa; gerente regional tem região. Não se pode presumir uma loja para todo usuário.
 - Token ausente/inválido/expirado: 401. Conta ausente/inativa: 403. O contrato não define aqui um formato de corpo de erro para o cliente interpretar.
 - A resposta já contém o nome da loja. Não é necessário listar `/branches` para resolver esse nome. Não há logo de loja nem endereço em `/profile`; não inventar esses dados ou usar produtos para deduzir o vínculo.
 - O cliente Core existente usa Bearer, remove Cookie e coordena renovação/repetição limitada de 401 via `CoreSessionInterceptor` e `SessionUseCase`. Não criar um fluxo paralelo de autenticação para o perfil.
@@ -197,3 +197,11 @@ Regressões escritas/adaptadas: limpeza de rejeição/foto no logout, navegaçã
 ### Diagnóstico de chamadas Core e carregamento de perfil
 
 O solicitante autorizou logs no padrão Auth. A extensão está em [Core request diagnostics](core-request-diagnostics.md): início, tentativas/status HTTP, duração, renovação, bloqueio de acesso e resultados de carregamento/validação do perfil, somente com campos sanitizados. Token, cookies, CSRF, URL, query, payload, identidade e texto/stack de exceções não são registrados. A instrumentação utiliza o Logger existente e a tag QuiStock, sem alterar fluxos de sessão/perfil. Testes de diagnóstico e ausência de dados sensíveis foram escritos, sem execução ou validação final.
+
+### Compatibilidade do cargo EMPLOYEE no ambiente consultado
+
+A resposta de GET /profile fornecida pelo solicitante contém `role=EMPLOYEE`, enquanto a documentação e `UserManagementRules` do DS_Backend local usam `FUNCIONARIO`. O modelo de domínio rejeitava o valor externo como cargo desconhecido, produzindo `reason=invalid` após HTTP 200. Não é falha do token nessa resposta. Não copiar a resposta nem identificadores/dados pessoais para documentação, fixtures ou logs.
+
+A correção de integração converte exclusivamente o alias observado `EMPLOYEE` em `FUNCIONARIO` no mapper `ProfileResponse.toDomain`, antes da validação de domínio. O rótulo continua Repositor. Os códigos documentados permanecem compatíveis, sem conversão implícita de outros nomes em inglês, mudança de caixa ou remoção de espaços. ADMIN/GERENTE_REGIONAL continuam bloqueados; cargos desconhecidos continuam inválidos; loja ausente continua impedindo entrada; status e demais campos mantêm as regras existentes. Não há alteração no backend ou no contrato de autenticação.
+
+Critérios adicionais: dado `EMPLOYEE` ativo com vínculo coerente, o mapper produz o papel interno FUNCIONARIO e permite a validação normal; sem loja, mantém NO_STORE; códigos antigos preservam seus resultados; cargos não reconhecidos não viram funcionário por fallback. Evidência planejada: `ProfileRoleMappingTests`, com JSON inteiramente sintético e sem dados da resposta fornecida. Testes e validações não serão executados nesta correção, conforme orientação vigente do solicitante; o ambiente real requer nova verificação manual após instalar a versão corrigida.

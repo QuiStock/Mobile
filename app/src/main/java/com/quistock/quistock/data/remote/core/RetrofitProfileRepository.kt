@@ -39,9 +39,15 @@ class ProfileResponse(
     @SerialName("region_name") val regionName: String? = null,
 ) {
     fun toDomain() = UserProfile(
-        id, name, email, role, status, photoUrl, storeId, storeName, storeCode,
+        id, name, email, internalRole(), status, photoUrl, storeId, storeName, storeCode,
         regionId, regionCode, regionName,
     )
+
+    // The deployed Core exposes this alias; domain and presentation keep their approved role codes.
+    private fun internalRole(): String = when (role) {
+        "EMPLOYEE" -> "FUNCIONARIO"
+        else -> role
+    }
 }
 
 class RetrofitProfileRepository(private val api: ProfileApi, private val logger: Logger? = null) : ProfileRepository {
