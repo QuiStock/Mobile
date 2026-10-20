@@ -21,6 +21,8 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 - Core e carregamento de perfil agora emitem eventos estruturados pelo Logger existente (tag QuiStock), com operation=core_profile/core_request, status/tentativa/duração, renovação, bloqueio e categorias de rejeição/decodificação, sem tokens, cookies, URLs, payloads ou dados pessoais. Ver `specs/core-request-diagnostics.md`. Testes escritos e verificações de execução continuam delegados ao solicitante.
 
+- O ambiente consultado pelo solicitante retornou role=EMPLOYEE em /profile, divergindo dos códigos portugueses do DS_Backend local. O mapper Core converte apenas EMPLOYEE em FUNCIONARIO, mantendo Repositor e as regras de acesso no domínio; outros aliases não foram presumidos. Ver `ProfileRoleMappingTests`, escritos mas não executados conforme orientação do solicitante.
+
 ## Sources of truth
 
 | Topic | Source |
