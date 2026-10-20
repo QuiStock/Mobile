@@ -80,7 +80,7 @@ class AuthTransportDiagnosticsTests {
                 )
                 logger.debug(
                     "Auth HTTP response received",
-                    mapOf("operation" to "auth_logout", "http_status" to 204),
+                    mapOf("operation" to "auth_logout", "stage" to "logout", "http_status" to 204),
                 )
             }
         }
@@ -99,8 +99,8 @@ class AuthTransportDiagnosticsTests {
             logger.info(
                 "Auth HTTP transport failed",
                 match { context ->
-                    context.keys == setOf("operation", "failure", "elapsed_ms") &&
-                        context["operation"] == "auth_logout" &&
+                    context.keys == setOf("operation", "stage", "failure", "elapsed_ms") &&
+                        context["stage"] == "logout" && context["operation"] == "auth_logout" &&
                         context["failure"] == "dns" &&
                         context["elapsed_ms"] is Long
                 },
