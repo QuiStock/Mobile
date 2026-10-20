@@ -1,6 +1,6 @@
 # CSRF da Auth no logout do perfil
 
-**Status:** Draft — plano para aprovação; adaptação não implementada
+**Status:** Ready for implementation — sequência aprovada em 2026-10-20
 **Issue:** none
 **Product decision owner:** Solicitante
 **Data:** 2026-10-20
@@ -23,13 +23,13 @@ Esta extensão complementa [logout do perfil](profile-logout.md) e [CSRF no refr
 
 Contrato confirmado: `GET /csrf` retorna JSON `headerName`/`token` e cookie HttpOnly `AUTH-XSRF-TOKEN`. O token mascarado do JSON vai em `X-CSRF-TOKEN`; nunca copiar o valor do cookie para o header. `POST /logout` com refresh exige esse par, sem JSON, access cookie ou Bearer. O par da Core não é intercambiável. 403 não confirma revogação; 204 confirma a operação inclusive para refresh desconhecido/já revogado. Sem refresh não há família identificável.
 
-Sequência proposta para aprovação:
+Sequência aprovada pelo solicitante em 2026-10-20:
 
 1. Manter confirmação, bloqueio imediato, captura privada do refresh elegível, avanço da geração e limpeza local independente da rede.
 2. Com refresh inicial elegível para `/logout`, fazer um GET `/csrf` sem credenciais em jar exclusivo da tentativa. Não reutilizar CSRF de refresh concorrente/anterior.
 3. Validar status 200, header exatamente `X-CSRF-TOKEN`, token não vazio com caracteres válidos para header e um único cookie CSRF elegível para `/logout`. Preservar origem exata, Domain, Path, Secure, HttpOnly e validade; aceitar cookie de sessão sem persistir nem inventar TTL.
 4. Revalidar refresh antes do POST. Não exigir `custody.isCurrent(generationAntiga)`: a limpeza avança essa geração deliberadamente. A captura é de uso único e nunca faz commit em custody. Respostas antigas não podem reinstalar credenciais nem afetar novo login.
-5. Fazer no máximo um POST com refresh + CSRF cookie + header. Preparação inválida impede POST; não retirar refresh elegível para contornar CSRF. Se o refresh expirar durante GET, propor encerrar a tentativa como não confirmada, sem POST.
+5. Fazer no máximo um POST com refresh + CSRF cookie + header. Preparação inválida impede POST; não retirar refresh elegível para contornar CSRF. Se o refresh expirar durante GET, encerrar a tentativa como não confirmada, sem POST.
 6. Sem refresh elegível desde o início, manter P-03: um POST sem cookies/header e sem GET, aceitando 204 sem afirmar revogação de família. Segue o filtro condicional do servidor.
 7. Aplicar os 10 segundos aprovados ao ciclo remoto inteiro: prazo monotônico, somente tempo restante para a segunda chamada e cancelamento efetivo da chamada ativa no limite. Não usar apenas timeout de coroutine em torno de `Call.execute()` bloqueante. Limpeza local não participa desse prazo.
 8. Falha de rede, timeout, payload/cookie inválido, 403, 429 ou status inesperado em qualquer etapa resulta em remoto não confirmado. Sem retries, inclusive HTTP follow-ups. Manter limpeza e aviso já aprovado; não reutilizar recuperação manual de refresh. Retry local repete somente limpeza.
@@ -71,7 +71,7 @@ Não é necessária migração de store, novo módulo ou alteração de contrato
 | --- | --- | --- |
 | D-01 — Nomes, token mascarado, CSRF condicional e 403 anterior à revogação. | Decidido | DS_Auth documentação/código, 2026-10-20. |
 | D-02 — Limpeza independente, tentativa única, 10 segundos, aviso e retry apenas local. | Decidido | Aprovações anteriores da spec de logout. |
-| O-01 — Aprovar GET somente com refresh inicial elegível, orçamento único GET + POST, interromper sem POST se refresh expirar durante GET e tratar falhas da preparação com aviso remoto atual. | Open | Solicitante; pedido atual é de planejamento. |
+| O-01 — Aprovar GET somente com refresh inicial elegível, orçamento único GET + POST, interromper sem POST se refresh expirar durante GET e tratar falhas da preparação com aviso remoto atual. | Decidido | Solicitante, aprovação explícita em 2026-10-20. |
 
 Enquanto O-01 ou nova dúvida genuína estiver Open, não implementar esta extensão. Resolução do rebase não representa aprovação desse plano.
 
