@@ -2,14 +2,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val coreBaseUrl = providers
-    .environmentVariable("CORE_BASE_URL")
-    .orElse("https://core-base-url.invalid")
-    .get()
-require(coreBaseUrl.startsWith("https://")) {
-    "CORE_BASE_URL must use HTTPS"
-}
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.spotless)
@@ -210,7 +202,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        resValue("string", "core_base_url", coreBaseUrl)
     }
 
     buildTypes {
