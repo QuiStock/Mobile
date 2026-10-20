@@ -17,6 +17,7 @@ import com.quistock.quistock.domain.port.LogoutRequest
 import com.quistock.quistock.domain.port.StoredSession
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
+import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -25,6 +26,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,6 +75,9 @@ class ProfileLogoutTests {
             onView(withId(android.R.id.button1)).perform(click())
             onView(withText(R.string.logout_progress)).check(matches(isDisplayed()))
             scenario.recreate()
+            scenario.onActivity {
+                assertNotNull(it.supportFragmentManager.findFragmentByTag(LogoutProgressDialog.TAG))
+            }
             onView(withText(R.string.logout_progress)).check(matches(isDisplayed()))
             scenario.onActivity { remote.complete(false) }
             onView(withText(R.string.logout_remote_warning_message)).check(matches(isDisplayed()))

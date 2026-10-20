@@ -57,6 +57,13 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    override fun onResumeFragments() {
+        super.onResumeFragments()
+        val state = sessionViewModel.session.state.value
+        renderLogoutDialog(state == SessionState.LoggingOut || state is SessionState.LogoutFailed)
+    }
+
     private fun observeSession() {
         val nav = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
         lifecycleScope.launch {
