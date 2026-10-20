@@ -36,7 +36,6 @@ class UserProfile(
         null -> regionCode != null || regionName != null
         else -> regionId <= 0
     }
-
 }
 
 enum class ProfileRejection { INVALID, FORBIDDEN, ROLE, NO_STORE }

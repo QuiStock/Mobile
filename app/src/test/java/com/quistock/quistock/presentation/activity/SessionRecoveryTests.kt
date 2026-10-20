@@ -6,9 +6,9 @@ import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
-import com.quistock.quistock.domain.usecase.SessionUseCase
-import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
+import com.quistock.quistock.domain.usecase.ProfileUseCase
+import com.quistock.quistock.domain.usecase.SessionUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -93,5 +93,4 @@ class SessionRecoveryTests {
         coEvery { profile.load() } returns Unit
         return profile
     }
-
 }

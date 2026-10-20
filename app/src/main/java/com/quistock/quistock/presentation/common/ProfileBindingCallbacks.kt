@@ -69,6 +69,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
                 view.setImageResource(R.drawable.ic_profile)
                 view.contentDescription = ready?.profile?.name ?: view.context.getString(R.string.profile_title)
             }
+
             is TextView -> bindText(view, ready)
         }
     }
@@ -77,6 +78,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
         val profile = ready?.profile
         return when (view.tag) {
             "current_profile_store" -> profile?.storeName
+
             "current_profile_role" -> profile?.let {
                 val label = if (it.role == "GERENTE") {
                     R.string.profile_role_manager
@@ -85,7 +87,9 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
                 }
                 view.context.getString(label)
             }
+
             "current_profile_email_input" -> profile?.email
+
             else -> profile?.name
         }.orEmpty()
     }
@@ -149,5 +153,4 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
     private companion object {
         const val MAX_PHOTO_DIMENSION = 512
     }
-
 }

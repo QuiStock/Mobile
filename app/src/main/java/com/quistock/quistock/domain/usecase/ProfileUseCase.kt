@@ -20,6 +20,7 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
     private val mutex = Mutex()
     private val mutableState = MutableStateFlow<ProfileState>(ProfileState.Empty)
     val state = mutableState.asStateFlow()
+
     @Volatile private var generation: Long? = null
     private var pending: Pair<Long, CompletableDeferred<Unit>>? = null
 
@@ -94,7 +95,9 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
                             rejection = ProfileState.Rejected(reason, result.profile.role)
                         }
                     }
+
                     ProfileResult.Forbidden -> rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
+
                     is ProfileResult.Failure -> mutableState.value = ProfileState.Failure(result.retryAfterMillis)
                 }
                 rejection?.let { mutableState.value = it }
