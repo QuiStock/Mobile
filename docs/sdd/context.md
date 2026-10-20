@@ -19,6 +19,8 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 - Rebase de perfil sobre CSRF/logout concluído: perfil e foto são descartados no início do logout, mantendo a barreira do perfil e a recuperação/diálogos de logout. Core usa apenas Bearer derivado do access cookie privado, com CookieJar vazio e remoção de headers Cookie/CSRF. O binding do chatbot legado foi renomeado para deixar explícito que não é o cliente Core autenticado. Testes de regressão foram escritos/adaptados, sem nova execução ou validação após o rebase por orientação do solicitante.
 
+- Core e carregamento de perfil agora emitem eventos estruturados pelo Logger existente (tag QuiStock), com operation=core_profile/core_request, status/tentativa/duração, renovação, bloqueio e categorias de rejeição/decodificação, sem tokens, cookies, URLs, payloads ou dados pessoais. Ver `specs/core-request-diagnostics.md`. Testes escritos e verificações de execução continuam delegados ao solicitante.
+
 ## Sources of truth
 
 | Topic | Source |

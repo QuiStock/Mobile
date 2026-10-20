@@ -193,3 +193,7 @@ Revisão do token contra Authentication de `DS_Backend/api-contract.md`: `GET pr
 Os qualifiers Retrofit antigos associavam nomes Core/Auth a bases invertidas, embora o perfil já utilizasse seu cliente correto. O binding legado agora tem nome explícito `LegacyChatbotApi`, sem alterar seu destino ou acrescentar autenticação; foi removida a instância Retrofit sem uso que induzia confusão com o Core. Não houve alteração de contrato no backend ou implantação.
 
 Regressões escritas/adaptadas: limpeza de rejeição/foto no logout, navegação para estados de logout e eliminação de Cookie/CSRF nas tentativas inicial/repetida ao Core, substituindo Bearer de entrada pelo access token atual. Testes, builds, Detekt, formatação automática, simulações e chamadas reais não foram executados após o rebase, conforme orientação do solicitante. A aprovação das validações informada anteriormente corresponde à árvore anterior ao rebase.
+
+### Diagnóstico de chamadas Core e carregamento de perfil
+
+O solicitante autorizou logs no padrão Auth. A extensão está em [Core request diagnostics](core-request-diagnostics.md): início, tentativas/status HTTP, duração, renovação, bloqueio de acesso e resultados de carregamento/validação do perfil, somente com campos sanitizados. Token, cookies, CSRF, URL, query, payload, identidade e texto/stack de exceções não são registrados. A instrumentação utiliza o Logger existente e a tag QuiStock, sem alterar fluxos de sessão/perfil. Testes de diagnóstico e ausência de dados sensíveis foram escritos, sem execução ou validação final.
