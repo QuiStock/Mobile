@@ -158,6 +158,18 @@ an independent unauthenticated HTTPS client and does not block navigation. See
 [the profile specification](docs/sdd/specs/profile-user-store-data.md). Execution and validation
 of this change are deferred at the requester's instruction.
 
+### Core request diagnostics
+
+Use the Logcat tag `QuiStock` and filter messages containing `operation=core_profile` to follow
+profile loading. Debug events show request start, `attempt`, `http_status`, `elapsed_ms`, access
+availability and renewal. Info events distinguish transport categories (`dns`, `connection`,
+`timeout`, TLS), session blocks (`stage=access_missing`, `session_changed`,
+`unauthorized_after_refresh`) and profile failures (`invalid_response`, `empty_body`, `forbidden`,
+`no_store`, `role`, `invalid`). Other Core operations use `operation=core_request`.
+Auth continues to log its own CSRF/refresh stages. Logs contain no token, cookie, URL, query,
+payload, account/store field, exception message or stack trace. See
+[the diagnostic specification](docs/sdd/specs/core-request-diagnostics.md).
+
 ### Tests
 
 - Tests for use cases, ViewModels, repositories, and mappers belong in `app/src/test`, using the

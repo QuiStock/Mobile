@@ -6,6 +6,8 @@ import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.ProfileRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -16,7 +18,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class ProfileUseCase(private val repository: ProfileRepository, private val session: SessionUseCase) {
+class ProfileUseCase(
+    private val repository: ProfileRepository,
+    private val session: SessionUseCase,
+    private val logger: Logger? = null,
+) {
+    private val logContext = mapOf("operation" to "core_profile", "stage" to "profile_state")
     private val mutex = Mutex()
     private val mutableState = MutableStateFlow<ProfileState>(ProfileState.Empty)
     val state = mutableState.asStateFlow()
@@ -27,6 +34,7 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
     fun clear() {
         generation = null
         mutableState.value = ProfileState.Empty
+        logger?.debug("Core profile cache cleared", logContext)
     }
 
     suspend fun load() {
@@ -38,6 +46,7 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
                 session.withCurrentSession(expected) {
                     val cached = state.value as? ProfileState.Ready
                     if (cached?.generation == expected.generation) {
+                        logger?.debug("Core profile cache reused", logContext)
                         null
                     } else {
                         pending?.takeIf { it.first == expected.generation }?.second
@@ -56,6 +65,7 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
         if (owner) {
             completeLoad(expected, task)
         } else {
+            logger?.debug("Core profile request shared", logContext)
             task.await()
         }
     }
@@ -85,18 +95,12 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
             session.withCurrentSession(expected) {
                 if (generation != expected.generation) return@withCurrentSession
                 when (result) {
-                    is ProfileResult.Success -> {
-                        val reason = result.profile.rejection()
-                        if (reason == null) {
-                            mutableState.value = ProfileState.Ready(expected.generation, result.profile)
-                        } else if (reason == ProfileRejection.INVALID) {
-                            mutableState.value = ProfileState.Failure()
-                        } else {
-                            rejection = ProfileState.Rejected(reason, result.profile.role)
-                        }
-                    }
+                    is ProfileResult.Success -> rejection = acceptProfile(result.profile, expected)
 
-                    ProfileResult.Forbidden -> rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
+                    ProfileResult.Forbidden -> {
+                        logger?.info("Core profile rejected", logContext + ("reason" to "forbidden"))
+                        rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
+                    }
 
                     is ProfileResult.Failure -> mutableState.value = ProfileState.Failure(result.retryAfterMillis)
                 }
@@ -104,11 +108,39 @@ class ProfileUseCase(private val repository: ProfileRepository, private val sess
             }
             if (rejection != null) session.expire(expected)
         } catch (error: CancellationException) {
+            logger?.debug("Core profile load cancelled", logContext)
             throw error
-        } catch (_: Exception) {
-            if (generation == expected.generation && session.snapshot().generation == expected.generation) {
-                mutableState.value = ProfileState.Failure()
+        } catch (error: Exception) {
+            val current = generation == expected.generation && session.snapshot().generation == expected.generation
+            logger?.info(
+                "Core profile result unavailable",
+                logContext + mapOf(
+                    "failure" to if (error is SessionException) "session_unavailable" else "unexpected",
+                    "result_discarded" to !current,
+                ),
+            )
+            if (current) mutableState.value = ProfileState.Failure()
+        }
+    }
+
+    private fun acceptProfile(profile: UserProfile, expected: SessionSnapshot): ProfileState.Rejected? {
+        val reason = profile.rejection()
+        if (reason != null) {
+            logger?.info("Core profile rejected", logContext + ("reason" to reason.name.lowercase()))
+        }
+        return when (reason) {
+            null -> {
+                mutableState.value = ProfileState.Ready(expected.generation, profile)
+                logger?.debug("Core profile loaded", logContext)
+                null
             }
+
+            ProfileRejection.INVALID -> {
+                mutableState.value = ProfileState.Failure()
+                null
+            }
+
+            else -> ProfileState.Rejected(reason, profile.role)
         }
     }
 }

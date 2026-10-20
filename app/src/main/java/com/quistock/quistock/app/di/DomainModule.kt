@@ -11,7 +11,7 @@ import org.koin.dsl.module
 
 val domainModule = module {
     single { SessionUseCase(get(), get()) }
-    singleOf(::ProfileUseCase)
+    single { ProfileUseCase(get(), get(), get()) }
     singleOf(::LoadProfilePhotoUseCase)
     factoryOf(::LoginUseCase)
     factoryOf(::SendMessageToChatbotUseCase)

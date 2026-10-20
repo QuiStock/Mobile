@@ -1,7 +1,10 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.data.remote.core.CoreTransportDiagnostics
 import com.quistock.quistock.domain.model.SessionException
+import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
@@ -15,53 +18,102 @@ class CoreSessionInterceptor(
     private val origin: HttpUrl,
     private val session: SessionUseCase,
     private val custody: AuthCookieCustody,
+    private val logger: Logger? = null,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response = runBlocking {
         val request = chain.request()
         if (!isCoreOrigin(request.url)) {
             return@runBlocking chain.proceed(request)
         }
+        val diagnostics = CoreTransportDiagnostics(origin, request, logger)
+        diagnostics.started()
+        try {
+            interceptCore(chain, request, diagnostics)
+        } catch (error: SessionException) {
+            diagnostics.blocked(error)
+            throw error
+        }
+    }
+
+    private suspend fun interceptCore(
+        chain: Interceptor.Chain,
+        request: Request,
+        diagnostics: CoreTransportDiagnostics,
+    ): Response {
         // A failed renewal waits for explicit recovery; background calls cannot retry it.
+        requireHealthySession()
+        val initial = session.snapshot()
+        diagnostics.sessionInspected(initial)
+        val current = if (!initial.hasAccess || session.state.value is SessionState.Failure) {
+            renew(initial, "access_unavailable", diagnostics)
+        } else {
+            session.requireAccess(initial)
+        }
+        val response = diagnostics.send(chain, authorized(request, current.generation, diagnostics), 1)
+        requireCurrentSession(current, response, diagnostics)
+        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response
+        response.close()
+        val valid = renew(current, "unauthorized", diagnostics)
+        val retried = diagnostics.send(chain, authorized(request, valid.generation, diagnostics), 2)
+        requireCurrentSession(valid, retried, diagnostics)
+        return checkRetriedResponse(retried, valid, diagnostics)
+    }
+
+    private fun requireHealthySession() {
         val failure = session.state.value as? SessionState.Failure
         if (failure != null) throw SessionException(failure.reason)
-        val initial = session.snapshot()
-        val recovered = if (!initial.hasAccess ||
-            session.state.value is SessionState.Failure
-        ) {
-            session.refresh(initial)
-        } else {
-            initial
-        }
-        if (recovered.generation != initial.generation) throw SessionException()
-        val current = session.requireAccess(recovered)
-        val response = chain.proceed(authorized(request, current.generation))
-        if (session.snapshot().generation != current.generation) {
+    }
+
+    private fun requireCurrentSession(
+        expected: SessionSnapshot,
+        response: Response,
+        diagnostics: CoreTransportDiagnostics,
+    ) {
+        if (session.snapshot().generation != expected.generation) {
             response.close()
+            diagnostics.stage = "session_changed"
             throw SessionException()
         }
-        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return@runBlocking response
-        response.close()
-        val updated = session.refresh(current)
-        if (updated.generation != current.generation) throw SessionException()
-        val valid = session.requireAccess(updated)
-        val retried = chain.proceed(authorized(request, valid.generation))
-        if (session.snapshot().generation != valid.generation) {
-            retried.close()
+    }
+
+    private suspend fun checkRetriedResponse(
+        response: Response,
+        expected: SessionSnapshot,
+        diagnostics: CoreTransportDiagnostics,
+    ): Response {
+        if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            response.close()
+            session.expire(expected)
+            diagnostics.stage = "unauthorized_after_refresh"
             throw SessionException()
         }
-        if (retried.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            retried.close()
-            session.expire(valid)
+        return response
+    }
+
+    private suspend fun renew(
+        expected: SessionSnapshot,
+        reason: String,
+        diagnostics: CoreTransportDiagnostics,
+    ): SessionSnapshot {
+        diagnostics.renewalStarted(reason)
+        val updated = session.refresh(expected)
+        diagnostics.renewalCompleted(reason, expected, updated)
+        if (updated.generation != expected.generation) {
+            diagnostics.stage = "session_changed"
             throw SessionException()
         }
-        retried
+        return session.requireAccess(updated)
     }
 
     private fun isCoreOrigin(url: HttpUrl): Boolean =
         url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port
 
-    private fun authorized(request: Request, generation: Long): Request {
-        val token = custody.access(generation) ?: throw SessionException()
+    private fun authorized(request: Request, generation: Long, diagnostics: CoreTransportDiagnostics): Request {
+        diagnostics.stage = "authorization"
+        val token = custody.access(generation) ?: run {
+            diagnostics.stage = "access_missing"
+            throw SessionException()
+        }
         return request.newBuilder()
             .removeHeader("Cookie")
             .removeHeader("X-CSRF-TOKEN")

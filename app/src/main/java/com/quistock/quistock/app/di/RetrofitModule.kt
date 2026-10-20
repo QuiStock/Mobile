@@ -16,6 +16,7 @@ import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotReposit
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -61,7 +62,7 @@ val retrofitModule = module {
             .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
             .build().create(ProfileApi::class.java)
     }
-    single<ProfileRepository> { RetrofitProfileRepository(get()) }
+    single<ProfileRepository> { RetrofitProfileRepository(get(), get()) }
     single<AuthCookieStore> { EncryptedAuthCookieStore(get()) }
     single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()) }
     single<AuthRepository> {
@@ -78,7 +79,7 @@ val retrofitModule = module {
     }
 
     single(named("CoreHttpClient")) {
-        createCoreHttpClient(get<Context>().getString(R.string.core_base_url), get(), get())
+        createCoreHttpClient(get<Context>().getString(R.string.core_base_url), get(), get(), get())
     }
     singleOf(::RetrofitChatbotRepository) {
         bind<ChatbotRepository>()
@@ -99,10 +100,15 @@ internal fun createRetrofit(baseUrl: String, json: Json): Retrofit = Retrofit.Bu
 
 internal fun createChatbotApi(retrofit: Retrofit): ChatbotApi = retrofit.create(ChatbotApi::class.java)
 
-internal fun createCoreHttpClient(baseUrl: String, session: SessionUseCase, custody: AuthCookieCustody): OkHttpClient =
+internal fun createCoreHttpClient(
+    baseUrl: String,
+    session: SessionUseCase,
+    custody: AuthCookieCustody,
+    logger: Logger? = null,
+): OkHttpClient =
     OkHttpClient.Builder()
         .cookieJar(CookieJar.NO_COOKIES)
-        .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody))
+        .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
         .retryOnConnectionFailure(false)
         .followRedirects(false)
         .followSslRedirects(false)

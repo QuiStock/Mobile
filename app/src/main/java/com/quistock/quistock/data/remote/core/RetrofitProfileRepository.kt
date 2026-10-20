@@ -1,13 +1,18 @@
 package com.quistock.quistock.data.remote.core
 
+import com.quistock.quistock.data.remote.auth.transportFailureCategory
 import com.quistock.quistock.domain.model.ProfileResult
+import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.ProfileRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import retrofit2.Response
 import retrofit2.http.GET
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -39,38 +44,64 @@ class ProfileResponse(
     )
 }
 
-class RetrofitProfileRepository(private val api: ProfileApi) : ProfileRepository {
+class RetrofitProfileRepository(private val api: ProfileApi, private val logger: Logger? = null) : ProfileRepository {
+    private val logContext = mapOf("operation" to "core_profile", "stage" to "profile_response")
+
     @Suppress("TooGenericExceptionCaught")
-    override suspend fun read(): ProfileResult = try {
-        val response = api.read()
-        when {
-            response.code() == HttpURLConnection.HTTP_FORBIDDEN -> {
-                response.errorBody()?.close()
-                ProfileResult.Forbidden
-            }
-
-            response.isSuccessful -> response.body()?.let { ProfileResult.Success(it.toDomain()) }
-                ?: ProfileResult.Failure()
-
-            else -> {
-                response.errorBody()?.close()
-                ProfileResult.Failure(
-                    if (response.code() ==
-                        HTTP_TOO_MANY_REQUESTS
-                    ) {
-                        retryAfterMillis(response.headers()["Retry-After"])
-                    } else {
-                        0
-                    },
-                )
-            }
+    override suspend fun read(): ProfileResult {
+        logger?.debug("Core profile load started", logContext)
+        return try {
+            mapResponse(api.read())
+        } catch (error: CancellationException) {
+            logger?.debug("Core profile request cancelled", logContext)
+            throw error
+        } catch (error: Exception) {
+            logger?.info("Core profile load failed", logContext + ("failure" to profileFailureCategory(error)))
+            ProfileResult.Failure()
         }
-    } catch (error: CancellationException) {
-        throw error
-    } catch (_: Exception) {
-        // Transport errors can contain credentials or personal data. Never log the throwable.
-        ProfileResult.Failure()
     }
+
+    private fun mapResponse(response: Response<ProfileResponse>): ProfileResult = when {
+        response.code() == HttpURLConnection.HTTP_FORBIDDEN -> {
+            response.errorBody()?.close()
+            logger?.info(
+                "Core profile load failed",
+                logContext + mapOf("http_status" to response.code(), "failure" to "forbidden"),
+            )
+            ProfileResult.Forbidden
+        }
+
+        response.isSuccessful -> mapBody(response.body())
+
+        else -> {
+            response.errorBody()?.close()
+            logger?.info(
+                "Core profile load failed",
+                logContext + mapOf("http_status" to response.code(), "failure" to "http_error"),
+            )
+            ProfileResult.Failure(
+                if (response.code() == HTTP_TOO_MANY_REQUESTS) {
+                    retryAfterMillis(response.headers()["Retry-After"])
+                } else {
+                    0
+                },
+            )
+        }
+    }
+
+    private fun mapBody(body: ProfileResponse?): ProfileResult = if (body == null) {
+        logger?.info("Core profile load failed", logContext + ("failure" to "empty_body"))
+        ProfileResult.Failure()
+    } else {
+        ProfileResult.Success(body.toDomain())
+    }
+}
+
+private fun profileFailureCategory(error: Exception): String = when (error) {
+    is SessionException -> "session_unavailable"
+    is SerializationException -> "invalid_response"
+    is IOException -> transportFailureCategory(error)
+    else -> "unexpected"
 }
 
 private const val HTTP_TOO_MANY_REQUESTS = 429
