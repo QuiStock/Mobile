@@ -19,4 +19,16 @@ class SessionNavigationTests {
     @Test fun activeSessionPreservesProtectedDestination() {
         assertNull(sessionDestination(SessionState.Active, R.id.homeFragment))
     }
+
+    @Test fun logoutInProgressOrCleanupFailureCannotNavigateToProtectedContent() {
+        assertNull(sessionDestination(SessionState.LoggingOut, R.id.homeFragment))
+        assertNull(sessionDestination(SessionState.LogoutFailed(false), R.id.homeFragment))
+    }
+
+    @Test fun completedLogoutReturnsToLoginWithoutDuplicatingLoginDestination() {
+        assertEquals(R.id.loginFragment, sessionDestination(SessionState.LoggedOut(true), R.id.homeFragment))
+        assertEquals(R.id.loginFragment, sessionDestination(SessionState.LoggedOut(false), R.id.profileFragment))
+        assertNull(sessionDestination(SessionState.LoggedOut(false), R.id.loginFragment))
+    }
+
 }

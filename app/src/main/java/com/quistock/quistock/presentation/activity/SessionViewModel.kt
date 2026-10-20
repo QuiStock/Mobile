@@ -69,6 +69,13 @@ class SessionViewModel(
         }
     }
 
+    private fun clearProfile(state: SessionState) {
+        loadPhoto.clear()
+        val preserveRejection = profile.state.value is ProfileState.Rejected &&
+            (state == SessionState.Expired || state == SessionState.LocalFailure)
+        if (!preserveRejection) profile.clear()
+    }
+
     fun logout() {
         if (logoutJob?.isActive == true) return
         logoutJob = viewModelScope.launch { session.logout() }
@@ -93,8 +100,7 @@ class SessionViewModel(
                 if (state == SessionState.Active) {
                     profile.load()
                 } else if (state !is SessionState.Failure) {
-                    loadPhoto.clear()
-                    if (profile.state.value !is ProfileState.Rejected) profile.clear()
+                    clearProfile(state)
                 }
             }
         }

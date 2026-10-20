@@ -62,6 +62,11 @@ class CoreSessionInterceptor(
 
     private fun authorized(request: Request, generation: Long): Request {
         val token = custody.access(generation) ?: throw SessionException()
-        return request.newBuilder().removeHeader("Cookie").header("Authorization", "Bearer $token").build()
+        return request.newBuilder()
+            .removeHeader("Cookie")
+            .removeHeader("X-CSRF-TOKEN")
+            .removeHeader("X-XSRF-TOKEN")
+            .header("Authorization", "Bearer $token")
+            .build()
     }
 }

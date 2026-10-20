@@ -14,7 +14,7 @@ Spec aprovada pelo solicitante em 20/10/2026, com autorização para implementar
 
 **Incluído:** leitura do perfil autenticado no Core; estado compartilhado em memória; preenchimento do perfil e dos headers existentes; carregamento, ausência de vínculo, falhas e isolamento entre sessões.
 
-**Fora do escopo:** salvar edições, enviar Contato, upload/câmera, implementar logout voluntário, CRUD de funcionários, selecionar loja, alterar backend e persistir perfil em disco. O bloqueio de entrada por ausência de loja e descarte da sessão em 403 pertencem a esta entrega. A demo mantém seus exemplos e sua ausência de acesso à rede.
+**Fora do escopo:** salvar edições, enviar Contato, upload/câmera, alterar o fluxo de logout voluntário já implementado, CRUD de funcionários, selecionar loja, alterar backend e persistir perfil em disco. O bloqueio de entrada por ausência de loja e descarte da sessão em 403 pertencem a esta entrega. A demo mantém seus exemplos e sua ausência de acesso à rede.
 
 Complementa `profile-screen.md`, que descreve o layout estático. Não substitui a spec de detalhes de outro funcionário (`employee-profile.md`): o header representa o usuário autenticado; os dados centrais do funcionário consultado são outro contexto.
 
@@ -183,3 +183,13 @@ Testes unitários/instrumentados, builds e demais validações não foram execut
 ### Apontamento restante de complexidade do interceptor Core
 
 O novo relatório Detekt de 20/10/2026, 14:47:13 UTC, contém apenas `CyclomaticComplexMethod` em `CoreSessionInterceptor.intercept` (16, limite 14). A verificação exata da origem e a construção da requisição autenticada foram extraídas em funções privadas. A leitura da credencial continua imediatamente antes de cada envio, com ausência convertida em `SessionException`; preservados descarte de Cookie, Bearer, geração, fechamento das respostas, uma repetição após renovação e bloqueio de renovação automática em falha. Refatoração mecânica sem novo comportamento, sem supressões ou alterações de regras. Detekt, testes e validações não foram executados nesta correção por instrução do solicitante.
+
+### Integração após rebase sobre CSRF/logout
+
+Rebase solicitado e concluído sobre `f6d58e1`, preservando os commits de perfil e suas correções, a confirmação/limpeza de logout, o CSRF de refresh/logout, o bloqueio de conteúdo durante limpeza local e o aviso de falha remota no Login. A DI mantém `UserPreferences` na sessão, além dos novos casos de uso do perfil. A Activity combina os estados de perfil e logout; o descarte de perfil/foto inclui o início de logout e não transporta uma rejeição antiga para a nova tela de Login.
+
+Revisão do token contra Authentication de `DS_Backend/api-contract.md`: `GET profile` utiliza a base Core e o cliente `CoreHttpClient`, com access token obtido da custódia privada e enviado em `Authorization: Bearer`. Não há token no modelo de perfil, ViewModel ou persistência de perfil. Cookies, `X-CSRF-TOKEN` e `X-XSRF-TOKEN` são removidos antes do envio à origem Core; o cliente usa explicitamente `CookieJar.NO_COOKIES`. Bearer não requer CSRF no Core. Refresh e seu par CSRF permanecem exclusivamente no cliente Auth. Preservados renovação compartilhada, uma repetição após 401, verificação de geração, rejeição de resposta obsoleta e bloqueio após logout. Fotos e chatbot legado não recebem credenciais Core.
+
+Os qualifiers Retrofit antigos associavam nomes Core/Auth a bases invertidas, embora o perfil já utilizasse seu cliente correto. O binding legado agora tem nome explícito `LegacyChatbotApi`, sem alterar seu destino ou acrescentar autenticação; foi removida a instância Retrofit sem uso que induzia confusão com o Core. Não houve alteração de contrato no backend ou implantação.
+
+Regressões escritas/adaptadas: limpeza de rejeição/foto no logout, navegação para estados de logout e eliminação de Cookie/CSRF nas tentativas inicial/repetida ao Core, substituindo Bearer de entrada pelo access token atual. Testes, builds, Detekt, formatação automática, simulações e chamadas reais não foram executados após o rebase, conforme orientação do solicitante. A aprovação das validações informada anteriormente corresponde à árvore anterior ao rebase.
