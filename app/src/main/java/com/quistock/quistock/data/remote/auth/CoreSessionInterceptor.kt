@@ -6,6 +6,7 @@ import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
+import okhttp3.Request
 import okhttp3.Response
 import java.net.HttpURLConnection
 
@@ -17,8 +18,7 @@ class CoreSessionInterceptor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response = runBlocking {
         val request = chain.request()
-        val url = request.url
-        if (url.scheme != origin.scheme || url.host != origin.host || url.port != origin.port) {
+        if (!isCoreOrigin(request.url)) {
             return@runBlocking chain.proceed(request)
         }
         // A failed renewal waits for explicit recovery; background calls cannot retry it.
@@ -34,9 +34,7 @@ class CoreSessionInterceptor(
         }
         if (recovered.generation != initial.generation) throw SessionException()
         val current = session.requireAccess(recovered)
-        fun authorized(token: String) =
-            request.newBuilder().removeHeader("Cookie").header("Authorization", "Bearer $token").build()
-        val response = chain.proceed(authorized(custody.access(current.generation) ?: throw SessionException()))
+        val response = chain.proceed(authorized(request, current.generation))
         if (session.snapshot().generation != current.generation) {
             response.close()
             throw SessionException()
@@ -46,7 +44,7 @@ class CoreSessionInterceptor(
         val updated = session.refresh(current)
         if (updated.generation != current.generation) throw SessionException()
         val valid = session.requireAccess(updated)
-        val retried = chain.proceed(authorized(custody.access(valid.generation) ?: throw SessionException()))
+        val retried = chain.proceed(authorized(request, valid.generation))
         if (session.snapshot().generation != valid.generation) {
             retried.close()
             throw SessionException()
@@ -58,4 +56,13 @@ class CoreSessionInterceptor(
         }
         retried
     }
+
+    private fun isCoreOrigin(url: HttpUrl): Boolean =
+        url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port
+
+    private fun authorized(request: Request, generation: Long): Request {
+        val token = custody.access(generation) ?: throw SessionException()
+        return request.newBuilder().removeHeader("Cookie").header("Authorization", "Bearer $token").build()
+    }
+
 }
