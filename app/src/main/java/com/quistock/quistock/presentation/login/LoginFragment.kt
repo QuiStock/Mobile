@@ -35,6 +35,7 @@ class LoginFragment : Fragment() {
         setupListeners()
         if (arguments?.getBoolean("expired") == true) viewModel.showExpired()
         if (arguments?.getBoolean("unexpected") == true) viewModel.showUnexpectedError()
+        val profileMessage = arguments?.getInt("profile_rejection_message", 0) ?: 0
         arguments?.remove("expired")
         arguments?.remove("unexpected")
         observeState()
@@ -43,6 +44,10 @@ class LoginFragment : Fragment() {
                 LogoutRemoteWarningDialog().show(childFragmentManager, LogoutRemoteWarningDialog.TAG)
             }
             arguments?.remove(LogoutRemoteWarningDialog.ARGUMENT)
+        }
+        if (profileMessage != 0) {
+            binding.txtErroLogin.setText(profileMessage)
+            binding.txtErroLogin.visibility = View.VISIBLE
         }
     }
 
@@ -92,9 +97,9 @@ class LoginFragment : Fragment() {
                 }
 
                 LoginUiState.Authenticated -> {
-                    enableLogin(true)
-                    showSpinner(false)
-                    redirectToMainPage()
+                    // MainActivity releases navigation only after the shared profile gate succeeds.
+                    enableLogin(false)
+                    showSpinner(true)
                 }
 
                 is LoginUiState.Error -> {

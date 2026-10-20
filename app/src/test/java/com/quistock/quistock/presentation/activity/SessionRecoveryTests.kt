@@ -6,6 +6,8 @@ import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.usecase.SessionUseCase
+import com.quistock.quistock.domain.usecase.ProfileUseCase
+import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -39,7 +41,8 @@ class SessionRecoveryTests {
             state.value = SessionState.Active
             SessionSnapshot(1, true, 1)
         }
-        val viewModel = SessionViewModel(session)
+        val profile = ProfileUseCase(mockk(relaxed = true), session)
+        val viewModel = SessionViewModel(session, profile, LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session))
         runCurrent()
         coVerify(exactly = 0) { session.refresh(any()) }
         viewModel.retrySession()
@@ -60,7 +63,8 @@ class SessionRecoveryTests {
         every { session.state } returns state
         every { session.retryDelayMillis } returns 1000L
         coEvery { session.restore() } returns state.value
-        val viewModel = SessionViewModel(session)
+        val profile = ProfileUseCase(mockk(relaxed = true), session)
+        val viewModel = SessionViewModel(session, profile, LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session))
         runCurrent()
         assertTrue(viewModel.recovery.value.retryBlocked)
         viewModel.retrySession()

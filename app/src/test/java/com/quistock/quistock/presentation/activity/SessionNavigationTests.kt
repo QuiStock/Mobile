@@ -12,11 +12,8 @@ class SessionNavigationTests {
         assertEquals(R.id.homeFragment, sessionDestination(SessionState.Active, R.id.splashFragment))
     }
 
-    @Test fun transientRestoreFailureLeavesSplashForHomeRetry() {
-        assertEquals(
-            R.id.homeFragment,
-            sessionDestination(SessionState.Failure(SessionFailure.NETWORK), R.id.splashFragment),
-        )
+    @Test fun transientRestoreFailureDoesNotLeaveSplash() {
+        assertNull(sessionDestination(SessionState.Failure(SessionFailure.NETWORK), R.id.splashFragment))
     }
 
     @Test fun activeSessionPreservesProtectedDestination() {

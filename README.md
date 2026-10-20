@@ -146,6 +146,17 @@ activity ViewModel retains the operation across screen recreation. Logout respon
 cookies into a newer session, and HTTP follow-ups cannot repeat the remote attempt. See the
 [profile logout specification](docs/sdd/specs/profile-logout.md) for decisions and pending execution checks.
 
+The authenticated Core profile is loaded once after login or session restoration before Home is
+released. `SessionViewModel` keeps the loading/retry gate active until `ProfileUseCase` publishes
+a valid profile for the current session generation. Only `FUNCIONARIO` (Repositor) and `GERENTE`
+with a store assignment can enter; missing assignments and forbidden accounts revoke the local
+session. Temporary profile failures retain the session and offer manual retry. Returning from
+background reuses the in-memory profile. Shared profile slots in headers and the edit/contact
+forms observe the same state; no profile or photo cache is written to disk. Photo loading uses
+an independent unauthenticated HTTPS client and does not block navigation. See
+[the profile specification](docs/sdd/specs/profile-user-store-data.md). Execution and validation
+of this change are deferred at the requester's instruction.
+
 ### Tests
 
 - Tests for use cases, ViewModels, repositories, and mappers belong in `app/src/test`, using the
