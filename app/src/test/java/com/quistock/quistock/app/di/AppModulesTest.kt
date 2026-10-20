@@ -25,6 +25,7 @@ class AppModulesTest {
                 FirebaseAuth::class,
                 FirebaseCrashlytics::class,
                 ChatbotApi::class,
+                kotlinx.serialization.json.Json::class,
                 // Constructed explicitly by the Auth factories, rather than resolved through get().
                 okhttp3.HttpUrl::class,
                 kotlin.Function0::class,
@@ -46,6 +47,7 @@ class AppModulesTest {
                 retrofitModule,
                 module {
                     single<Context> { context }
+                    single { createJson() }
                     single<com.quistock.quistock.data.remote.auth.AuthCookieStore> {
                         com.quistock.quistock.data.remote.auth.MemoryCookieStore()
                     }
@@ -55,6 +57,8 @@ class AppModulesTest {
             )
         }
         try {
+            application.koin.get<com.quistock.quistock.domain.usecase.ProfileUseCase>()
+            application.koin.get<com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase>()
             application.koin.get<LoginUseCase>()
             application.koin.get<SessionUseCase>()
             application.koin.get<okhttp3.OkHttpClient>(org.koin.core.qualifier.named("CoreHttpClient"))

@@ -19,7 +19,7 @@
 
         <!-- PERFIL -->
 
-        <ImageButton
+        <ImageButton android:tag="current_profile_photo"
             android:id="@+id/btnPerfil"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -34,12 +34,14 @@
 
         <!-- NOME DA LOJA -->
 
-        <TextView
+        <TextView android:tag="current_profile_store"
             android:id="@+id/tvNomeLoja"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="Nome da loja"
+            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            android:layout_marginEnd="12dp"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
@@ -48,11 +50,13 @@
 
         <!-- USUÁRIO -->
 
-        <TextView
+        <TextView android:tag="current_profile_header_name"
             android:id="@+id/tvNomeUsuario"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Nome do usuário"
+            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            android:layout_marginEnd="12dp"
             android:textColor="#BFAFC5"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/tvNomeLoja"

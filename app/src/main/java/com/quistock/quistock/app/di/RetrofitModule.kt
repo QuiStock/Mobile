@@ -8,11 +8,16 @@ import com.quistock.quistock.data.remote.auth.AuthCookieStore
 import com.quistock.quistock.data.remote.auth.AuthHttpAttempt
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
 import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
+import com.quistock.quistock.data.remote.core.HttpProfilePhotoRepository
+import com.quistock.quistock.data.remote.core.ProfileApi
+import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
+import com.quistock.quistock.domain.port.ProfilePhotoRepository
+import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar
@@ -60,6 +65,15 @@ val retrofitSdkModule = module {
 }
 
 val retrofitModule = module {
+    single<ProfilePhotoRepository> { HttpProfilePhotoRepository() }
+    single<ProfileApi> {
+        Retrofit.Builder()
+            .baseUrl(get<Context>().getString(R.string.core_base_url))
+            .client(get<OkHttpClient>(named("CoreHttpClient")))
+            .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
+            .build().create(ProfileApi::class.java)
+    }
+    single<ProfileRepository> { RetrofitProfileRepository(get()) }
     single<AuthCookieStore> { EncryptedAuthCookieStore(get()) }
     single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()) }
     single<AuthRepository> {

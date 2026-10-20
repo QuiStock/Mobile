@@ -30,7 +30,7 @@
                 android:layout_height="40dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
-                <ImageView
+                <ImageView android:tag="current_profile_photo"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="Perfil"
@@ -41,8 +41,8 @@
                     android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loja Av. Paulista" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Milena Souza" android:textColor="#BFAFC5" android:textSize="12sp" />
+                    <TextView android:tag="current_profile_store" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Loja Av. Paulista" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+                    <TextView android:tag="current_profile_header_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Milena Souza" android:textColor="#BFAFC5" android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
 

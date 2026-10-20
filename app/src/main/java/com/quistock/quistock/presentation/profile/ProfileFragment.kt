@@ -20,6 +20,9 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding?.profileEditButton?.setOnClickListener {
+            findNavController().navigate(R.id.editProfileFragment)
+        }
         binding?.profileBackControl?.setOnClickListener {
             findNavController().popBackStack(R.id.homeFragment, false)
         }

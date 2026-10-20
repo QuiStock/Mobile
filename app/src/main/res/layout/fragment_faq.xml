@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <ImageView android:tag="current_profile_photo"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:contentDescription="@string/profile_store_name"
@@ -33,16 +33,16 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <TextView android:tag="current_profile_store"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_store_name"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <TextView android:tag="current_profile_header_name"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_user_name"
                 android:textColor="#BFAFC5"
