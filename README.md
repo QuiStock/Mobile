@@ -136,7 +136,9 @@ unaffected. A valid `Retry-After` temporarily disables manual retry after 429; r
 limit only re-enables the action and does not trigger a request.
 
 Profile logout asks for confirmation, immediately blocks the session, and revokes local credentials
-independently of one remote `POST /logout` attempt with a ten-second total HTTP timeout. It removes
+independently of one remote logout exchange. With eligible refresh, an isolated `GET /csrf` precedes
+`POST /logout` with the Auth CSRF cookie and masked JSON token in `X-CSRF-TOKEN`.
+Both calls share a ten-second total deadline; preparation failure prevents POST. It removes
 the legacy refresh and stored user identifier, clears session conversation state, and returns to
 Login with the protected back stack removed. Local cleanup failure keeps protected content hidden
 and offers local-only retry; remote failure after local success shows a warning on Login. The

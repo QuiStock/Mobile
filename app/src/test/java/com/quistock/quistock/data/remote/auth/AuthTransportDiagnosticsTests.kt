@@ -100,7 +100,8 @@ class AuthTransportDiagnosticsTests {
                 "Auth HTTP transport failed",
                 match { context ->
                     context.keys == setOf("operation", "failure", "elapsed_ms") &&
-                        context["operation"] == "auth_logout" && context["failure"] == "dns" &&
+                        context["operation"] == "auth_logout" &&
+                        context["failure"] == "dns" &&
                         context["elapsed_ms"] is Long
                 },
             )

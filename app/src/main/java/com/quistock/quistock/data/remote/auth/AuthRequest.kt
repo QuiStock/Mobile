@@ -210,7 +210,7 @@ private const val HTTP_TOO_MANY_REQUESTS = 429
 private const val FIRST_HEADER_CHARACTER = '!'
 private const val LAST_HEADER_CHARACTER = '~'
 
-private fun CsrfResponse.validHeaderToken() = headerName == "X-CSRF-TOKEN" && token.isNotEmpty() &&
+internal fun CsrfResponse.validHeaderToken() = headerName == "X-CSRF-TOKEN" && token.isNotEmpty() &&
     token.all { it in FIRST_HEADER_CHARACTER..LAST_HEADER_CHARACTER }
 
 private fun blockedOutcome(error: AuthFollowUpBlocked): AuthOutcome =

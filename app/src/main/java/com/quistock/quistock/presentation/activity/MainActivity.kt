@@ -91,8 +91,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderSession(state: SessionState, recovery: SessionRecoveryUiState) {
         val logoutBlocked = state == SessionState.LoggingOut || state is SessionState.LogoutFailed
-        val recovering = state is SessionState.Failure || (recovery.retrying && !logoutBlocked &&
-            state !is SessionState.LoggedOut)
+        val recovering = state is SessionState.Failure || (
+            recovery.retrying && !logoutBlocked &&
+                state !is SessionState.LoggedOut
+            )
         val blocked = logoutBlocked || recovering || state == SessionState.Restoring
         binding.navHostFragment.visibility = if (blocked) View.INVISIBLE else View.VISIBLE
         binding.navHostFragment.importantForAccessibility = if (blocked) {

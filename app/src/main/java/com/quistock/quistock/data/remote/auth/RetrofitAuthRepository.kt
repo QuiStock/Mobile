@@ -14,11 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import retrofit2.Response
-import java.io.IOException
-import java.net.HttpURLConnection
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class RetrofitAuthRepository(
@@ -28,8 +25,6 @@ class RetrofitAuthRepository(
     private val now: () -> Long = System::currentTimeMillis,
     private val logger: Logger? = null,
 ) : AuthRepository {
-    private val diagnostics = AuthTransportDiagnostics(baseUrl, logger)
-
     @Volatile private var retryAt = 0L
     override suspend fun begin(generation: Long) = custody.begin(generation)
     override fun hasAccess(generation: Long) = custody.access(generation) != null
@@ -44,38 +39,15 @@ class RetrofitAuthRepository(
     override fun prepareLogout(generation: Long): LogoutRequest {
         // Capture before local revocation. Never commit logout responses into live custody.
         var captured: StagedAuthCookieJar? = custody.requestJar(generation, true, AuthCookieCustody.LOGOUT_PATH)
+        val logoutUrl = requireNotNull(baseUrl.resolve(AuthCookieCustody.LOGOUT_PATH))
+        val requiresCsrf = requireNotNull(captured).hasRefresh(logoutUrl)
         val used = AtomicBoolean(false)
         return LogoutRequest {
             check(used.compareAndSet(false, true)) { "Logout request already consumed" }
             val jar = requireNotNull(captured)
             captured = null
             withContext(Dispatchers.IO) {
-                val logContext = mapOf("operation" to "auth_logout")
-                val started = diagnostics.requestStarted(logContext)
-                val call = createApi(jar).logout()
-                call.timeout().timeout(LOGOUT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                try {
-                    val response = call.execute()
-                    try {
-                        logger?.debug("Auth HTTP response received", logContext + ("http_status" to response.code()))
-                        val confirmed = response.code() == HttpURLConnection.HTTP_NO_CONTENT
-                        if (confirmed && listOf(AuthCookieCustody.ACCESS, AuthCookieCustody.REFRESH).any { name ->
-                                jar.received().none { it.name == name && it.expiresAt <= now() }
-                            }
-                        ) {
-                            logger?.info("Logout response missing cookie expiry", mapOf("operation" to "auth_logout"))
-                        }
-                        confirmed
-                    } finally {
-                        response.errorBody()?.close()
-                    }
-                } catch (error: IOException) {
-                    diagnostics.transportFailed(error, started, logContext)
-                    false
-                } finally {
-                    // Drops references to the captured refresh when the operation finishes.
-                    call.cancel()
-                }
+                LogoutExchange(baseUrl, jar, createApi(jar), logger, now, requiresCsrf).execute()
             }
         }
     }
@@ -129,7 +101,6 @@ class RetrofitAuthRepository(
     }
 
     companion object {
-        private const val LOGOUT_TIMEOUT_SECONDS = 10L
         private const val MILLIS_PER_SECOND = 1000L
     }
 }
