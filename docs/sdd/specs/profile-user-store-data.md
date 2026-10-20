@@ -179,3 +179,7 @@ As fixtures de telas autenticadas, navegação de sessão e formulário de login
 Na custódia Core, ausência do access cookie antes do envio ou da repetição passa a lançar `SessionException` (IOException recuperável), sem `IllegalArgumentException` em thread do OkHttp. A operação não é enviada sem credencial. Essa correção mantém a exigência de acesso válido e os limites de renovação existentes. Dois testes unitários de regressão foram escritos para ausência inicial e ausência após renovação.
 
 Testes unitários/instrumentados, builds e demais validações não foram executados nesta correção, conforme orientação do solicitante. O resultado requer nova execução pelo solicitante; não há evidência de que os testes restantes da execução abortada tenham passado.
+
+### Apontamento restante de complexidade do interceptor Core
+
+O novo relatório Detekt de 20/10/2026, 14:47:13 UTC, contém apenas `CyclomaticComplexMethod` em `CoreSessionInterceptor.intercept` (16, limite 14). A verificação exata da origem e a construção da requisição autenticada foram extraídas em funções privadas. A leitura da credencial continua imediatamente antes de cada envio, com ausência convertida em `SessionException`; preservados descarte de Cookie, Bearer, geração, fechamento das respostas, uma repetição após renovação e bloqueio de renovação automática em falha. Refatoração mecânica sem novo comportamento, sem supressões ou alterações de regras. Detekt, testes e validações não foram executados nesta correção por instrução do solicitante.
