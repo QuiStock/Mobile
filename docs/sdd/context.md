@@ -13,7 +13,7 @@ Updated on 2026-10-16 from repository files. This document guides discovery; con
 - The cancelled indicator branch is no longer part of the login stack. Home retains main's static layout; SessionUseCase has no indicator/cache dependency. Login retains the Logger/Logcat adapter used for safe diagnostics.
 - Profile logout now confirms the action, fences the session, clears local credentials and legacy user identity independently of a single bounded DS_Auth logout attempt, then clears navigation to Login. Local cleanup failures block protected content and offer local-only retry. See `specs/profile-logout.md`; execution checks for this delivery were deferred at the requester's instruction.
 
-- Auth refresh now obtains an isolated, memory-only CSRF pair from `/csrf` and sends the JSON token in `X-CSRF-TOKEN` with refresh/CSRF cookies to `/refresh`. Protocol failures preserve eligible refresh and present manual recovery while protected navigation is hidden. HTTP follow-ups are blocked. See `specs/auth-refresh-csrf.md`; tests were written but execution/validation is deferred by the requester. Logout remains outside this delivery.
+- Auth refresh now obtains an isolated, memory-only CSRF pair from `/csrf` and sends the JSON token in `X-CSRF-TOKEN` with refresh/CSRF cookies to `/refresh`. Protocol failures preserve eligible refresh and present manual recovery while protected navigation is hidden. HTTP follow-ups are blocked. See `specs/auth-refresh-csrf.md`; tests were written but execution/validation is deferred by the requester. Logout now has its own isolated CSRF exchange with one shared ten-second deadline; see `specs/profile-logout-csrf.md`. Execution checks remain deferred.
 
 ## Sources of truth
 

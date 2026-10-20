@@ -172,7 +172,7 @@ class StagedAuthCookieJar(
     fun received(): List<Cookie> = synchronized(received) { received.toList() }
     fun hasRefresh(url: HttpUrl): Boolean = loadForRequest(url).any { it.name == AuthCookieCustody.REFRESH }
     fun hasCsrf(url: HttpUrl): Boolean = synchronized(received) {
-        sameOrigin(url) && url.encodedPath == AuthCookieCustody.REFRESH_PATH &&
+        sameOrigin(url) && url.encodedPath == requestPath &&
             csrf.size == 1 && eligibleCsrf(csrf.single(), url)
     }
     fun discardCsrf() = synchronized(received) { csrf.clear() }
