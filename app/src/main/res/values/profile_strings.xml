@@ -6,6 +6,4 @@
     <string name="profile_mobile_denied">Seu perfil não tem acesso ao aplicativo móvel.</string>
     <string name="profile_no_store_employee">Sem loja vinculada. Entre em contato com seu gerente.</string>
     <string name="profile_no_store_manager">Sem loja vinculada. Entre em contato com seu gerente regional.</string>
-    <string name="profile_role_employee">Repositor</string>
-    <string name="profile_role_manager">Gerente</string>
 </resources>

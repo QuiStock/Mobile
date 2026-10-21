@@ -4,6 +4,7 @@ import com.quistock.quistock.MainDispatcherRule
 import com.quistock.quistock.domain.model.ProfileRejection
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -25,7 +26,7 @@ class ProfileLogoutIntegrationTests {
 
     @Test fun logoutClearsRejectionInsteadOfCarryingItIntoTheLoginScreen() = runTest {
         val sessionState = MutableStateFlow<SessionState>(SessionState.Expired)
-        val rejection = ProfileState.Rejected(ProfileRejection.NO_STORE, "FUNCIONARIO")
+        val rejection = ProfileState.Rejected(ProfileRejection.NO_STORE, UserRole.EMPLOYEE)
         val profileState = MutableStateFlow<ProfileState>(rejection)
         val session = mockk<SessionUseCase>()
         every { session.state } returns sessionState

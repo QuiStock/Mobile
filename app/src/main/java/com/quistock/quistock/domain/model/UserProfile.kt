@@ -1,12 +1,20 @@
 package com.quistock.quistock.domain.model
 
+enum class UserRole(val displayName: String, val hasAccess: Boolean) {
+    EMPLOYEE(displayName = "Funcionário", hasAccess = true),
+    MANAGER(displayName = "Gerente", hasAccess = true),
+    REGIONAL_MANAGER(displayName = "Gerente Regional", hasAccess = false),
+}
+
+enum class UserStatus { ACTIVE, INACTIVE }
+
 // Deliberately not a data class: default diagnostics must not expose personal data.
 class UserProfile(
     val id: String,
     val name: String,
     val email: String,
-    val role: String,
-    val status: String,
+    val role: UserRole,
+    val status: UserStatus,
     val photoUrl: String?,
     val storeId: Long?,
     val storeName: String?,
@@ -17,15 +25,14 @@ class UserProfile(
 ) {
     fun rejection(): ProfileRejection? = when {
         hasInvalidIdentity() -> ProfileRejection.INVALID
-        role == "ADMIN" || role == "GERENTE_REGIONAL" -> ProfileRejection.ROLE
+        !role.hasAccess -> ProfileRejection.ROLE
         hasInvalidStore() || hasInvalidRegion() -> ProfileRejection.INVALID
         storeId == null || storeName.isNullOrBlank() -> ProfileRejection.NO_STORE
         else -> null
     }
 
     private fun hasInvalidIdentity(): Boolean =
-        id.isBlank() || name.isBlank() || email.isBlank() || status != "ACTIVE" ||
-            role !in setOf("ADMIN", "GERENTE", "GERENTE_REGIONAL", "FUNCIONARIO")
+        id.isBlank() || name.isBlank() || email.isBlank() || status != UserStatus.ACTIVE
 
     private fun hasInvalidStore(): Boolean = when (storeId) {
         null -> storeName != null || storeCode != null
@@ -51,5 +58,5 @@ sealed interface ProfileState {
     data object Loading : ProfileState
     class Ready(val generation: Long, val profile: UserProfile) : ProfileState
     class Failure(val retryAfterMillis: Long = 0) : ProfileState
-    class Rejected(val reason: ProfileRejection, val role: String? = null) : ProfileState
+    class Rejected(val reason: ProfileRejection, val role: UserRole? = null) : ProfileState
 }

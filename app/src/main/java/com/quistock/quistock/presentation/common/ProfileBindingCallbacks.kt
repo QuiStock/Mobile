@@ -79,14 +79,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
         return when (view.tag) {
             "current_profile_store" -> profile?.storeName
 
-            "current_profile_role" -> profile?.let {
-                val label = if (it.role == "GERENTE") {
-                    R.string.profile_role_manager
-                } else {
-                    R.string.profile_role_employee
-                }
-                view.context.getString(label)
-            }
+            "current_profile_role" -> profile?.role?.displayName
 
             "current_profile_email_input" -> profile?.email
 

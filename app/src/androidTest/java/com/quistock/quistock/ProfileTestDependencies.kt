@@ -2,6 +2,8 @@ package com.quistock.quistock
 
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
@@ -24,8 +26,8 @@ class ProfileTestDependencies(session: SessionUseCase) {
                     id = "1",
                     name = "Fixture operator",
                     email = "fixture@example.test",
-                    role = "FUNCIONARIO",
-                    status = "ACTIVE",
+                    role = UserRole.EMPLOYEE,
+                    status = UserStatus.ACTIVE,
                     photoUrl = null,
                     storeId = 1,
                     storeName = "Fixture store",
