@@ -26,7 +26,7 @@ class RetrofitProfileRepositoryTests {
 
     @Test fun profileMappingKeepsNumericStoreIdsAndNullablePhoto() = runTest {
         coEvery { api.read() } returns Response.success(
-            ProfileResponse("1", "Fixture", "fixture@example.test", "FUNCIONARIO", "ACTIVE", storeId = 7),
+            ProfileResponse("1", "Fixture", "fixture@example.test", "EMPLOYEE", "ACTIVE", storeId = 7),
         )
         val profile = (repository.read() as ProfileResult.Success).profile
         assertEquals(7L, profile.storeId)

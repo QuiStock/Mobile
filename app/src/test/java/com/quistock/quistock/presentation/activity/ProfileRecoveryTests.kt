@@ -40,7 +40,14 @@ class ProfileRecoveryTests {
             ProfileResult.Failure(1000),
             ProfileResult.Success(
                 UserProfile(
-                    "1", "Fixture", "fixture@example.test", UserRole.EMPLOYEE, UserStatus.ACTIVE, null, 1, "Fixture",
+                    "1",
+                    "Fixture",
+                    "fixture@example.test",
+                    UserRole.EMPLOYEE,
+                    UserStatus.ACTIVE,
+                    null,
+                    1,
+                    "Fixture",
                 ),
             ),
         )

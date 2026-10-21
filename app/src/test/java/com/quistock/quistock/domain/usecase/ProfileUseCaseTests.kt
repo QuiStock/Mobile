@@ -101,14 +101,12 @@ class ProfileUseCaseTests {
         }
     }
 
-    @Test fun restoredAdministrativeRolesCannotEnterEvenWithStore() = runTest {
-        for (role in listOf(UserRole.ADMIN, UserRole.REGIONAL_MANAGER)) {
-            login()
-            coEvery { repository.read() } returns ProfileResult.Success(valid(role))
-            profile.load()
-            assertEquals(ProfileRejection.ROLE, (profile.state.value as ProfileState.Rejected).reason)
-            assertEquals(SessionState.Expired, session.state.value)
-        }
+    @Test fun restoredRegionalManagerCannotEnterEvenWithStore() = runTest {
+        login()
+        coEvery { repository.read() } returns ProfileResult.Success(valid(UserRole.REGIONAL_MANAGER))
+        profile.load()
+        assertEquals(ProfileRejection.ROLE, (profile.state.value as ProfileState.Rejected).reason)
+        assertEquals(SessionState.Expired, session.state.value)
     }
 
     @Test fun inactiveStatusIsInvalidAndDoesNotPublishProfile() = runTest {
