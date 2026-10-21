@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="profile_save_not_implemented">Salvar alterações ainda não foi implementado.</string>
     <string name="profile_greeting">Olá, %1$s!</string>
     <string name="profile_loading">Carregando seu perfil…</string>
     <string name="profile_load_failed">Não foi possível carregar seu perfil. Tente novamente.</string>
