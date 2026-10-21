@@ -12,6 +12,31 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AuthCookieCustodyTests {
+    @Test fun csrfStaysInTheAttemptAndCannotInstallAuthenticationCookies() = runBlocking {
+        custody.begin(1)
+        custody.commit(1, pair(), true)
+        val jar = custody.requestJar(1, true)
+        val csrf = Cookie.Builder().name(AuthCookieCustody.CSRF).value("synthetic-csrf")
+            .hostOnlyDomain(origin.host).path("/").secure().httpOnly().build()
+        jar.saveFromResponse(origin.resolve("/csrf")!!, listOf(csrf) + pair())
+        assertTrue(jar.hasCsrf(origin.resolve("/refresh")!!))
+        assertTrue(jar.received().isEmpty())
+        assertEquals(2, jar.loadForRequest(origin.resolve("/refresh")!!).size)
+        for (url in listOf(
+            origin.resolve("/csrf")!!,
+            origin.resolve("/login")!!,
+            origin.resolve("/logout")!!,
+            "https://auth.example.test:444/refresh".toHttpUrl(),
+            "http://auth.example.test/refresh".toHttpUrl(),
+        )) {
+            assertTrue(jar.loadForRequest(url).isEmpty())
+        }
+        assertEquals(listOf("refresh_token"), store.records.map { it.name })
+        assertFalse(custody.requestJar(1, true).hasCsrf(origin.resolve("/refresh")!!))
+        jar.discardCsrf()
+        assertFalse(jar.hasCsrf(origin.resolve("/refresh")!!))
+    }
+
     private val origin = "https://auth.example.test/".toHttpUrl()
     private var time = 1000L
     private val store = MemoryCookieStore()
@@ -19,6 +44,18 @@ class AuthCookieCustodyTests {
     private fun cookie(name: String, value: String = "synthetic", expires: Long = 2000) = Cookie.Builder()
         .name(name).value(value).hostOnlyDomain(origin.host).path("/").secure().httpOnly().expiresAt(expires).build()
     private fun pair() = listOf(cookie("access_token"), cookie("refresh_token"))
+
+    @Test fun logoutCaptureCannotSendRefreshToOtherRoutesOrOrigins() = runBlocking {
+        custody.begin(1)
+        custody.commit(1, pair(), true)
+        val jar = custody.requestJar(1, true, AuthCookieCustody.LOGOUT_PATH)
+        assertEquals(listOf("refresh_token"), jar.loadForRequest(origin.resolve("/logout")!!).map { it.name })
+        assertTrue(jar.loadForRequest(origin.resolve("/refresh")!!).isEmpty())
+        assertTrue(jar.loadForRequest(origin.resolve("/login")!!).isEmpty())
+        assertTrue(jar.loadForRequest("https://other.example.test/logout".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("http://auth.example.test/logout".toHttpUrl()).isEmpty())
+        assertTrue(jar.loadForRequest("https://auth.example.test:8443/logout".toHttpUrl()).isEmpty())
+    }
 
     @Test fun cancellationAfterPersistenceStartsCompletesCommitBeforePropagation() = kotlinx.coroutines.test.runTest {
         val entered = kotlinx.coroutines.CompletableDeferred<Unit>()

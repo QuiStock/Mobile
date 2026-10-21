@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ================================================================= -->
+    <!-- Corner Radii                                                      -->
+    <!-- ================================================================= -->
+    <dimen name="corner_radius_button_primary">17dp</dimen>
+    <dimen name="corner_radius_input">17dp</dimen>
+    <dimen name="corner_radius_card">21.71dp</dimen>
+    <dimen name="corner_radius_alert_button">12dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Dimensões de Botões                                               -->
+    <!-- ================================================================= -->
+    <!-- 398dp como largura máxima proporcional (evita quebrar telas <398dp) -->
+    <dimen name="button_max_width">398dp</dimen>
+    <dimen name="button_height">50dp</dimen>
+    <dimen name="button_min_height">48dp</dimen>
+    <dimen name="button_alert_height">36dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Espaçamento Uniforme de Cards e Telas (Item 5)                    -->
+    <!-- ================================================================= -->
+    <dimen name="screen_padding_horizontal">24dp</dimen>
+    <dimen name="screen_padding_top">48dp</dimen>
+    <dimen name="screen_padding_bottom">24dp</dimen>
+
+    <dimen name="card_margin_horizontal">16dp</dimen>
+    <dimen name="card_margin_vertical">12dp</dimen>
+    <dimen name="card_padding_inner">16dp</dimen>
+    <dimen name="card_padding_inner_compact">12dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Tipografia Acessível e Legível (Item 8)                            -->
+    <!-- ================================================================= -->
+    <dimen name="text_size_caption">12sp</dimen>
+    <dimen name="text_size_body_small">13sp</dimen>
+    <dimen name="text_size_body">14sp</dimen>
+    <dimen name="text_size_button">15sp</dimen>
+    <dimen name="text_size_subtitle">16sp</dimen>
+    <dimen name="text_size_title_small">18sp</dimen>
+    <dimen name="text_size_title">20sp</dimen>
+    <dimen name="text_size_headline">26sp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Barra de Navegação Inferior (Navbar - Item 9)                     -->
+    <!-- ================================================================= -->
+    <dimen name="nav_bar_height">68dp</dimen>
+    <dimen name="nav_bar_icon_size">26dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Splash Screen (Item 10)                                           -->
+    <!-- ================================================================= -->
+    <dimen name="splash_logo_width">280dp</dimen>
+    <dimen name="splash_logo_height">68dp</dimen>
+</resources>

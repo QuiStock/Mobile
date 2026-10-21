@@ -10,6 +10,7 @@ import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.databinding.FragmentLoginBinding
 import com.quistock.quistock.domain.model.LoginError
+import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginFragment : Fragment() {
@@ -34,9 +35,20 @@ class LoginFragment : Fragment() {
         setupListeners()
         if (arguments?.getBoolean("expired") == true) viewModel.showExpired()
         if (arguments?.getBoolean("unexpected") == true) viewModel.showUnexpectedError()
+        val profileMessage = arguments?.getInt("profile_rejection_message", 0) ?: 0
         arguments?.remove("expired")
         arguments?.remove("unexpected")
         observeState()
+        if (arguments?.getBoolean(LogoutRemoteWarningDialog.ARGUMENT) == true) {
+            if (childFragmentManager.findFragmentByTag(LogoutRemoteWarningDialog.TAG) == null) {
+                LogoutRemoteWarningDialog().show(childFragmentManager, LogoutRemoteWarningDialog.TAG)
+            }
+            arguments?.remove(LogoutRemoteWarningDialog.ARGUMENT)
+        }
+        if (profileMessage != 0) {
+            binding.txtErroLogin.setText(profileMessage)
+            binding.txtErroLogin.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {
@@ -85,9 +97,9 @@ class LoginFragment : Fragment() {
                 }
 
                 LoginUiState.Authenticated -> {
-                    enableLogin(true)
-                    showSpinner(false)
-                    redirectToMainPage()
+                    // MainActivity releases navigation only after the shared profile gate succeeds.
+                    enableLogin(false)
+                    showSpinner(true)
                 }
 
                 is LoginUiState.Error -> {

@@ -90,6 +90,24 @@
     <string name="popup_register_required">Preencha todos os campos para continuar.</string>
     <string name="popup_register_email">Confira o formato do seu e-mail e tente novamente.</string>
     <string name="popup_register_password_mismatch">As senhas não coincidem. Confira e tente novamente.</string>
+
+    <!-- Popup messages for confirmation and status feedback -->
+    <string name="popup_employee_registered">Funcionário cadastrado com sucesso.</string>
+    <string name="popup_employee_updated">Informações do funcionário alteradas com sucesso.</string>
+    <string name="popup_employee_delete_confirm">Tem certeza que deseja remover este funcionário?</string>
+    <string name="popup_employee_deleted">Funcionário removido com sucesso.</string>
+    <string name="popup_exit_confirm">Tem certeza que deseja sair do app?</string>
+    <string name="popup_logout_confirm">Tem certeza que deseja sair da sua conta?</string>
+    <string name="popup_form_submitted">Formulário enviado com sucesso.</string>
+    <string name="popup_form_error">Não foi possível enviar o formulário. Tente novamente.</string>
+    <string name="popup_info_updated">Informações alteradas com sucesso.</string>
+    <string name="popup_profile_saved">Perfil salvo com sucesso.</string>
+    <string name="popup_product_updated">Produto atualizado com sucesso.</string>
+    <string name="popup_manager_reject_order">Tem certeza que deseja reprovar este pedido?</string>
+    <string name="popup_manager_reject_promotion">Tem certeza que deseja reprovar esta promoção?</string>
+    <string name="popup_order_rejected">Pedido reprovado com sucesso.</string>
+    <string name="popup_promotion_rejected">Promoção reprovada com sucesso.</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="erro_login_erro_inesperado">Ocorreu um erro inesperado. Tente novamente. Se o erro persistir, entre em contato com o suporte.</string>
@@ -99,4 +117,17 @@
     <string name="session_server">Ocorreu um erro interno. Tente novamente mais tarde.</string>
     <string name="session_rate_limit">Limite de tentativas ultrapassado. Aguarde e tente novamente.</string>
     <string name="login_platform_not_allowed">Este perfil não pode acessar esta plataforma.</string>
+    <string name="session_renewal_failed">Não foi possível renovar sua sessão. Tente novamente.</string>
+    <string name="session_renewal_retry">Tentar novamente</string>
+    <string name="session_renewal_loading">Renovando sessão…</string>
+    <string name="logout_confirmation_title">Sair da conta?</string>
+    <string name="logout_confirmation_message">Deseja encerrar sua sessão neste aparelho?</string>
+    <string name="logout_cancel">Cancelar</string>
+    <string name="logout_confirm">Sair</string>
+    <string name="logout_progress">Saindo…</string>
+    <string name="logout_retry">Tentar novamente</string>
+    <string name="logout_local_failure">Não foi possível concluir a saída neste aparelho. Tente novamente.</string>
+    <string name="logout_remote_warning_title">Saída do aparelho concluída</string>
+    <string name="logout_remote_warning_message">Você saiu deste aparelho, mas não foi possível confirmar o encerramento no servidor.</string>
+    <string name="logout_understood">Entendi</string>
 </resources>

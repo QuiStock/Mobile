@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     jacoco
 }
 
@@ -246,34 +247,56 @@ tasks.configureEach {
 }
 
 dependencies {
-    implementation(libs.androidx.datastore.preferences)
+    // Android UI (Views and Material)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.material)
+    implementation(libs.play.services.maps)
+
+    // Navigation and lifecycle
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+
+    // Local persistence
+    implementation(libs.androidx.datastore.preferences)
+
+    // Coroutines and serialization
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.androidx.arch.core.testing)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.okhttp.mockwebserver)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
-    testImplementation(libs.kotest.assertion.core)
-    implementation(libs.firebase.auth)
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Networking
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlinx.serialization)
-    implementation(libs.kotlinx.serialization.json)
+
+    // Firebase (versions aligned by the BoM)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.crashlytics)
+
+    // Dependency injection (versions aligned by the BoM)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+
+    // Unit tests
+    testImplementation(libs.junit)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotest.assertion.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.koin.test)
+
+    // Instrumented tests
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.navigation.test)
+}
+
+secrets {
+    defaultPropertiesFileName = "secrets.defaults.properties"
 }

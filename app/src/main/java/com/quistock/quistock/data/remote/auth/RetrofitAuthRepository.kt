@@ -8,27 +8,15 @@ import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.Logger
+import com.quistock.quistock.domain.port.LogoutRequest
 import com.quistock.quistock.domain.port.StoredSession
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl
 import retrofit2.Response
-import java.io.IOException
-import java.net.ConnectException
-import java.net.HttpURLConnection
-import java.net.ProtocolException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLException
-import javax.net.ssl.SSLHandshakeException
-import javax.net.ssl.SSLPeerUnverifiedException
+import java.util.concurrent.atomic.AtomicBoolean
 
 class RetrofitAuthRepository(
     private val baseUrl: HttpUrl,
@@ -38,10 +26,6 @@ class RetrofitAuthRepository(
     private val logger: Logger? = null,
 ) : AuthRepository {
     @Volatile private var retryAt = 0L
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-    }
     override suspend fun begin(generation: Long) = custody.begin(generation)
     override fun hasAccess(generation: Long) = custody.access(generation) != null
     override suspend fun clear(generation: Long) = custody.clear(generation)
@@ -52,87 +36,58 @@ class RetrofitAuthRepository(
     }
     override fun retryDelayMillis() = (retryAt - now()).coerceAtLeast(0)
 
+    override fun prepareLogout(generation: Long): LogoutRequest {
+        // Capture before local revocation. Never commit logout responses into live custody.
+        var captured: StagedAuthCookieJar? = custody.requestJar(generation, true, AuthCookieCustody.LOGOUT_PATH)
+        val logoutUrl = requireNotNull(baseUrl.resolve(AuthCookieCustody.LOGOUT_PATH))
+        val requiresCsrf = requireNotNull(captured).hasRefresh(logoutUrl)
+        val used = AtomicBoolean(false)
+        return LogoutRequest {
+            check(used.compareAndSet(false, true)) { "Logout request already consumed" }
+            val jar = requireNotNull(captured)
+            captured = null
+            withContext(Dispatchers.IO) {
+                LogoutExchange(baseUrl, jar, createApi(jar), logger, now, requiresCsrf).execute()
+            }
+        }
+    }
+
     override suspend fun login(email: String, password: String, generation: Long): LoginResult =
         when (request(generation, LoginRequest(email, password))) {
-            Outcome.SUCCESS -> AuthResult.Success
-            Outcome.INVALID -> LoginError.InvalidCredentials
-            Outcome.PLATFORM -> LoginError.PlatformNotAllowed
-            Outcome.NETWORK, Outcome.TIMEOUT -> LoginError.NetworkError
-            Outcome.LIMIT -> LoginError.RateLimited
+            AuthOutcome.SUCCESS -> AuthResult.Success
+            AuthOutcome.INVALID -> LoginError.InvalidCredentials
+            AuthOutcome.PLATFORM -> LoginError.PlatformNotAllowed
+            AuthOutcome.NETWORK, AuthOutcome.TIMEOUT -> LoginError.NetworkError
+            AuthOutcome.LIMIT -> LoginError.RateLimited
             else -> LoginError.UnexpectedError
         }
 
     override suspend fun refresh(generation: Long): AuthRefreshResult = when (request(generation, null)) {
-        Outcome.SUCCESS -> AuthResult.Success
-        Outcome.INVALID -> AuthRefreshError.InvalidToken
-        Outcome.NETWORK -> AuthRefreshError.NetworkError
-        Outcome.TIMEOUT -> AuthRefreshError.Timeout
-        Outcome.SERVER -> AuthRefreshError.ServerError
-        Outcome.LIMIT -> AuthRefreshError.RateLimited
+        AuthOutcome.SUCCESS -> AuthResult.Success
+        AuthOutcome.INVALID -> AuthRefreshError.InvalidToken
+        AuthOutcome.NETWORK -> AuthRefreshError.NetworkError
+        AuthOutcome.TIMEOUT -> AuthRefreshError.Timeout
+        AuthOutcome.SERVER -> AuthRefreshError.ServerError
+        AuthOutcome.LIMIT -> AuthRefreshError.RateLimited
+        AuthOutcome.PROTOCOL -> AuthRefreshError.ProtocolError
         else -> AuthRefreshError.UnexpectedError
     }
 
-    @Suppress("TooGenericExceptionCaught")
-    private suspend fun request(generation: Long, login: LoginRequest?): Outcome {
-        val logContext = mapOf("operation" to if (login == null) "auth_refresh" else "login")
+    private suspend fun request(generation: Long, login: LoginRequest?): AuthOutcome {
         val limited = retryDelayMillis() > 0
         val jar = custody.requestJar(generation, refresh = login == null)
         val refreshUrl = requireNotNull(baseUrl.resolve(AuthCookieCustody.REFRESH_PATH))
-        if (limited || (login == null && jar.loadForRequest(refreshUrl).isEmpty())) {
-            return if (limited) Outcome.LIMIT else Outcome.INVALID
+        if (limited || (login == null && !jar.hasRefresh(refreshUrl))) {
+            return if (limited) AuthOutcome.LIMIT else AuthOutcome.INVALID
         }
         val api = createApi(jar)
         return withContext(Dispatchers.IO) {
-            val started = System.nanoTime()
-            logger?.debug(
-                "Auth HTTP request started",
-                logContext + mapOf(
-                    "https" to baseUrl.isHttps,
-                    "placeholder_host" to baseUrl.host.endsWith(".invalid"),
-                    "base_path_discarded" to (baseUrl.encodedPath != "/"),
-                ),
-            )
-            val response = try {
-                if (login == null) api.refresh().execute() else api.login(login).execute()
-            } catch (e: SocketTimeoutException) {
-                logTransportFailure(e, started, logContext)
-                return@withContext Outcome.TIMEOUT
-            } catch (e: IOException) {
-                logTransportFailure(e, started, logContext)
-                return@withContext Outcome.NETWORK
-            }
-            logger?.debug("Auth HTTP response received", logContext + ("http_status" to response.code()))
-            // Stay in the worker until cookies are durably committed. Cancellation at the dispatcher
-            // boundary must not lose a successor after the server has consumed the old refresh.
-            try {
-                val outcome = classify(response, login != null)
-                if (!custody.commit(generation, jar.received(), outcome == Outcome.SUCCESS)) {
-                    Outcome.UNEXPECTED
-                } else {
-                    if (outcome == Outcome.LIMIT) updateRetryAfter(response)
-                    outcome
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                Outcome.UNEXPECTED
-            } finally {
-                response.errorBody()?.close()
-            }
+            val context = AuthRequestContext(baseUrl, custody, logger, ::updateRetryAfter)
+            AuthRequest(generation, login, jar, api, context).execute()
         }
     }
 
-    private fun logTransportFailure(error: IOException, started: Long, context: Map<String, String>) {
-        logger?.info(
-            "Auth HTTP transport failed",
-            context + mapOf(
-                "failure" to transportFailureCategory(error),
-                "elapsed_ms" to TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started),
-            ),
-        )
-    }
-
-    private fun updateRetryAfter(response: Response<Unit>) {
+    private fun updateRetryAfter(response: Response<*>) {
         val value = response.headers()["Retry-After"]
         val seconds = value?.toLongOrNull()?.takeIf { it >= 0 }
         val currentTime = now()
@@ -145,43 +100,7 @@ class RetrofitAuthRepository(
         }
     }
 
-    private fun classify(response: Response<Unit>, login: Boolean): Outcome {
-        val code = runCatching {
-            json.parseToJsonElement(response.errorBody()?.string().orEmpty()).jsonObject["code"]?.jsonPrimitive?.content
-        }.getOrNull()
-        return when {
-            response.code() == HttpURLConnection.HTTP_OK -> Outcome.SUCCESS
-
-            response.code() == HTTP_TOO_MANY_REQUESTS -> Outcome.LIMIT
-
-            response.code() >= HttpURLConnection.HTTP_INTERNAL_ERROR -> Outcome.SERVER
-
-            response.code() == HttpURLConnection.HTTP_UNAUTHORIZED &&
-                code == (if (login) "invalid_credentials" else "invalid_refresh_token") ->
-                Outcome.INVALID
-
-            login && response.code() == HttpURLConnection.HTTP_FORBIDDEN && code == "platform_not_allowed" ->
-                Outcome.PLATFORM
-
-            else -> Outcome.UNEXPECTED
-        }
-    }
-
     companion object {
         private const val MILLIS_PER_SECOND = 1000L
-        private const val HTTP_TOO_MANY_REQUESTS = 429
     }
-
-    private enum class Outcome { SUCCESS, INVALID, PLATFORM, NETWORK, TIMEOUT, SERVER, LIMIT, UNEXPECTED }
-}
-
-internal fun transportFailureCategory(error: IOException): String = when (error) {
-    is UnknownHostException -> "dns"
-    is ConnectException -> "connection"
-    is SocketTimeoutException -> "timeout"
-    is SSLPeerUnverifiedException -> "tls_peer_verification"
-    is SSLHandshakeException -> "tls_handshake"
-    is SSLException -> "tls"
-    is ProtocolException -> "protocol"
-    else -> "io"
 }

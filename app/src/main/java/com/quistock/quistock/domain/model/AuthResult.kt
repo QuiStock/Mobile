@@ -20,6 +20,7 @@ sealed interface LoginError : LoginResult {
 sealed interface AuthRefreshResult : AuthResult
 
 sealed interface AuthRefreshError : AuthRefreshResult {
+    data object ProtocolError : AuthRefreshError
     data object NetworkError : AuthRefreshError
     data object Timeout : AuthRefreshError
     data object ServerError : AuthRefreshError

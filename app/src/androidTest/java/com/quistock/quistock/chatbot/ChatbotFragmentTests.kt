@@ -19,6 +19,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.domain.model.ChatbotResponse
@@ -29,12 +30,15 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 
 @RunWith(AndroidJUnit4::class)
 class ChatbotFragmentTests {
+    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
+
     private lateinit var viewModel: ChatbotViewModel
     private lateinit var uiState: MutableLiveData<ChatbotUiState>
     private lateinit var answer: MutableLiveData<ChatbotResponse?>

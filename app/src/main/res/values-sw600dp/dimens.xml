@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ================================================================= -->
+    <!-- Corner Radii (Mantidos consistentes no Tablet)                     -->
+    <!-- ================================================================= -->
+    <dimen name="corner_radius_button_primary">17dp</dimen>
+    <dimen name="corner_radius_input">17dp</dimen>
+    <dimen name="corner_radius_card">21.71dp</dimen>
+    <dimen name="corner_radius_alert_button">12dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Dimensões de Botões Tablet (Galaxy Tab A7 Lite)                   -->
+    <!-- ================================================================= -->
+    <!-- 398dp evita que os botões fiquem esticados na tela de 800-1340px   -->
+    <dimen name="button_max_width">398dp</dimen>
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="button_min_height">48dp</dimen>
+    <dimen name="button_alert_height">42dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Espaçamento Responsivo para Tablet                                -->
+    <!-- ================================================================= -->
+    <dimen name="screen_padding_horizontal">48dp</dimen>
+    <dimen name="screen_padding_top">64dp</dimen>
+    <dimen name="screen_padding_bottom">32dp</dimen>
+
+    <dimen name="card_margin_horizontal">24dp</dimen>
+    <dimen name="card_margin_vertical">16dp</dimen>
+    <dimen name="card_padding_inner">24dp</dimen>
+    <dimen name="card_padding_inner_compact">16dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Tipografia Proporcional para Tela 8.7"                            -->
+    <!-- ================================================================= -->
+    <dimen name="text_size_caption">13sp</dimen>
+    <dimen name="text_size_body_small">14sp</dimen>
+    <dimen name="text_size_body">16sp</dimen>
+    <dimen name="text_size_button">16sp</dimen>
+    <dimen name="text_size_subtitle">18sp</dimen>
+    <dimen name="text_size_title_small">20sp</dimen>
+    <dimen name="text_size_title">22sp</dimen>
+    <dimen name="text_size_headline">30sp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Barra de Navegação Inferior Tablet                                -->
+    <!-- ================================================================= -->
+    <dimen name="nav_bar_height">76dp</dimen>
+    <dimen name="nav_bar_icon_size">30dp</dimen>
+
+    <!-- ================================================================= -->
+    <!-- Splash Screen Tablet                                              -->
+    <!-- ================================================================= -->
+    <dimen name="splash_logo_width">380dp</dimen>
+    <dimen name="splash_logo_height">92dp</dimen>
+</resources>

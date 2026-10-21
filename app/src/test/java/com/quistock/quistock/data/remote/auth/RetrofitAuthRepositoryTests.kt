@@ -31,12 +31,14 @@ class RetrofitAuthRepositoryTests {
                 { createAuthApi(f.auth.url("/"), it) },
             )
             val recreatedSession = com.quistock.quistock.domain.usecase.SessionUseCase(recreatedRepository)
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(cookieResponse("renewed"))
 
             assertEquals(SessionState.Active, recreatedSession.restore())
+            assertEquals("/csrf", f.auth.takeRequest(5, TimeUnit.SECONDS)!!.path)
             val refresh = f.auth.takeRequest(5, TimeUnit.SECONDS)!!
             assertEquals("/refresh", refresh.path)
-            assertEquals("refresh_token=old-refresh", refresh.getHeader("Cookie"))
+            assertEquals("refresh_token=old-refresh; AUTH-XSRF-TOKEN=raw-synthetic", refresh.getHeader("Cookie"))
             assertEquals("renewed", recreatedCustody.access(recreatedSession.snapshot().generation))
             assertEquals("renewed-refresh", f.store.record!!.value)
         }
@@ -68,7 +70,9 @@ class RetrofitAuthRepositoryTests {
                 val entered = CountDownLatch(1)
                 val release = CountDownLatch(1)
                 f.auth.dispatcher = object : Dispatcher() {
-                    override fun dispatch(request: RecordedRequest): MockResponse = if (request.path == "/refresh") {
+                    override fun dispatch(request: RecordedRequest): MockResponse = if (request.path == "/csrf") {
+                        csrfResponse()
+                    } else if (request.path == "/refresh") {
                         entered.countDown()
                         check(release.await(10, TimeUnit.SECONDS))
                         late
@@ -101,6 +105,7 @@ class RetrofitAuthRepositoryTests {
     @Test fun errorResponseDeletionIsAppliedRatherThanAssumingPreservation() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(
                 MockResponse().setResponseCode(503)
                     .addHeader("Set-Cookie", "refresh_token=; HttpOnly; Path=/; Max-Age=0"),
@@ -127,6 +132,7 @@ class RetrofitAuthRepositoryTests {
             f.auth.enqueue(MockResponse().setResponseCode(401).setBody("{\"code\":\"invalid_credentials\"}"))
             assertEquals(LoginError.InvalidCredentials, f.session.login("synthetic", "synthetic"))
             f.login()
+            f.auth.enqueue(csrfResponse())
             f.auth.enqueue(MockResponse().setResponseCode(401).setBody("{\"code\":\"invalid_refresh_token\"}"))
             f.session.refresh(f.session.snapshot())
             assertEquals(SessionState.Expired, f.session.state.value)
@@ -146,6 +152,7 @@ class RetrofitAuthRepositoryTests {
             now = parsed.first { it.name == "access_token" }.expiresAt
             assertFalse(repository.hasAccess(1))
             assertEquals(0, server.requestCount)
+            server.enqueue(csrfResponse())
             server.enqueue(cookieResponse("new", 600))
             assertEquals(AuthResult.Success, repository.refresh(1))
             assertTrue(repository.hasAccess(1))

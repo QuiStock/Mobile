@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.google.firebase.crashlytics) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
 }

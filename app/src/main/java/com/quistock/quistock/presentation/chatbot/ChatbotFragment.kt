@@ -51,7 +51,13 @@ class ChatbotFragment : Fragment() {
         }
 
         viewModel.answer.observe(viewLifecycleOwner) { response ->
-            response?.let { addMessage(messages, it.answer, isUser = false) }
+            if (response == null) {
+                messages.removeAllViews()
+                messageInput.text.clear()
+                lastMessage = null
+            } else {
+                addMessage(messages, response.answer, isUser = false)
+            }
         }
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
@@ -78,6 +84,11 @@ class ChatbotFragment : Fragment() {
                 else -> Unit
             }
         }
+    }
+
+    override fun onDestroyView() {
+        lastMessage = null
+        super.onDestroyView()
     }
 
     private fun addMessage(container: LinearLayout, message: String, isUser: Boolean) {
