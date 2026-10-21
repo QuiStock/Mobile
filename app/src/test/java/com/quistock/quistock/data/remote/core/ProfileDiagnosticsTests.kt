@@ -5,6 +5,8 @@ import com.quistock.quistock.domain.model.ProfileRejection
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.ProfileUseCase
@@ -87,8 +89,8 @@ class ProfileDiagnosticsTests {
         id = "private-sentinel",
         name = "private-sentinel",
         email = "private-sentinel",
-        role = "FUNCIONARIO",
-        status = "ACTIVE",
+        role = UserRole.EMPLOYEE,
+        status = UserStatus.ACTIVE,
         photoUrl = "https://example.test/private-sentinel",
         storeId = storeId,
         storeName = storeName,

@@ -6,6 +6,8 @@ import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import io.mockk.coEvery
@@ -36,8 +38,12 @@ class ProfileUseCaseTests {
         session.login("fixture@example.test", "fixture")
     }
 
-    private fun valid(role: String = "FUNCIONARIO", storeId: Long? = 7, storeName: String? = "Fixture store") =
-        UserProfile("1", "Fixture user", "fixture@example.test", role, "ACTIVE", null, storeId, storeName)
+    private fun valid(
+        role: UserRole = UserRole.EMPLOYEE,
+        storeId: Long? = 7,
+        storeName: String? = "Fixture store",
+        status: UserStatus = UserStatus.ACTIVE,
+    ) = UserProfile("1", "Fixture user", "fixture@example.test", role, status, null, storeId, storeName)
 
     @Test fun profileIsSharedInMemoryAfterSuccessfulLoad() = runTest {
         login()
@@ -85,17 +91,18 @@ class ProfileUseCaseTests {
     }
 
     @Test fun missingStoreRejectsBothMobileRoles() = runTest {
-        for (role in listOf("FUNCIONARIO", "GERENTE")) {
+        for (role in listOf(UserRole.EMPLOYEE, UserRole.MANAGER)) {
             login()
             coEvery { repository.read() } returns ProfileResult.Success(valid(role, null, null))
             profile.load()
             assertEquals(ProfileRejection.NO_STORE, (profile.state.value as ProfileState.Rejected).reason)
+            assertEquals(role, (profile.state.value as ProfileState.Rejected).role)
             assertEquals(SessionState.Expired, session.state.value)
         }
     }
 
     @Test fun restoredAdministrativeRolesCannotEnterEvenWithStore() = runTest {
-        for (role in listOf("ADMIN", "GERENTE_REGIONAL")) {
+        for (role in listOf(UserRole.ADMIN, UserRole.REGIONAL_MANAGER)) {
             login()
             coEvery { repository.read() } returns ProfileResult.Success(valid(role))
             profile.load()
@@ -104,9 +111,9 @@ class ProfileUseCaseTests {
         }
     }
 
-    @Test fun unknownRoleIsInvalidAndDoesNotPublishProfile() = runTest {
+    @Test fun inactiveStatusIsInvalidAndDoesNotPublishProfile() = runTest {
         login()
-        coEvery { repository.read() } returns ProfileResult.Success(valid("UNKNOWN"))
+        coEvery { repository.read() } returns ProfileResult.Success(valid(status = UserStatus.INACTIVE))
         profile.load()
         assertTrue(profile.state.value is ProfileState.Failure)
         assertEquals(SessionState.Active, session.state.value)

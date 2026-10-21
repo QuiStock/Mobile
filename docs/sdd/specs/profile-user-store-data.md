@@ -198,6 +198,14 @@ Regressões escritas/adaptadas: limpeza de rejeição/foto no logout, navegaçã
 
 O solicitante autorizou logs no padrão Auth. A extensão está em [Core request diagnostics](core-request-diagnostics.md): início, tentativas/status HTTP, duração, renovação, bloqueio de acesso e resultados de carregamento/validação do perfil, somente com campos sanitizados. Token, cookies, CSRF, URL, query, payload, identidade e texto/stack de exceções não são registrados. A instrumentação utiliza o Logger existente e a tag QuiStock, sem alterar fluxos de sessão/perfil. Testes de diagnóstico e ausência de dados sensíveis foram escritos, sem execução ou validação final.
 
+### Compatibilidade do modelo tipado (21/10/2026)
+
+A alteração do solicitante em `UserProfile` passa cargo/status para `UserRole`/`UserStatus`. O domínio e o estado de rejeição usam esses tipos; a apresentação usa `role.displayName` e a elegibilidade usa `role.hasAccess`. O rótulo de funcionário passa a “Funcionário”, conforme o enum fornecido, substituindo o rótulo anterior “Repositor”.
+
+O DTO mantém strings na fronteira HTTP. O mapper aceita EMPLOYEE/FUNCIONARIO, MANAGER/GERENTE e REGIONAL_MANAGER/GERENTE_REGIONAL, produzindo os respectivos enums em inglês. ADMIN permanece representado como cargo sem acesso para preservar AC-17 e a mensagem de bloqueio aprovada. Status ACTIVE/INACTIVE são convertidos explicitamente; valores desconhecidos ou não canônicos falham como resposta inválida, sem fallback para cargo permitido. INACTIVE continua falhando na validação de elegibilidade.
+
+Evidências previstas: `ProfileRoleMappingTests` para códigos novos/legados, status e valores desconhecidos; `ProfileUseCaseTests` para estado tipado e bloqueios; fixtures unitárias/instrumentadas adaptadas. Exibição do `displayName` e orientação por cargo ficam para conferência manual do solicitante. Testes e validações não serão executados por instrução explícita do solicitante.
+
 ### Compatibilidade do cargo EMPLOYEE no ambiente consultado
 
 A resposta de GET /profile fornecida pelo solicitante contém `role=EMPLOYEE`, enquanto a documentação e `UserManagementRules` do DS_Backend local usam `FUNCIONARIO`. O modelo de domínio rejeitava o valor externo como cargo desconhecido, produzindo `reason=invalid` após HTTP 200. Não é falha do token nessa resposta. Não copiar a resposta nem identificadores/dados pessoais para documentação, fixtures ou logs.

@@ -21,6 +21,7 @@ import com.quistock.quistock.domain.model.ProfileRejection
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
@@ -221,7 +222,7 @@ internal fun sessionDestination(state: SessionState, current: Int?): Int? = when
 }
 
 internal fun profileRejectionMessage(state: ProfileState.Rejected): Int = when (state.reason) {
-    ProfileRejection.NO_STORE -> if (state.role == "GERENTE") {
+    ProfileRejection.NO_STORE -> if (state.role == UserRole.MANAGER) {
         R.string.profile_no_store_manager
     } else {
         R.string.profile_no_store_employee

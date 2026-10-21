@@ -1,10 +1,19 @@
 package com.quistock.quistock.data.remote.core
 
 import com.quistock.quistock.domain.model.ProfileRejection
+import com.quistock.quistock.domain.model.ProfileResult
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import retrofit2.Response
 
 class ProfileRoleMappingTests {
     @Test fun englishEmployeeResponseMapsToAnEligibleInternalEmployee() {
@@ -29,7 +38,8 @@ class ProfileRoleMappingTests {
 
         val profile = response.toDomain()
 
-        assertEquals("FUNCIONARIO", profile.role)
+        assertEquals(UserRole.EMPLOYEE, profile.role)
+        assertEquals(UserStatus.ACTIVE, profile.status)
         assertEquals(1L, profile.storeId)
         assertEquals(1L, profile.regionId)
         assertNull(profile.rejection())
@@ -38,29 +48,31 @@ class ProfileRoleMappingTests {
     @Test fun employeeAliasWithoutStoreStillCannotEnterMobile() {
         val profile = response("EMPLOYEE", storeId = null, storeName = null).toDomain()
 
-        assertEquals("FUNCIONARIO", profile.role)
+        assertEquals(UserRole.EMPLOYEE, profile.role)
         assertEquals(ProfileRejection.NO_STORE, profile.rejection())
     }
 
-    @Test fun documentedRolesPreserveTheirExistingAccessRules() {
+    @Test fun canonicalAndLegacyRolesMapToTypedRoles() {
         val expected = mapOf(
-            "FUNCIONARIO" to null,
-            "GERENTE" to null,
-            "ADMIN" to ProfileRejection.ROLE,
-            "GERENTE_REGIONAL" to ProfileRejection.ROLE,
+            "EMPLOYEE" to UserRole.EMPLOYEE,
+            "FUNCIONARIO" to UserRole.EMPLOYEE,
+            "MANAGER" to UserRole.MANAGER,
+            "GERENTE" to UserRole.MANAGER,
+            "ADMIN" to UserRole.ADMIN,
+            "REGIONAL_MANAGER" to UserRole.REGIONAL_MANAGER,
+            "GERENTE_REGIONAL" to UserRole.REGIONAL_MANAGER,
         )
-        expected.forEach { (role, rejection) ->
+        expected.forEach { (role, mappedRole) ->
             val profile = response(role).toDomain()
-            assertEquals(role, profile.role)
-            assertEquals(rejection, profile.rejection())
+            assertEquals(mappedRole, profile.role)
+            assertEquals(if (mappedRole.hasAccess) null else ProfileRejection.ROLE, profile.rejection())
         }
     }
 
     @Test fun unknownAndNoncanonicalRolesAreNotConvertedToEmployees() {
         listOf("UNKNOWN", "employee", "EMPLOYEE ").forEach { role ->
-            val profile = response(role).toDomain()
-            assertEquals(role, profile.role)
-            assertEquals(ProfileRejection.INVALID, profile.rejection())
+            val error = runCatching { response(role).toDomain() }.exceptionOrNull()
+            assertTrue(error is SerializationException)
         }
     }
 
@@ -70,7 +82,26 @@ class ProfileRoleMappingTests {
             storeId = 1, storeName = "Fixture store",
         ).toDomain()
 
+        assertEquals(UserStatus.INACTIVE, profile.status)
         assertEquals(ProfileRejection.INVALID, profile.rejection())
+    }
+
+    @Test fun unknownAndNoncanonicalStatusesFailMapping() {
+        listOf("UNKNOWN", "active", "ACTIVE ").forEach { status ->
+            val response = ProfileResponse("1", "Fixture", "fixture@example.test", "EMPLOYEE", status)
+            assertTrue(runCatching { response.toDomain() }.exceptionOrNull() is SerializationException)
+        }
+    }
+
+    @Test fun invalidRoleOrStatusProducesRecoverableRepositoryFailure() = runTest {
+        val api = mockk<ProfileApi>()
+        val repository = RetrofitProfileRepository(api)
+        listOf("UNKNOWN" to "ACTIVE", "EMPLOYEE" to "UNKNOWN").forEach { (role, status) ->
+            coEvery { api.read() } returns Response.success(
+                ProfileResponse("1", "Fixture", "fixture@example.test", role, status),
+            )
+            assertTrue(repository.read() is ProfileResult.Failure)
+        }
     }
 
     private fun response(role: String, storeId: Long? = 1, storeName: String? = "Fixture store") = ProfileResponse(

@@ -5,6 +5,8 @@ import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
@@ -37,7 +39,9 @@ class ProfileRecoveryTests {
         coEvery { repository.read() } returnsMany listOf(
             ProfileResult.Failure(1000),
             ProfileResult.Success(
-                UserProfile("1", "Fixture", "fixture@example.test", "FUNCIONARIO", "ACTIVE", null, 1, "Fixture"),
+                UserProfile(
+                    "1", "Fixture", "fixture@example.test", UserRole.EMPLOYEE, UserStatus.ACTIVE, null, 1, "Fixture",
+                ),
             ),
         )
         val profile = ProfileUseCase(repository, session)

@@ -4,6 +4,8 @@ import com.quistock.quistock.data.remote.auth.transportFailureCategory
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.ProfileRepository
 import kotlinx.coroutines.CancellationException
@@ -39,14 +41,21 @@ class ProfileResponse(
     @SerialName("region_name") val regionName: String? = null,
 ) {
     fun toDomain() = UserProfile(
-        id, name, email, internalRole(), status, photoUrl, storeId, storeName, storeCode,
+        id, name, email, internalRole(), internalStatus(), photoUrl, storeId, storeName, storeCode,
         regionId, regionCode, regionName,
     )
 
-    // The deployed Core exposes this alias; domain and presentation keep their approved role codes.
-    private fun internalRole(): String = when (role) {
-        "EMPLOYEE" -> "FUNCIONARIO"
-        else -> role
+    private fun internalRole(): UserRole = when (role) {
+        "EMPLOYEE" -> UserRole.EMPLOYEE
+        "MANAGER" -> UserRole.MANAGER
+        "REGIONAL_MANAGER" -> UserRole.REGIONAL_MANAGER
+        else -> throw SerializationException("Unsupported profile role")
+    }
+
+    private fun internalStatus(): UserStatus = when (status) {
+        "ACTIVE" -> UserStatus.ACTIVE
+        "INACTIVE" -> UserStatus.INACTIVE
+        else -> throw SerializationException("Unsupported profile status")
     }
 }
 
