@@ -135,13 +135,11 @@ internal class RecordingCoreLogger : Logger {
         events += msg to context.toMap()
     }
 
-    override fun warn(msg: String, throwable: Throwable?, context: Map<String, Any>) {
+    override fun warn(msg: String, throwable: Throwable?, context: Map<String, Any>): Unit =
         throw AssertionError("Unexpected diagnostic level")
-    }
 
-    override fun error(msg: String, throwable: Throwable?, context: Map<String, Any>) {
+    override fun error(msg: String, throwable: Throwable?, context: Map<String, Any>): Unit =
         throw AssertionError("Unexpected diagnostic level")
-    }
 
     fun event(message: String): Map<String, Any> = events.single { it.first == message }.second
 

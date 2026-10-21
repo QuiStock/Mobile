@@ -52,15 +52,11 @@ class ProfileRoleMappingTests {
         assertEquals(ProfileRejection.NO_STORE, profile.rejection())
     }
 
-    @Test fun canonicalAndLegacyRolesMapToTypedRoles() {
+    @Test fun canonicalRolesMapToTypedRoles() {
         val expected = mapOf(
             "EMPLOYEE" to UserRole.EMPLOYEE,
-            "FUNCIONARIO" to UserRole.EMPLOYEE,
             "MANAGER" to UserRole.MANAGER,
-            "GERENTE" to UserRole.MANAGER,
-            "ADMIN" to UserRole.ADMIN,
             "REGIONAL_MANAGER" to UserRole.REGIONAL_MANAGER,
-            "GERENTE_REGIONAL" to UserRole.REGIONAL_MANAGER,
         )
         expected.forEach { (role, mappedRole) ->
             val profile = response(role).toDomain()
@@ -70,16 +66,22 @@ class ProfileRoleMappingTests {
     }
 
     @Test fun unknownAndNoncanonicalRolesAreNotConvertedToEmployees() {
-        listOf("UNKNOWN", "employee", "EMPLOYEE ").forEach { role ->
-            val error = runCatching { response(role).toDomain() }.exceptionOrNull()
-            assertTrue(error is SerializationException)
-        }
+        listOf("ADMIN", "FUNCIONARIO", "GERENTE", "GERENTE_REGIONAL", "UNKNOWN", "employee", "EMPLOYEE ")
+            .forEach { role ->
+                val error = runCatching { response(role).toDomain() }.exceptionOrNull()
+                assertTrue(error is SerializationException)
+            }
     }
 
     @Test fun employeeAliasDoesNotBypassInactiveAccountValidation() {
         val profile = ProfileResponse(
-            "1", "Fixture operator", "fixture@example.test", "EMPLOYEE", "INACTIVE",
-            storeId = 1, storeName = "Fixture store",
+            "1",
+            "Fixture operator",
+            "fixture@example.test",
+            "EMPLOYEE",
+            "INACTIVE",
+            storeId = 1,
+            storeName = "Fixture store",
         ).toDomain()
 
         assertEquals(UserStatus.INACTIVE, profile.status)
@@ -96,7 +98,7 @@ class ProfileRoleMappingTests {
     @Test fun invalidRoleOrStatusProducesRecoverableRepositoryFailure() = runTest {
         val api = mockk<ProfileApi>()
         val repository = RetrofitProfileRepository(api)
-        listOf("UNKNOWN" to "ACTIVE", "EMPLOYEE" to "UNKNOWN").forEach { (role, status) ->
+        listOf("ADMIN" to "ACTIVE", "UNKNOWN" to "ACTIVE", "EMPLOYEE" to "UNKNOWN").forEach { (role, status) ->
             coEvery { api.read() } returns Response.success(
                 ProfileResponse("1", "Fixture", "fixture@example.test", role, status),
             )
@@ -105,7 +107,12 @@ class ProfileRoleMappingTests {
     }
 
     private fun response(role: String, storeId: Long? = 1, storeName: String? = "Fixture store") = ProfileResponse(
-        "1", "Fixture operator", "fixture@example.test", role, "ACTIVE",
-        storeId = storeId, storeName = storeName,
+        "1",
+        "Fixture operator",
+        "fixture@example.test",
+        role,
+        "ACTIVE",
+        storeId = storeId,
+        storeName = storeName,
     )
 }

@@ -105,14 +105,13 @@ internal fun createCoreHttpClient(
     session: SessionUseCase,
     custody: AuthCookieCustody,
     logger: Logger? = null,
-): OkHttpClient =
-    OkHttpClient.Builder()
-        .cookieJar(CookieJar.NO_COOKIES)
-        .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
-        .retryOnConnectionFailure(false)
-        .followRedirects(false)
-        .followSslRedirects(false)
-        .build()
+): OkHttpClient = OkHttpClient.Builder()
+    .cookieJar(CookieJar.NO_COOKIES)
+    .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
+    .retryOnConnectionFailure(false)
+    .followRedirects(false)
+    .followSslRedirects(false)
+    .build()
 
 internal fun createAuthApi(baseUrl: HttpUrl, jar: CookieJar, client: OkHttpClient = OkHttpClient()): AuthApi =
     Retrofit.Builder()

@@ -30,5 +30,4 @@ class SessionNavigationTests {
         assertEquals(R.id.loginFragment, sessionDestination(SessionState.LoggedOut(false), R.id.profileFragment))
         assertNull(sessionDestination(SessionState.LoggedOut(false), R.id.loginFragment))
     }
-
 }
