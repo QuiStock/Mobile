@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="profile_greeting">Olá, %1$s!</string>
     <string name="profile_loading">Carregando seu perfil…</string>
     <string name="profile_load_failed">Não foi possível carregar seu perfil. Tente novamente.</string>
     <string name="profile_access_denied">Não foi possível acessar sua conta. Entre em contato com o responsável.</string>

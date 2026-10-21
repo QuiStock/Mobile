@@ -35,6 +35,7 @@ Documentação local consultada em `../DS_Backend/README.md` e `../DS_Backend/ap
 | Destino | Origem | Observação |
 | --- | --- | --- |
 | Nome nos headers e no centro do perfil | `name` | Mesmo usuário e mesmo resultado compartilhado |
+| Saudação inicial da Home | `name` | Mostrar “Olá, %1$s!” com o nome completo do perfil em memória, sem nova consulta; uma linha com reticências e texto completo acessível |
 | Loja nos headers e na linha de loja do perfil | `store_name` | Sem vínculo: bloquear entrada e mostrar “Sem loja vinculada” fora da Home; ver O-09 |
 | Cargo no perfil | `role` | Traduzir cargo conhecido; cargo desconhecido invalida o perfil. FUNCIONARIO aparece como “Repositor” e GERENTE como “Gerente” |
 | E-mail | `email` | Preencher Editar perfil e Contato; não adicionar campo ao perfil principal |
@@ -141,6 +142,8 @@ O contrato consultado não garante loja para GERENTE. A regra aprovada permanece
 Para cargo conhecido não permitido (ADMIN/GERENTE_REGIONAL retornado pelo perfil), descartar a sessão e voltar ao login com “Seu perfil não tem acesso ao aplicativo móvel.” A mensagem é distinta da recusa 403 do Core e da ausência de loja.
 
 ## Resultado da implementação
+
+A saudação da Home também participa do binding compartilhado por `current_profile_greeting`, usando recurso de string formatado. Conferência manual pelo solicitante: abrir a Home após carregar o perfil, conferir o nome na saudação, nomes longos e leitura completa no TalkBack; sair/trocar sessão deve limpar/substituir o nome junto aos demais slots. Essa alteração simples de apresentação reutiliza o binding existente; não adiciona testes automatizados nem executa validações, conforme orientação vigente.
 
 Implementação autorizada após fechamento de O-01 a O-13:
 

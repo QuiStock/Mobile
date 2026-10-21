@@ -81,6 +81,10 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
 
             "current_profile_role" -> profile?.role?.displayName
 
+            "current_profile_greeting" -> profile?.let {
+                view.context.getString(R.string.profile_greeting, it.name)
+            }
+
             "current_profile_email_input" -> profile?.email
 
             else -> profile?.name
