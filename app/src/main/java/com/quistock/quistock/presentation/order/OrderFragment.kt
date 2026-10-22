@@ -7,13 +7,22 @@ import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentOrderBinding
 import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.presentation.common.AlertProductNavigation
+import com.quistock.quistock.presentation.common.bindAlertProductSummary
 
 class OrderFragment : Fragment(R.layout.fragment_order) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentOrderBinding.bind(view)
+        val selectedProduct = AlertProductNavigation.product(arguments)
+        selectedProduct?.let { view.bindAlertProductSummary(it) }
+        binding.btnAlertBack.setOnClickListener { findNavController().popBackStack() }
 
         binding.btnSubmitOrder.setOnClickListener {
+            if (selectedProduct != null) {
+                PopupFeedback.showStatus(view, getString(R.string.home_alerts_submission_unavailable), true)
+                return@setOnClickListener
+            }
             if (binding.etOrderQuantity.text.toString().trim().isEmpty() ||
                 binding.etOrderDate.text.toString().trim().isEmpty()
             ) {

@@ -47,8 +47,11 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/btnAlertBack"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:gravity="center_vertical"
                 android:layout_marginTop="30dp"
                 android:text="‹  Voltar"
                 android:textColor="#FFFFFF"
@@ -66,7 +69,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="88dp"
+                android:layout_height="wrap_content"
+                android:minHeight="88dp"
                 android:layout_marginTop="30dp"
                 android:background="@drawable/bg_card_summary"
                 android:orientation="vertical"
@@ -76,15 +80,15 @@
                 android:paddingBottom="9dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Leite Integral UHT 1L" android:textColor="#FFFFFF" android:textSize="12sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laticínios · 25 un" android:textColor="#BFAFC5" android:textSize="9sp" />
+                        <TextView android:id="@+id/alertProductName" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="2" android:ellipsize="end" android:text="Leite Integral UHT 1L" android:textColor="#FFFFFF" android:textSize="12sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/alertProductQuantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laticínios · 25 un" android:textColor="#BFAFC5" android:textSize="9sp" />
                     </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_flow_low" android:paddingStart="9dp" android:paddingTop="3dp" android:paddingEnd="9dp" android:paddingBottom="3dp" android:text="Fluxo Baixo" android:textColor="#DA4DC8" android:textSize="8sp" />
+                    <TextView android:id="@+id/alertProductFlow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_flow_low" android:paddingStart="9dp" android:paddingTop="3dp" android:paddingEnd="9dp" android:paddingBottom="3dp" android:text="Fluxo Baixo" android:textColor="#DA4DC8" android:textSize="8sp" />
                 </LinearLayout>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Validade" android:textColor="#BFAFC5" android:textSize="8sp" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="06/08/2026" android:textColor="#FFFFFF" android:textSize="9sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vence em 2 dias" android:textColor="#A544FF" android:textSize="8sp" />
+                    <TextView android:id="@+id/alertProductExpiry" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="06/08/2026" android:textColor="#FFFFFF" android:textSize="9sp" />
+                    <TextView android:id="@+id/alertProductExpiryExtra" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vence em 2 dias" android:textColor="#A544FF" android:textSize="8sp" />
                 </LinearLayout>
             </LinearLayout>
 
