@@ -19,6 +19,8 @@
 
         <!-- PERFIL -->
         <ImageButton
+
+        <ImageButton android:tag="current_profile_photo"
             android:id="@+id/btnPerfil"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -33,24 +35,31 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- NOME DA LOJA -->
-        <TextView
+
+        <TextView android:tag="current_profile_store"
             android:id="@+id/tvNomeLoja"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:text="Nome da loja"
             android:textColor="@color/color_branco"
+            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            android:layout_marginEnd="12dp"
+            android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/btnPerfil"
             app:layout_constraintTop_toTopOf="@id/btnPerfil" />
 
         <!-- USUÁRIO -->
-        <TextView
+
+        <TextView android:tag="current_profile_header_name"
             android:id="@+id/tvNomeUsuario"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Nome do usuário"
+            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            android:layout_marginEnd="12dp"
             android:textColor="#BFAFC5"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/tvNomeLoja"
@@ -77,14 +86,19 @@
 
         <TextView
             android:id="@+id/tvSaudacao"
-            android:layout_width="wrap_content"
+            android:tag="current_profile_greeting"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
+            android:layout_marginStart="29dp"
+            android:layout_marginEnd="29dp"
+            android:layout_marginTop="45dp"
             android:text="Olá, usuário!"
             android:textColor="#E8D2F0"
             android:textSize="26sp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnPerfil" />
 

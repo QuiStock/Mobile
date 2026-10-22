@@ -38,6 +38,9 @@
                 <ImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                <ImageView android:tag="current_profile_photo"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:contentDescription="Perfil"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_profile" />
@@ -49,16 +52,16 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <TextView android:tag="current_profile_store"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Loja Av. Paulista"
                         android:textColor="@color/color_branco"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <TextView android:tag="current_profile_header_name"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Milena Souza"
                         android:textColor="#BFAFC5"

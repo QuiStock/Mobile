@@ -117,4 +117,17 @@
     <string name="session_server">Ocorreu um erro interno. Tente novamente mais tarde.</string>
     <string name="session_rate_limit">Limite de tentativas ultrapassado. Aguarde e tente novamente.</string>
     <string name="login_platform_not_allowed">Este perfil não pode acessar esta plataforma.</string>
+    <string name="session_renewal_failed">Não foi possível renovar sua sessão. Tente novamente.</string>
+    <string name="session_renewal_retry">Tentar novamente</string>
+    <string name="session_renewal_loading">Renovando sessão…</string>
+    <string name="logout_confirmation_title">Sair da conta?</string>
+    <string name="logout_confirmation_message">Deseja encerrar sua sessão neste aparelho?</string>
+    <string name="logout_cancel">Cancelar</string>
+    <string name="logout_confirm">Sair</string>
+    <string name="logout_progress">Saindo…</string>
+    <string name="logout_retry">Tentar novamente</string>
+    <string name="logout_local_failure">Não foi possível concluir a saída neste aparelho. Tente novamente.</string>
+    <string name="logout_remote_warning_title">Saída do aparelho concluída</string>
+    <string name="logout_remote_warning_message">Você saiu deste aparelho, mas não foi possível confirmar o encerramento no servidor.</string>
+    <string name="logout_understood">Entendi</string>
 </resources>

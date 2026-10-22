@@ -46,6 +46,8 @@
     <!-- ================================================================= -->
     <dimen name="nav_bar_height">56dp</dimen>
     <dimen name="nav_bar_icon_size">22dp</dimen>
+    <dimen name="nav_bar_height">68dp</dimen>
+    <dimen name="nav_bar_icon_size">26dp</dimen>
 
     <!-- ================================================================= -->
     <!-- Splash Screen (Item 10)                                           -->

@@ -18,11 +18,13 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.quistock.quistock.ProfileTestDependencies
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
+import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
-import com.quistock.quistock.domain.model.SessionSnapshot
-import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.port.AuthRepository
+import com.quistock.quistock.domain.port.StoredSession
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.login.LoginUiState
@@ -31,10 +33,12 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,14 +48,24 @@ import org.koin.core.context.GlobalContext
 class LoginFragmentTests {
     private lateinit var viewModel: LoginViewModel
     private lateinit var uiState: MutableLiveData<LoginUiState>
+    private lateinit var session: SessionUseCase
+    private lateinit var previousSession: SessionUseCase
+    private lateinit var previousLoginViewModel: LoginViewModel
+    private lateinit var profileDependencies: ProfileTestDependencies
 
     @Before
     fun setup() {
-        val session = mockk<SessionUseCase>(relaxed = true)
-        every { session.state } returns MutableStateFlow(SessionState.SignedOut)
-        every { session.snapshot() } returns SessionSnapshot(0, false)
-        coEvery { session.restore() } returns SessionState.SignedOut
-        GlobalContext.get().declare(session, allowOverride = true)
+        val koin = GlobalContext.get()
+        previousSession = koin.get()
+        previousLoginViewModel = koin.get()
+        val auth = mockk<AuthRepository>(relaxed = true)
+        every { auth.hasAccess(any()) } returns true
+        coEvery { auth.restore(any()) } returns StoredSession.MISSING
+        coEvery { auth.login(any(), any(), any()) } returns AuthResult.Success
+        session = SessionUseCase(auth)
+        profileDependencies = ProfileTestDependencies(session)
+        koin.declare(session, allowOverride = true)
+        profileDependencies.install()
         uiState = MutableLiveData(LoginUiState.Idle)
         viewModel = mockk(relaxed = true)
         every { viewModel.uiState } returns uiState
@@ -59,6 +73,13 @@ class LoginFragmentTests {
             instance = viewModel,
             allowOverride = true,
         )
+    }
+
+    @After
+    fun restoreDependencies() {
+        profileDependencies.restore()
+        GlobalContext.get().declare(previousSession, allowOverride = true)
+        GlobalContext.get().declare(previousLoginViewModel, allowOverride = true)
     }
 
     @Test
@@ -117,13 +138,28 @@ class LoginFragmentTests {
     }
 
     @Test
-    fun authenticated_shouldNavigateToHomePage() = runInstrumented { navController ->
+    fun authenticatedWithoutProfile_shouldRemainOnLoginPage() = runInstrumented { navController ->
         emitUiState(LoginUiState.Authenticated)
 
-        assertThat(
-            navController.currentDestination?.id,
-            `is`(NavGraph.Destinations.HOME),
-        )
+        onLoadingSpinner().check(matches(isDisplayed()))
+        onSubmitButtonView().check(matches(isNotEnabled()))
+        assertThat(navController.currentDestination?.id, `is`(NavGraph.Destinations.LOGIN))
+    }
+
+    @Test
+    fun authenticated_shouldWaitForProfileBeforeNavigatingHome() = runInstrumented { navController ->
+        val release = CompletableDeferred<Unit>()
+        profileDependencies.holdReadsUntil(release)
+        emitUiState(LoginUiState.Authenticated)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            runBlocking { session.login("fixture@example.test", "fixture") }
+        }
+
+        onView(withId(R.id.session_recovery_progress)).check(matches(isDisplayed()))
+        assertThat(navController.currentDestination?.id, `is`(NavGraph.Destinations.LOGIN))
+        release.complete(Unit)
+        onView(withId(R.id.tvNomeLoja)).check(matches(withText("Fixture store")))
+        assertThat(navController.currentDestination?.id, `is`(NavGraph.Destinations.HOME))
     }
 
     @Test

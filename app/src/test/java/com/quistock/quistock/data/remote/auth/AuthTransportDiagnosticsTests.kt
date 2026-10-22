@@ -8,9 +8,14 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
+import java.io.InterruptedIOException
 import java.net.ConnectException
 import java.net.ProtocolException
 import java.net.SocketTimeoutException
@@ -25,6 +30,7 @@ class AuthTransportDiagnosticsTests {
             UnknownHostException("sensitive") to "dns",
             ConnectException("sensitive") to "connection",
             SocketTimeoutException("sensitive") to "timeout",
+            InterruptedIOException("sensitive") to "timeout",
             SSLPeerUnverifiedException("sensitive") to "tls_peer_verification",
             SSLHandshakeException("sensitive") to "tls_handshake",
             SSLException("sensitive") to "tls",
@@ -54,5 +60,52 @@ class AuthTransportDiagnosticsTests {
                 },
             )
         }
+    }
+
+    @Test fun logoutLogsStartAndHttpStatusWithoutCredentialsOrUrls() = runBlocking {
+        MockWebServer().use { server ->
+            val origin = server.url("/")
+            val logger = mockk<Logger>(relaxed = true)
+            val custody = AuthCookieCustody(MemoryCookieStore(), origin)
+            val repository = RetrofitAuthRepository(origin, custody, { createAuthApi(origin, it) }, logger = logger)
+            server.enqueue(MockResponse().setResponseCode(204))
+            assertTrue(repository.prepareLogout(0).execute())
+            verify(exactly = 1) {
+                logger.debug(
+                    "Auth HTTP request started",
+                    match { context ->
+                        context.keys == setOf("operation", "https", "placeholder_host", "base_path_discarded") &&
+                            context["operation"] == "auth_logout" && context["https"] == false
+                    },
+                )
+                logger.debug(
+                    "Auth HTTP response received",
+                    mapOf("operation" to "auth_logout", "stage" to "logout", "http_status" to 204),
+                )
+            }
+        }
+    }
+
+    @Test fun logoutLogsSafeFailureCategoryAndElapsedTime() = runBlocking {
+        val origin = "https://auth.example.test/".toHttpUrl()
+        val logger = mockk<Logger>(relaxed = true)
+        val custody = AuthCookieCustody(MemoryCookieStore(), origin)
+        val client = OkHttpClient.Builder().addInterceptor {
+            throw UnknownHostException("sensitive-url-and-credentials")
+        }.build()
+        val repository = RetrofitAuthRepository(origin, custody, { createAuthApi(origin, it, client) }, logger = logger)
+        assertFalse(repository.prepareLogout(0).execute())
+        verify(exactly = 1) {
+            logger.info(
+                "Auth HTTP transport failed",
+                match { context ->
+                    context.keys == setOf("operation", "stage", "failure", "elapsed_ms") &&
+                        context["stage"] == "logout" && context["operation"] == "auth_logout" &&
+                        context["failure"] == "dns" &&
+                        context["elapsed_ms"] is Long
+                },
+            )
+        }
+        verify(exactly = 0) { logger.debug("Auth HTTP response received", any()) }
     }
 }

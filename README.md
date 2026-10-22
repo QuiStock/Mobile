@@ -109,15 +109,25 @@ Domain models expose generation/revision and availability, never credential valu
 
 `SessionUseCase` restores sessions, shares refresh attempts, and fences response commits,
 retries, cache writes and rendering by generation. The Core client extracts a valid access
-cookie privately in data and sends Bearer to the exact configured Core origin. It sends no
-authentication cookies; the independent legacy chatbot client receives no Core credentials.
-Auth sends only refresh cookies to the configured refresh route; login sends no stored cookies.
+cookie privately in data and sends Bearer to the exact configured Core origin. Core uses an
+empty CookieJar and strips Cookie and CSRF headers; Bearer calls do not require Core CSRF.
+It sends no authentication cookies; the independent legacy chatbot client receives no Core credentials.
+Auth obtains a fresh CSRF pair from `GET /csrf` before each renewal. The GET sends no
+stored credentials; `POST /refresh` sends only the refresh cookie, the temporary
+`AUTH-XSRF-TOKEN` cookie and the masked JSON token in `X-CSRF-TOKEN`. CSRF stays in
+memory for that attempt and is never persisted. Login sends no stored cookies.
+A protocol/CSRF failure preserves eligible refresh credentials, blocks protected content
+and offers manual recovery; no automatic renewal retry follows a failure. Auth calls
+also block HTTP follow-ups, including an immediate retry requested by a 503 response.
+See [the CSRF specification](docs/sdd/specs/auth-refresh-csrf.md); execution checks for
+this implementation are deferred at the requester's instruction.
 Both clients disable redirects and connection retries. Renewal happens on demand, without timers.
 
 Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
 CORE_BASE_URL remains a build environment variable with an invalid dummy default.
 Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
-the cookie jar authorizes only /refresh on the configured Auth origin. Cookie path metadata remains unchanged.
+The cookie jar isolates /refresh and /logout attempts on the configured Auth origin.
+CSRF is received only from /csrf on that origin. Cookie path metadata remains unchanged.
 
 Local revocation destroys a dedicated Keystore key before removing the encrypted refresh
 record. Disk removal is attempted even if key destruction fails. If both fail, the app reports
@@ -125,6 +135,40 @@ a local error and blocks the current session; durable revocation cannot be promi
 local mechanisms fail. Unreadable ciphertext never restores a session. Other secret keys are
 unaffected. A valid `Retry-After` temporarily disables manual retry after 429; reaching the
 limit only re-enables the action and does not trigger a request.
+
+Profile logout asks for confirmation, immediately blocks the session, and revokes local credentials
+independently of one remote logout exchange. With eligible refresh, an isolated `GET /csrf` precedes
+`POST /logout` with the Auth CSRF cookie and masked JSON token in `X-CSRF-TOKEN`.
+Both calls share a ten-second total deadline; preparation failure prevents POST. It removes
+the legacy refresh and stored user identifier, clears session conversation state, and returns to
+Login with the protected back stack removed. Local cleanup failure keeps protected content hidden
+and offers local-only retry; remote failure after local success shows a warning on Login. The
+activity ViewModel retains the operation across screen recreation. Logout responses never install
+cookies into a newer session, and HTTP follow-ups cannot repeat the remote attempt. See the
+[profile logout specification](docs/sdd/specs/profile-logout.md) for decisions and pending execution checks.
+
+The authenticated Core profile is loaded once after login or session restoration before Home is
+released. `SessionViewModel` keeps the loading/retry gate active until `ProfileUseCase` publishes
+a valid profile for the current session generation. Only `FUNCIONARIO` (Repositor) and `GERENTE`
+with a store assignment can enter; missing assignments and forbidden accounts revoke the local
+session. Temporary profile failures retain the session and offer manual retry. Returning from
+background reuses the in-memory profile. Shared profile slots in headers and the edit/contact
+forms observe the same state; no profile or photo cache is written to disk. Photo loading uses
+an independent unauthenticated HTTPS client and does not block navigation. See
+[the profile specification](docs/sdd/specs/profile-user-store-data.md). Execution and validation
+of this change are deferred at the requester's instruction.
+
+### Core request diagnostics
+
+Use the Logcat tag `QuiStock` and filter messages containing `operation=core_profile` to follow
+profile loading. Debug events show request start, `attempt`, `http_status`, `elapsed_ms`, access
+availability and renewal. Info events distinguish transport categories (`dns`, `connection`,
+`timeout`, TLS), session blocks (`stage=access_missing`, `session_changed`,
+`unauthorized_after_refresh`) and profile failures (`invalid_response`, `empty_body`, `forbidden`,
+`no_store`, `role`, `invalid`). Other Core operations use `operation=core_request`.
+Auth continues to log its own CSRF/refresh stages. Logs contain no token, cookie, URL, query,
+payload, account/store field, exception message or stack trace. See
+[the diagnostic specification](docs/sdd/specs/core-request-diagnostics.md).
 
 ### Tests
 

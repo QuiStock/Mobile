@@ -12,14 +12,22 @@ class SessionNavigationTests {
         assertEquals(R.id.homeFragment, sessionDestination(SessionState.Active, R.id.splashFragment))
     }
 
-    @Test fun transientRestoreFailureLeavesSplashForHomeRetry() {
-        assertEquals(
-            R.id.homeFragment,
-            sessionDestination(SessionState.Failure(SessionFailure.NETWORK), R.id.splashFragment),
-        )
+    @Test fun transientRestoreFailureDoesNotLeaveSplash() {
+        assertNull(sessionDestination(SessionState.Failure(SessionFailure.NETWORK), R.id.splashFragment))
     }
 
     @Test fun activeSessionPreservesProtectedDestination() {
         assertNull(sessionDestination(SessionState.Active, R.id.homeFragment))
+    }
+
+    @Test fun logoutInProgressOrCleanupFailureCannotNavigateToProtectedContent() {
+        assertNull(sessionDestination(SessionState.LoggingOut, R.id.homeFragment))
+        assertNull(sessionDestination(SessionState.LogoutFailed(false), R.id.homeFragment))
+    }
+
+    @Test fun completedLogoutReturnsToLoginWithoutDuplicatingLoginDestination() {
+        assertEquals(R.id.loginFragment, sessionDestination(SessionState.LoggedOut(true), R.id.homeFragment))
+        assertEquals(R.id.loginFragment, sessionDestination(SessionState.LoggedOut(false), R.id.profileFragment))
+        assertNull(sessionDestination(SessionState.LoggedOut(false), R.id.loginFragment))
     }
 }

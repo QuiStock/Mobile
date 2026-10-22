@@ -1,5 +1,7 @@
 # Migração da autenticação para cookies com persistência seletiva
 
+> Atualização em 2026-10-19: [auth-refresh-csrf.md](auth-refresh-csrf.md) complementa esta spec. A regra histórica de envio de somente refresh para Auth passa a autorizar também o cookie CSRF efêmero e o header do token JSON em `/refresh`, após `GET /csrf` sem credenciais. CSRF não participa da persistência nem da exigência de cookies persistentes. Rotas atuais são `/login`, `/csrf` e `/refresh` na raiz; referências históricas a `/auth/*` abaixo não definem o transporte vigente. Falha CSRF/protocolo preserva refresh elegível e oferece recuperação manual, sem usar a limpeza de falhas locais. A configuração compatível sem prefixo foi confirmada para esta correção; ver decisões O-01/O-02 da nova spec. Implementação entregue com testes/validações ainda não executados por instrução do solicitante.
+
 > Current scope (2026-10-15): the preceding indicator feature was cancelled. Its Home UI, fetch, cache integration and associated tests are removed. Historical references to those components and validation below describe the former stack only. The current cleanup criteria and evidence are recorded in QUIS-128 under "Removal of the cancelled indicator feature". Authentication credential revocation, generation fencing and HTTP recovery remain in scope.
 
 **Status:** Implemented client-side; Android execution and deployment validation pending

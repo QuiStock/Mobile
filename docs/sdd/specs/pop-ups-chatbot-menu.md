@@ -40,3 +40,8 @@ Adds reusable presentation components and updates login, chatbot, order, and pro
 ## Implementation outcome
 
 Delivered shared error/success snackbars, input validation feedback, order and promotion confirmation flows, reusable manager approval confirmations, chatbot offline retry dialog, and the chatbot menu overlay. Added standardized confirmation and feedback copy for employee management, profile changes, contact forms, and application exit. Automated coverage now includes `ChatbotViewModelTests`, `ChatbotFragmentTests`, `OrderAndPromotionFragmentTests`, and `PopupFeedbackTests`; FAQ/contact navigation and expansion are covered by `FaqFragmentTests`.
+
+
+### Instrumented fixture isolation — 2026-10-19
+
+A user-produced run reported five chatbot interaction failures and three order/promotion visibility/scroll failures. These feature tests launched protected destinations without an authenticated session fixture. `ChatbotFragmentTests` and `OrderAndPromotionFragmentTests` now use `AuthenticatedSessionRule`, which restores a synthetic session before Activity launch and reinstates the previous Koin session afterward. This is a test setup correction, with no change to feature behavior, layouts or Espresso visibility constraints. The requester prohibited rerunning tests; no successful execution is claimed. See the instrumented-report entry in [the CSRF specification](auth-refresh-csrf.md).
