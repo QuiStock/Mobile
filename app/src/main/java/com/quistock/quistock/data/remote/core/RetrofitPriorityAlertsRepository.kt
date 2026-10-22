@@ -6,9 +6,11 @@ import com.quistock.quistock.domain.model.StockFlow
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.JsonArray
@@ -28,7 +30,12 @@ class RetrofitPriorityAlertsRepository(
     private val context = mapOf("operation" to "core_priority_alerts")
 
     @Suppress("TooGenericExceptionCaught")
-    override suspend fun read(storeId: Long, storeCode: String?): AlertProductsResult = try {
+    override suspend fun read(storeId: Long, storeCode: String?): AlertProductsResult = withContext(Dispatchers.IO) {
+        readProducts(storeId, storeCode)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun readProducts(storeId: Long, storeCode: String?): AlertProductsResult = try {
         val branch = resolveBranch(storeId, storeCode)
         val rows = body(api.products(branch))
         val parsed = rows.map { row -> parseProduct(row, branch) }
@@ -89,7 +96,6 @@ class RetrofitPriorityAlertsRepository(
         val value = row.jsonObject
         require(value.text("branch") == branch)
         val stock = requireNotNull(value.number("current_stock")).longValueExact()
-        require(stock >= 0)
         val expiration = value["expiration_days"]
         val days = if (expiration == null || expiration == JsonNull) null else {
             requireNotNull(value.number("expiration_days")).intValueExact()
@@ -118,9 +124,10 @@ class RetrofitPriorityAlertsRepository(
     }
 
     private fun JsonObject.text(key: String): String? =
-        (get(key) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
+        (get(key) as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.takeIf { it.isNotBlank() }
 
-    private fun JsonObject.number(key: String): BigDecimal? = text(key)?.toBigDecimalOrNull()
+    private fun JsonObject.number(key: String): BigDecimal? =
+        (get(key) as? JsonPrimitive)?.contentOrNull?.toBigDecimalOrNull()
 
     private companion object {
         const val MAX_CONCURRENT_REQUESTS = 4
