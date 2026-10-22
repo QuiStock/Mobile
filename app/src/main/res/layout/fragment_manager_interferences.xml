@@ -351,8 +351,8 @@
     <LinearLayout
         android:id="@+id/bottomNavigationInterferencias"
         android:layout_width="0dp"
-        android:layout_height="72dp"
-        android:background="#11061F"
+        android:layout_height="@dimen/nav_bar_height"
+        android:background="@color/color_petroleo"
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="5"
@@ -363,51 +363,61 @@
         <ImageButton
             android:id="@+id/btnHomeNav"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Início"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/btnInterferenciasNav"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Interferências"
-            android:padding="0dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_interferences_active" />
 
         <ImageButton
             android:id="@+id/btnFuncionariosNav"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Funcionários"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_employee" />
 
         <ImageButton
             android:id="@+id/btnNotificacoesNav"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Notificações"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_notification" />
 
         <ImageButton
             android:id="@+id/btnChatbotNav"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Chatbot"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_chatbot" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

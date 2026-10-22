@@ -11,9 +11,9 @@
         android:id="@+id/faq_store_header"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/profile_store_name"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/profile_user_name"
                 android:textColor="#BFAFC5"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -54,7 +54,7 @@
         android:id="@+id/faq_back_control"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_marginStart="28dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="12dp"
         android:clickable="true"
         android:contentDescription="@string/profile_back"
@@ -78,19 +78,19 @@
             android:gravity="center_vertical"
             android:text="@string/profile_back"
             android:textColor="@color/white"
-            android:textSize="11sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/faq_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/help_faq_title"
         android:textColor="@color/white"
-        android:textSize="22sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

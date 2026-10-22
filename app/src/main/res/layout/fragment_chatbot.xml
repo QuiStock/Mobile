@@ -4,18 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.chatbot.ChatbotFragment">
 
+    <!-- TOP BAR -->
     <ImageButton
         android:id="@+id/btnMenuChatbot"
-        android:layout_width="33dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="52dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
         android:background="@android:color/transparent"
         android:contentDescription="Menu"
         android:padding="0dp"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_menu"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -26,8 +28,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
         android:text="Boas-vindas"
-        android:textColor="#FFFFFF"
-        android:textSize="15sp"
+        android:textColor="@color/color_branco"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/btnMenuChatbot"
         app:layout_constraintStart_toEndOf="@id/btnMenuChatbot"
@@ -37,20 +39,23 @@
         android:id="@+id/btnNotificacoesChatbot"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginEnd="42dp"
+        android:layout_marginEnd="24dp"
         android:background="@android:color/transparent"
         android:contentDescription="Notificações"
         android:padding="0dp"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_notification"
+        app:layout_constraintBottom_toBottomOf="@id/btnMenuChatbot"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/btnMenuChatbot" />
 
+    <!-- ÁREA DE MENSAGENS -->
     <ScrollView
         android:id="@+id/scrollMensagens"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="24dp"
         android:clipToPadding="false"
         android:fillViewport="true"
@@ -60,7 +65,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnMenuChatbot">
 
-        <!-- Empty by default; message rows can be added here as the conversation runs. -->
         <LinearLayout
             android:id="@+id/containerMensagens"
             android:layout_width="match_parent"
@@ -69,13 +73,14 @@
             android:orientation="vertical" />
     </ScrollView>
 
+    <!-- ÁREA DE ENTRADA -->
     <LinearLayout
         android:id="@+id/areaEntrada"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="28dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationChatbot"
@@ -91,36 +96,37 @@
             android:hint="Digite sua pergunta"
             android:imeOptions="actionSend"
             android:inputType="textCapSentences|textMultiLine"
-            android:gravity="top|start"
-            android:minHeight="42dp"
+            android:gravity="center_vertical|start"
+            android:minHeight="46dp"
             android:maxHeight="120dp"
             android:scrollbars="vertical"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:textColor="#FFFFFF"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="@color/color_branco"
             android:textColorHint="#8F7898"
-            android:textSize="12sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/btnEnviarPergunta"
-            android:layout_width="40dp"
-            android:layout_height="44dp"
+            android:layout_width="44dp"
+            android:layout_height="46dp"
             android:layout_marginStart="8dp"
             android:background="@android:color/transparent"
             android:contentDescription="Enviar pergunta"
             android:gravity="center"
             android:text="➤"
-            android:textColor="#FFFFFF"
-            android:textSize="25sp" />
+            android:textColor="@color/color_branco"
+            android:textSize="24sp" />
     </LinearLayout>
 
+    <!-- BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/bottomNavigationChatbot"
         android:layout_width="0dp"
-        android:layout_height="72dp"
-        android:background="#11061F"
+        android:layout_height="@dimen/nav_bar_height"
+        android:background="@color/color_petroleo"
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="4"
@@ -131,45 +137,53 @@
         <ImageButton
             android:id="@+id/btnHomeChatbot"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Início"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/btnInterferenciasChatbot"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Interferências"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_interferences" />
 
         <ImageButton
             android:id="@+id/btnProdutosChatbot"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Controle de produtos"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_product_control" />
 
         <ImageButton
             android:id="@+id/btnChatbotAtivo"
             android:layout_width="0dp"
-            android:layout_height="41dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Chatbot"
-            android:padding="0dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_chatbot_active" />
     </LinearLayout>
 
+    <!-- OVERLAY MENU LATERAL -->
     <FrameLayout
         android:id="@+id/chatMenuOverlay"
         android:layout_width="match_parent"
@@ -184,7 +198,7 @@
             android:id="@+id/chatMenuPanel"
             android:layout_width="280dp"
             android:layout_height="match_parent"
-            android:background="#22103A"
+            android:background="@color/color_petrolhinho"
             android:clickable="true"
             android:focusable="true"
             android:orientation="vertical"
@@ -196,7 +210,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="QuiStock"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_branco"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -210,6 +224,7 @@
                     android:layout_width="38dp"
                     android:layout_height="38dp"
                     android:contentDescription="Perfil"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/ic_profile" />
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -220,8 +235,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Loja Av. Paulista"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
+                        android:textColor="@color/color_branco"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
                     <TextView
                         android:layout_width="wrap_content"
@@ -251,7 +266,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:text="Novo chat"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_branco"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -260,7 +275,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:text="Recentes"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_branco"
                 android:textSize="14sp"
                 android:textStyle="bold" />
             <TextView
@@ -292,7 +307,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="12dp"
                 android:text="Boas-vindas"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_branco"
                 android:textSize="13sp" />
         </LinearLayout>
     </FrameLayout>

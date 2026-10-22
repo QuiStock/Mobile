@@ -4,16 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/login_background"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.profile.ProfileFragment">
 
+    <!-- HEADER LOJA -->
     <LinearLayout
         android:id="@+id/profile_store_header"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -24,6 +25,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:contentDescription="@string/profile_store_name"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_profile" />
 
         <LinearLayout
@@ -37,8 +39,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_store_name"
-                android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textColor="@color/color_branco"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -46,15 +48,16 @@
                 android:layout_height="wrap_content"
                 android:text="@string/profile_user_name"
                 android:textColor="#BFAFC5"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <!-- VOLTAR -->
     <LinearLayout
         android:id="@+id/profile_back_control"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginStart="28dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="12dp"
         android:clickable="true"
         android:contentDescription="@string/profile_back"
@@ -65,8 +68,8 @@
         app:layout_constraintTop_toBottomOf="@id/profile_store_header">
 
         <ImageView
-            android:layout_width="8dp"
-            android:layout_height="14dp"
+            android:layout_width="10dp"
+            android:layout_height="16dp"
             android:importantForAccessibility="no"
             android:rotation="180"
             android:src="@drawable/arrow_right" />
@@ -74,22 +77,22 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="8dp"
             android:gravity="center_vertical"
             android:text="@string/profile_back"
-            android:textColor="@color/white"
-            android:textSize="11sp" />
+            android:textColor="@color/color_branco"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/profile_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="@string/profile_title"
-        android:textColor="@color/white"
-        android:textSize="22sp"
+        android:textColor="@color/color_branco"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profile_back_control" />
@@ -111,37 +114,40 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp">
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp">
 
             <ImageView
-                android:layout_width="66dp"
-                android:layout_height="66dp"
-                android:layout_marginTop="8dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginTop="12dp"
                 android:contentDescription="@string/profile_user_name"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_profile" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/profile_user_name"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textColor="@color/color_branco"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/profile_role"
                 android:textColor="#BFAFC5"
-                android:textSize="11sp" />
+                android:textSize="13sp" />
 
+            <!-- ROW: MINHA CONTA -->
             <LinearLayout
                 android:id="@+id/profile_account_row"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="24dp"
                 android:background="@android:color/transparent"
                 android:clickable="true"
                 android:focusable="true"
@@ -160,8 +166,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/profile_account"
-                        android:textColor="@color/white"
-                        android:textSize="12sp" />
+                        android:textColor="@color/color_branco"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -169,12 +176,12 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_account_description"
                         android:textColor="#BFAFC5"
-                        android:textSize="9sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/arrow_right" />
             </LinearLayout>
@@ -182,8 +189,9 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#557F3AEF" />
+                android:background="#337F3AEF" />
 
+            <!-- ROW: MINHA LOJA -->
             <LinearLayout
                 android:id="@+id/profile_store_row"
                 android:layout_width="match_parent"
@@ -206,8 +214,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/profile_store"
-                        android:textColor="@color/white"
-                        android:textSize="12sp" />
+                        android:textColor="@color/color_branco"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -215,12 +224,12 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_store_name"
                         android:textColor="#BFAFC5"
-                        android:textSize="9sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/arrow_right" />
             </LinearLayout>
@@ -228,8 +237,9 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#557F3AEF" />
+                android:background="#337F3AEF" />
 
+            <!-- ROW: AJUDA -->
             <LinearLayout
                 android:id="@+id/profile_help_row"
                 android:layout_width="match_parent"
@@ -252,8 +262,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/profile_help"
-                        android:textColor="@color/white"
-                        android:textSize="12sp" />
+                        android:textColor="@color/color_branco"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -261,40 +272,43 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_help_description"
                         android:textColor="#BFAFC5"
-                        android:textSize="9sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/arrow_right" />
             </LinearLayout>
 
+            <!-- EDITAR PERFIL BUTTON -->
             <TextView
                 android:id="@+id/profile_edit_button"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_card_active"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_login_button"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/profile_edit"
-                android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textColor="@color/color_branco"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
+            <!-- SAIR DA CONTA -->
             <TextView
                 android:id="@+id/profile_sign_out_button"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/profile_sign_out"
                 android:textColor="#E8A8F4"
-                android:textSize="11sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </ScrollView>

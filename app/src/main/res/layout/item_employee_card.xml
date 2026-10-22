@@ -1,61 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="96dp"
+    android:layout_height="wrap_content"
+    android:minHeight="112dp"
     android:background="@drawable/bg_card_summary"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="25dp"
-    android:paddingEnd="24dp">
+    android:paddingStart="20dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="16dp">
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingTop="11dp"
-        android:paddingBottom="9dp">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvNomeFuncionario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Bruna Alves"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
+            android:textColor="@color/color_branco"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvCargoFuncionario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
             android:text="Estoquista"
             android:textColor="#BFAFC5"
-            android:textSize="9sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
+            android:layout_marginTop="8dp"
             android:text="Data de início"
             android:textColor="#C7B7CC"
-            android:textSize="8sp" />
+            android:textSize="11sp" />
 
         <TextView
             android:id="@+id/tvDataInicioFuncionario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
             android:text="06/08/2026"
-            android:textColor="#FFFFFF"
-            android:textSize="8sp" />
+            android:textColor="@color/color_branco"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <ImageView
-        android:layout_width="55dp"
-        android:layout_height="55dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:contentDescription="Foto do funcionário"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_profile" />
 </LinearLayout>
