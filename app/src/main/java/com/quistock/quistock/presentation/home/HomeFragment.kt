@@ -6,17 +6,44 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentHomeBinding
+import com.quistock.quistock.domain.model.AlertRisk
+import com.quistock.quistock.domain.model.PriorityAlert
+import com.quistock.quistock.presentation.common.AlertProductNavigation
+import com.quistock.quistock.presentation.common.PopupFeedback
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding? = null
+    private val viewModel: HomeViewModel by viewModel()
+    private var navigating = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         FragmentHomeBinding.inflate(inflater, container, false).also { binding = it }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val alerts = PriorityAlertsAdapter(::openAction) {
+            PopupFeedback.showStatus(view, getString(R.string.home_alerts_fefo_unavailable), false)
+        }
+        binding?.rvAlertas?.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = alerts
+        }
+        binding?.alertsRetry?.setOnClickListener { viewModel.retry() }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { state -> render(state, alerts) }
+            }
+        }
+        viewModel.enter()
         binding?.btnPerfil?.setOnClickListener {
             if (findNavController().currentDestination?.id == R.id.homeFragment) {
                 findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
@@ -25,7 +52,47 @@ class HomeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        if (activity?.isChangingConfigurations != true) viewModel.leave()
+        binding?.rvAlertas?.adapter = null
         binding = null
         super.onDestroyView()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        navigating = false
+    }
+
+    private fun render(state: HomeAlertsState, adapter: PriorityAlertsAdapter) {
+        val views = binding ?: return
+        val ready = state as? HomeAlertsState.Ready
+        views.alertsProgress.isVisible = state == HomeAlertsState.Loading
+        views.alertsRetry.isVisible = state == HomeAlertsState.Error
+        views.rvAlertas.isVisible = ready != null
+        adapter.submitList(ready?.alerts.orEmpty())
+        val message = when {
+            state == HomeAlertsState.Error -> R.string.home_alerts_error
+            ready?.partial == true -> R.string.home_alerts_partial
+            ready != null && ready.alerts.isEmpty() -> R.string.home_alerts_empty
+            else -> null
+        }
+        views.alertsMessage.isVisible = message != null
+        message?.let { views.alertsMessage.setText(it) }
+    }
+
+    private fun openAction(alert: PriorityAlert) {
+        val controller = findNavController()
+        val current = viewModel.state.value as? HomeAlertsState.Ready ?: return
+        if (alert !in current.alerts) return
+        if (navigating || !viewModel.canNavigate() || controller.currentDestination?.id != R.id.homeFragment) return
+        navigating = true
+        controller.navigate(
+            if (alert.risk == AlertRisk.STOCKOUT) {
+                R.id.action_homeFragment_to_orderFragment
+            } else {
+                R.id.action_homeFragment_to_promotionFragment
+            },
+            AlertProductNavigation.arguments(alert.product),
+        )
     }
 }
