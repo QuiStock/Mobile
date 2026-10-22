@@ -25,6 +25,8 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Home agora possui integração de alertas prioritários com Core via `/branches`, `/products` e `/flows`, seleção em domínio e estados locais de loading/erro/vazio/parcial no ViewModel. Requer uma única análise vigente por produto; histórico múltiplo é incompatível e não é escolhido no cliente. IDs por lote foram confirmados pelo solicitante, divergindo da documentação local do backend. Autorização por loja e contrato real de análise vigente seguem pendentes. Promoção/pedido recebem o produto selecionado, mas a submissão por essa entrada informa indisponibilidade pois os destinos ainda não integram envio Core. Ver `specs/home-priority-alerts.md`. Testes escritos, sem execução, build ou validações por instrução do solicitante.
+
 | Topic | Source |
 | --- | --- |
 | Intended architecture and commands | `README.md` |
