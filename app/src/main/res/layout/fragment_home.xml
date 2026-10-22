@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.home.HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,16 +18,18 @@
         <!-- ================================================= -->
 
         <!-- PERFIL -->
+        <ImageButton
 
         <ImageButton android:tag="current_profile_photo"
             android:id="@+id/btnPerfil"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="28dp"
-            android:layout_marginTop="52dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="28dp"
             android:background="@android:color/transparent"
             android:contentDescription="Perfil"
             android:padding="0dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_profile"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -38,8 +40,9 @@
             android:id="@+id/tvNomeLoja"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="12dp"
             android:text="Nome da loja"
+            android:textColor="@color/color_branco"
             app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
             android:layout_marginEnd="12dp"
             android:textColor="#FFFFFF"
@@ -63,19 +66,19 @@
             app:layout_constraintTop_toBottomOf="@id/tvNomeLoja" />
 
         <!-- NOTIFICAÇÕES -->
-
         <ImageButton
             android:id="@+id/btnNotificacoes"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="42dp"
+            android:layout_marginEnd="24dp"
             android:background="@android:color/transparent"
             android:contentDescription="Notificações"
             android:padding="0dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_notification"
+            app:layout_constraintBottom_toBottomOf="@id/btnPerfil"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/btnPerfil" />
-
 
         <!-- ================================================= -->
         <!-- SAUDAÇÃO                                           -->
@@ -86,43 +89,42 @@
             android:tag="current_profile_greeting"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
             android:layout_marginStart="29dp"
             android:layout_marginEnd="29dp"
             android:layout_marginTop="45dp"
             android:text="Olá, usuário!"
             android:textColor="#E8D2F0"
-            android:textSize="27sp"
+            android:textSize="26sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnPerfil" />
 
-
         <!-- ================================================= -->
-        <!-- TRÊS CARDS                                         -->
+        <!-- TRÊS CARDS DE RESUMO                               -->
         <!-- ================================================= -->
 
         <LinearLayout
             android:id="@+id/containerResumo"
             android:layout_width="0dp"
-            android:layout_height="130dp"
-            android:layout_marginStart="27dp"
-            android:layout_marginTop="18dp"
-            android:layout_marginEnd="27dp"
+            android:layout_height="115dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="24dp"
             android:orientation="horizontal"
             android:weightSum="3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSaudacao">
 
-
             <!-- CARD 1 -->
-
             <LinearLayout
                 android:id="@+id/cardVencimento"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="5dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_interference_category"
                 android:gravity="center"
@@ -144,19 +146,16 @@
                     android:gravity="center"
                     android:text="Vencimento&#10;curto"
                     android:textColor="#C7B7CC"
-                    android:textSize="11sp" />
-
+                    android:textSize="12sp" />
             </LinearLayout>
 
-
             <!-- CARD 2 -->
-
             <LinearLayout
                 android:id="@+id/cardRuptura"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_interference_category"
                 android:gravity="center"
@@ -178,18 +177,15 @@
                     android:gravity="center"
                     android:text="Ruptura/&#10;Excesso"
                     android:textColor="#C7B7CC"
-                    android:textSize="11sp" />
-
+                    android:textSize="12sp" />
             </LinearLayout>
 
-
             <!-- CARD 3 -->
-
             <LinearLayout
                 android:id="@+id/cardAcoes"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="5dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_active"
                 android:gravity="center"
@@ -201,7 +197,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="4"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_branco"
                     android:textSize="26sp"
                     android:textStyle="bold" />
 
@@ -211,30 +207,26 @@
                     android:gravity="center"
                     android:text="Ações ativas"
                     android:textColor="#E8D2F0"
-                    android:textSize="11sp" />
-
+                    android:textSize="12sp" />
             </LinearLayout>
-
         </LinearLayout>
 
-
         <!-- ================================================= -->
-        <!--  ALERTS TITLES                                   -->
+        <!-- ALERTS TITLE                                      -->
         <!-- ================================================= -->
 
         <TextView
             android:id="@+id/tvTituloAlertas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="36dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
             android:text="Alertas prioritários"
             android:textColor="#E8D2F0"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/containerResumo" />
-
 
         <!-- ================================================= -->
         <!-- LISTA DE ALERTAS                                   -->
@@ -244,17 +236,16 @@
             android:id="@+id/rvAlertas"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="31dp"
-            android:layout_marginTop="17dp"
-            android:layout_marginEnd="31dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="24dp"
             android:clipToPadding="false"
-            android:paddingBottom="15dp"
+            android:paddingBottom="16dp"
             app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTituloAlertas"
             tools:listitem="@layout/item_alerta" />
-
 
         <!-- ================================================= -->
         <!-- BOTTOM NAVIGATION                                 -->
@@ -263,8 +254,8 @@
         <LinearLayout
             android:id="@+id/bottomNavigation"
             android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:background="#11061F"
+            android:layout_height="@dimen/nav_bar_height"
+            android:background="@color/color_petroleo"
             android:gravity="center"
             android:orientation="horizontal"
             android:weightSum="5"
@@ -272,71 +263,70 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-
             <!-- HOME -->
-
             <ImageButton
                 android:id="@+id/btnHome"
                 android:layout_width="0dp"
-                android:layout_height="35dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:contentDescription="Início"
-                android:padding="0dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_home_active" />
 
-
             <!-- INTERFERENCES -->
-
             <ImageButton
                 android:id="@+id/btnMovimentacoes"
                 android:layout_width="0dp"
-                android:layout_height="25dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:contentDescription="Movimentações"
-                android:padding="0dp"
+                android:paddingTop="17dp"
+                android:paddingBottom="17dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_interferences" />
 
-
             <!-- EMPLOYEES -->
-
             <ImageButton
                 android:id="@+id/btnFuncionarios"
                 android:layout_width="0dp"
-                android:layout_height="35dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:contentDescription="Funcionários"
-                android:padding="0dp"
+                android:paddingTop="17dp"
+                android:paddingBottom="17dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_employee" />
 
-
             <!-- NOTIFICATIONS -->
-
             <ImageButton
                 android:id="@+id/btnNotificacoesBottom"
                 android:layout_width="0dp"
-                android:layout_height="25dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:contentDescription="Notificações"
-                android:padding="0dp"
+                android:paddingTop="17dp"
+                android:paddingBottom="17dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_notification" />
 
-
             <!-- CHATBOT -->
-
             <ImageButton
                 android:id="@+id/btnFolha"
                 android:layout_width="0dp"
-                android:layout_height="25dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:contentDescription="Chatbot"
-                android:padding="0dp"
+                android:paddingTop="17dp"
+                android:paddingBottom="17dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_chatbot" />
-
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

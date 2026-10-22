@@ -4,32 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.employee.EmployeeFragment">
 
     <LinearLayout
         android:id="@+id/headerFuncionarios"
         android:layout_width="0dp"
-        android:layout_height="32dp"
+        android:layout_height="40dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
         <ImageView android:tag="current_profile_photo"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:contentDescription="Perfil"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_profile" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -37,8 +41,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Loja Av. Paulista"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
+                android:textColor="@color/color_branco"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView android:tag="current_profile_header_name"
@@ -46,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="Milena Souza"
                 android:textColor="#BFAFC5"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
         </LinearLayout>
 
         <ImageButton
@@ -56,6 +60,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="Notificações"
             android:padding="0dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_notification" />
     </LinearLayout>
 
@@ -63,11 +68,11 @@
         android:id="@+id/tvTituloControleFuncionarios"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="27dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:text="Controle"
-        android:textColor="#FFFFFF"
-        android:textSize="21sp"
+        android:textColor="@color/color_branco"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerFuncionarios" />
@@ -75,10 +80,10 @@
     <LinearLayout
         android:id="@+id/areaFiltrosFuncionarios"
         android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="17dp"
-        android:layout_marginEnd="31dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,13 +92,13 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1.2"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_card_summary"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="10dp">
 
             <EditText
                 android:id="@+id/etBuscaFuncionario"
@@ -106,44 +111,44 @@
                 android:inputType="text"
                 android:padding="0dp"
                 android:singleLine="true"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_branco"
                 android:textColorHint="#C7B7CC"
-                android:textSize="9sp" />
+                android:textSize="13sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="Buscar funcionário"
                 android:text="⌕"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
+                android:textColor="@color/color_branco"
+                android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/dropdownFiltroDataFuncionario"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:background="@drawable/bg_card_summary"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="10dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Filtrar por data"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp" />
+                android:textColor="@color/color_branco"
+                android:textSize="13sp" />
 
             <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:contentDescription="Abrir filtro de data"
                 android:src="@drawable/arrow_down" />
         </LinearLayout>
@@ -152,15 +157,16 @@
     <Button
         android:id="@+id/btnCadastrarFuncionario"
         android:layout_width="0dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="31dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
         android:background="@drawable/bg_login_button"
         android:text="Cadastrar funcionário"
         android:textAllCaps="false"
-        android:textColor="#FFFFFF"
-        android:textSize="12sp"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/areaFiltrosFuncionarios" />
@@ -169,9 +175,9 @@
         android:id="@+id/scrollFuncionarios"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="31dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
         android:clipToPadding="false"
         android:fillViewport="false"
         android:paddingBottom="20dp"
@@ -212,8 +218,8 @@
     <LinearLayout
         android:id="@+id/bottomNavigationFuncionarios"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:background="#11061F"
+        android:layout_height="@dimen/nav_bar_height"
+        android:background="@color/color_petroleo"
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="5"
@@ -224,51 +230,61 @@
         <ImageButton
             android:id="@+id/btnHomeFuncionarios"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Início"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/btnMovimentacoesFuncionarios"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Movimentações"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_interferences" />
 
         <ImageButton
             android:id="@+id/btnControleFuncionariosAtivo"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Funcionários"
-            android:padding="0dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_employee_active" />
 
         <ImageButton
             android:id="@+id/btnNotificacoesBottomFuncionarios"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Notificações"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_notification" />
 
         <ImageButton
             android:id="@+id/btnChatbotFuncionarios"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Chatbot"
-            android:padding="0dp"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_chatbot" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -73,7 +73,7 @@
             <TextView android:id="@+id/tvPrecoAtual" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="Preço atual: R$ 4,99" android:textColor="#FFFFFF" android:textSize="11sp" />
             <TextView android:id="@+id/tvPrecoPromocional" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Preço após promoção: R$ 4,24" android:textColor="#FFFFFF" android:textSize="11sp" />
 
-            <Button android:id="@+id/btnSubmitPromotion" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginStart="10dp" android:layout_marginTop="44dp" android:layout_marginEnd="10dp" android:backgroundTint="#8138F2" android:text="Enviar para aprovação" android:textAllCaps="false" android:textColor="#FFFFFF" android:textSize="12sp" android:textStyle="bold" />
+            <Button android:id="@+id/btnSubmitPromotion" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginStart="10dp" android:layout_marginTop="36dp" android:layout_marginEnd="10dp" android:background="@drawable/bg_login_button" android:text="Enviar para aprovação" android:textAllCaps="false" android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

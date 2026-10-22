@@ -66,8 +66,13 @@
             <Button
                 android:id="@+id/bt_prox_cadastro"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/bt_proximi" />
+                android:layout_height="52dp"
+                android:background="@drawable/bg_login_button"
+                android:text="@string/bt_proximi"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/bt_ir_login"
