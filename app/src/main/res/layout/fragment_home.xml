@@ -240,6 +240,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTituloAlertas">
 
+            <TextView
+                android:id="@+id/managerHomeNotice"
+                android:tag="current_manager_home_notice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:saveEnabled="false"
+                android:text="@string/home_alerts_manager_notice"
+                android:textColor="#BFAFC5"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
             <ProgressBar
                 android:id="@+id/alertsProgress"
                 android:layout_width="48dp"
