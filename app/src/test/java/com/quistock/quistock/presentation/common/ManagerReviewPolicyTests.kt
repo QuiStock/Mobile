@@ -29,8 +29,14 @@ class ManagerReviewPolicyTests {
     private fun ready(role: UserRole) = ProfileState.Ready(
         GENERATION,
         UserProfile(
-            "fixture", "Fixture", "fixture@example.test", role, UserStatus.ACTIVE,
-            null, 17, "Fixture store",
+            "fixture",
+            "Fixture",
+            "fixture@example.test",
+            role,
+            UserStatus.ACTIVE,
+            null,
+            17,
+            "Fixture store",
         ),
     )
 

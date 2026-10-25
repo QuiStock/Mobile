@@ -9,8 +9,8 @@ import com.quistock.quistock.data.remote.auth.AuthHttpAttempt
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
 import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
 import com.quistock.quistock.data.remote.core.HttpProfilePhotoRepository
-import com.quistock.quistock.data.remote.core.ProfileApi
 import com.quistock.quistock.data.remote.core.PriorityAlertsApi
+import com.quistock.quistock.data.remote.core.ProfileApi
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
@@ -19,9 +19,9 @@ import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
 import com.quistock.quistock.domain.port.Logger
+import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
-import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar

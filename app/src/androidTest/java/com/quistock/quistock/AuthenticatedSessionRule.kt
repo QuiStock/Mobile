@@ -1,7 +1,7 @@
 package com.quistock.quistock
 
-import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.AlertProductsResult
+import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.PriorityAlertsRepository

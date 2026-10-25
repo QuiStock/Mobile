@@ -6,8 +6,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentOrderBinding
-import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.AlertProductNavigation
+import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.bindAlertProductSummary
 
 class OrderFragment : Fragment(R.layout.fragment_order) {

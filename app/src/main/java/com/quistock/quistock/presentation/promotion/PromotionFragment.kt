@@ -2,13 +2,13 @@ package com.quistock.quistock.presentation.promotion
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.core.view.isVisible
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentPromotionBinding
-import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.AlertProductNavigation
+import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.bindAlertProductSummary
 
 class PromotionFragment : Fragment(R.layout.fragment_promotion) {

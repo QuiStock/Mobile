@@ -63,6 +63,10 @@ Testes adicionados/adaptados, **sem execução**:
 
 Permanecem fora do escopo: envio/aprovação remotos, auditoria persistida, associação de solicitações reais aos detalhes e correção de permissões no backend. Essas dependências não foram apresentadas como implementadas. Fuso de negócio Core continua não fixado; mobile consome os dias retornados sem recalcular validade.
 
+### Correção após os checks do solicitante
+
+O solicitante informou aprovação dos instrumentados e falha de Spotless, detekt e unitários. O relatório detekt de 25/10 e o artefato de lint do Spotless apontam a mesma fixture JSON em `HistoricalAnalysisMapperTests` acima de 120 caracteres; convertida para literal multilinha sem alterar seu conteúdo. O log Gradle registra falha em `compileDebugUnitTestKotlin` por aspas não escapadas em `RetrofitPriorityAlertsRepositoryTests`; a fixture incompleta agora usa literal raw separado, preservando o teste de campo obrigatório ausente. A falha reportada dos unitários ocorreu na compilação, antes de executar a suíte nova. Nenhuma regra de check foi alterada. O agente não executou novamente testes, formatter, detekt ou tasks Gradle; resultado após a correção continua pendente da execução pelo solicitante.
+
 ## Registro anterior de refinamento e implementação
 
 As seções abaixo preservam o histórico e o que foi implementado antes desta revisão. Requisitos conflitantes — análise obrigatoriamente vigente, rejeição de frações ou ID por lote — não prevalecem sobre a seção normativa acima.

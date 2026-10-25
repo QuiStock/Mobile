@@ -9,12 +9,11 @@ import java.text.NumberFormat
 import java.util.Locale
 
 object AlertProductPresentation {
-    fun quantity(context: Context, product: AlertProduct): String =
-        context.getString(
-            R.string.home_alerts_quantity,
-            product.category,
-            formatStock(product.stock),
-        )
+    fun quantity(context: Context, product: AlertProduct): String = context.getString(
+        R.string.home_alerts_quantity,
+        product.category,
+        formatStock(product.stock),
+    )
 
     internal fun formatStock(stock: BigDecimal, locale: Locale = Locale.getDefault()): String =
         NumberFormat.getNumberInstance(locale).apply {

@@ -70,7 +70,9 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
     private fun bind(view: View, ready: ProfileState.Ready?) {
         if ((view.tag as? String)?.startsWith("current_manager_") == true) {
             view.isVisible = ManagerReviewPolicy.canShow(
-                ready, model.session.state.value, model.session.snapshot().generation,
+                ready,
+                model.session.state.value,
+                model.session.snapshot().generation,
             )
             return
         }

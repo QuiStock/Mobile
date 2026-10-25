@@ -14,7 +14,8 @@ fun View.bindAlertProductSummary(product: AlertProduct) {
         contentDescription = product.name
     }
     findViewById<TextView>(R.id.alertProductQuantity).text = AlertProductPresentation.quantity(context, product)
-    findViewById<TextView>(R.id.alertProductExpiry).text = AlertProductPresentation.expiry(context, product.expirationDays)
+    findViewById<TextView>(R.id.alertProductExpiry).text =
+        AlertProductPresentation.expiry(context, product.expirationDays)
     findViewById<View>(R.id.alertProductExpiryExtra).isVisible = false
     findViewById<TextView>(R.id.alertProductFlow).setText(
         when (product.flow) {
