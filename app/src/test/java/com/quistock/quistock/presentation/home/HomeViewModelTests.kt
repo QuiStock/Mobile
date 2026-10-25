@@ -33,6 +33,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTests {
@@ -118,7 +119,7 @@ class HomeViewModelTests {
     }
 
     private fun validProducts() = AlertProductsResult.Success(
-        listOf(AlertProduct("product", "Fixture product", "Category", 5, 1, StockFlow.LOW)),
+        listOf(AlertProduct("product", "Fixture product", "Category", BigDecimal("5"), 1, StockFlow.LOW)),
         invalidCount = 0,
     )
 }

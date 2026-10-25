@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentHomeBinding
@@ -83,8 +83,9 @@ class HomeFragment : Fragment() {
     private fun openAction(alert: PriorityAlert) {
         val controller = findNavController()
         val current = viewModel.state.value as? HomeAlertsState.Ready ?: return
-        if (alert !in current.alerts) return
-        if (navigating || !viewModel.canNavigate() || controller.currentDestination?.id != R.id.homeFragment) return
+        val isActionable = alert in current.alerts && alert.hasPrimaryAction
+        val canOpen = isActionable && !navigating && viewModel.canNavigate()
+        if (!canOpen || controller.currentDestination?.id != R.id.homeFragment) return
         navigating = true
         controller.navigate(
             if (alert.risk == AlertRisk.STOCKOUT) {

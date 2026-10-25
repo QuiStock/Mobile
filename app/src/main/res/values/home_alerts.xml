@@ -10,18 +10,19 @@
     <string name="home_alerts_expiry_days">Vence em %1$d dias</string>
     <string name="home_alerts_expiry_tomorrow">Vence em 1 dia</string>
     <string name="home_alerts_expiry_unknown">Não informada</string>
-    <string name="home_alerts_quantity">%1$s • %2$s unidades</string>
-    <string name="home_alerts_quantity_single">%1$s • 1 unidade</string>
+    <string name="home_alerts_quantity">%1$s • %2$s</string>
     <string name="home_alerts_promotion">Criar promoção</string>
     <string name="home_alerts_order">Criar pedido</string>
     <string name="home_alerts_fefo">Ajuda do FEFO</string>
     <string name="home_alerts_fefo_unavailable">Ajuda do FEFO indisponível no momento</string>
     <string name="home_alerts_expiry_risk">Vencimento próximo</string>
     <string name="home_alerts_stockout_risk">Risco de ruptura</string>
-    <string name="home_alerts_overstock_risk">Risco de excesso</string>
+    <string name="home_alerts_overstock_risk">Risco de excesso ou vencimento</string>
     <string name="home_alerts_flow_high">Fluxo alto</string>
     <string name="home_alerts_flow_medium">Fluxo adequado</string>
     <string name="home_alerts_flow_low">Fluxo baixo</string>
     <string name="home_alerts_flow_unavailable">Análise indisponível</string>
     <string name="home_alerts_submission_unavailable">O envio deste produto ainda não está disponível.</string>
+    <string name="home_alerts_manager_notice">As análises podem não refletir alterações recentes. Confira os dados no ERP antes de decidir.</string>
+    <string name="manager_request_review_notice">Confira no ERP o estoque, a validade e as condições desta solicitação. A análise pode estar desatualizada.</string>
 </resources>
