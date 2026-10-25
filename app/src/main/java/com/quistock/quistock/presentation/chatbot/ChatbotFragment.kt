@@ -10,6 +10,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.quistock.quistock.R
 import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
+import com.quistock.quistock.presentation.common.SkeletonScreenType
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ChatbotFragment : Fragment() {
@@ -17,7 +19,10 @@ class ChatbotFragment : Fragment() {
     private var lastMessage: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        inflater.inflate(R.layout.fragment_chatbot, container, false)
+        SkeletonLoadingScreen.wrap(
+            inflater.inflate(R.layout.fragment_chatbot, container, false),
+            SkeletonScreenType.CHATBOT,
+        )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val menuOverlay = view.findViewById<View>(R.id.chatMenuOverlay)

@@ -17,6 +17,8 @@ import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.presentation.common.AlertProductNavigation
 import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
+import com.quistock.quistock.presentation.common.SkeletonScreenType
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -26,7 +28,10 @@ class HomeFragment : Fragment() {
     private var navigating = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        FragmentHomeBinding.inflate(inflater, container, false).also { binding = it }.root
+        SkeletonLoadingScreen.wrap(
+            FragmentHomeBinding.inflate(inflater, container, false).also { binding = it }.root,
+            SkeletonScreenType.HOME,
+        )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

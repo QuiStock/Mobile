@@ -18,7 +18,7 @@
     <string name="Cadastro">Cadastro</string>
     <string name="home">Home</string>
     <string name="onboarding_welcome">Bem-vindo!</string>
-    <string name="onboarding_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="onboarding_description">O seu assistente inteligente para o controlo de inventário. Acompanhe o fluxo de mercadorias, evite desperdícios e agilize processos.</string>
     <string name="onboarding_continue">Continuar</string>
     <string name="notifications_store_name">Loja Av. Paulista</string>
     <string name="notifications_user_name">Milena Souza</string>
