@@ -79,9 +79,8 @@ class HomeViewModel(
 
     private fun reload() {
         val expected = context ?: return
-        if (request?.isActive == true) return
+        if (request?.isActive == true || !canNavigate()) return
         val snapshot = session.snapshot()
-        if (!canNavigate()) return
         needsReload = false
         mutableState.value = HomeAlertsState.Loading
         request = viewModelScope.launch {
