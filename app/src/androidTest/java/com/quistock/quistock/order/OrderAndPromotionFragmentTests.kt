@@ -28,15 +28,19 @@ class OrderAndPromotionFragmentTests {
     @get:Rule val authenticatedSession = AuthenticatedSessionRule()
 
     @Test
-    fun orderForm_shouldShowValidationForEachMissingFieldAndConfirmSubmission() =
+    fun orderForm_shouldShowValidationForEachMissingField() = runInstrumented(NavGraph.Destinations.ORDER) { _ ->
+        onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
+        onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
+
+        onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
+        onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
+        onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
+    }
+
+    @Test
+    fun orderForm_withRequiredFields_shouldConfirmSubmission() =
         runInstrumented(NavGraph.Destinations.ORDER) { navController ->
-            onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
-
             onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
-            onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
-
             onView(withId(R.id.etOrderDate)).perform(scrollTo(), replaceText("15 ago"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
