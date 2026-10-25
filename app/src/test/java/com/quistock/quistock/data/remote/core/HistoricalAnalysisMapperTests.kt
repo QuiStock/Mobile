@@ -35,7 +35,15 @@ class HistoricalAnalysisMapperTests {
     @Test
     fun `unreliable date prevents silent fallback to another analysis`() {
         listOf("null", "\"invalid\"", "\"2026-10-20T10:00:00\"").forEach { date ->
-            val invalid = """{"id":"unknown","product_id":"product:store","flow_type":"HIGH","status":"ANALYZED","analysis_date":$date}"""
+            val invalid = """
+                {
+                  "id": "unknown",
+                  "product_id": "product:store",
+                  "flow_type": "HIGH",
+                  "status": "ANALYZED",
+                  "analysis_date": $date
+                }
+            """.trimIndent()
             assertNull(select(flow("valid", "2026-10-20T10:00:00Z"), invalid))
         }
     }

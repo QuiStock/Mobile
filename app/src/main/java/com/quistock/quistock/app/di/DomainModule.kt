@@ -1,7 +1,7 @@
 package com.quistock.quistock.app.di
 
-import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.LoadPriorityAlertsUseCase
+import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase

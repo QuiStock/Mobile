@@ -84,7 +84,8 @@ class RetrofitPriorityAlertsRepositoryTests {
 
     @Test
     fun `duplicate product identity and missing mandatory fields fail if no valid items remain`() = runTest {
-        setup("[${product("duplicate")},${product("duplicate")},{" id ":" incomplete "}]")
+        val incomplete = """{"id":"incomplete"}"""
+        setup("[${product("duplicate")},${product("duplicate")},$incomplete]")
 
         assertEquals(AlertProductsResult.Failure, repository.read(17, "store"))
         coVerify(exactly = 0) { api.flows(any()) }

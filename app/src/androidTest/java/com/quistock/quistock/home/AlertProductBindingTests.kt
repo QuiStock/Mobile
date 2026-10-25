@@ -61,7 +61,13 @@ class AlertProductBindingTests {
     }
 
     private fun product() = AlertProduct(
-        "product:store", "Fixture product", "Category", BigDecimal("2.375"), 2, StockFlow.LOW,
-        "analysis", Instant.parse("2026-10-20T10:00:00Z"),
+        "product:store",
+        "Fixture product",
+        "Category",
+        BigDecimal("2.375"),
+        2,
+        StockFlow.LOW,
+        "analysis",
+        Instant.parse("2026-10-20T10:00:00Z"),
     )
 }

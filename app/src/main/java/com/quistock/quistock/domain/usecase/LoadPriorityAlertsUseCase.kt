@@ -12,6 +12,7 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
     suspend operator fun invoke(storeId: Long, storeCode: String?): PriorityAlertsResult =
         when (val result = repository.read(storeId, storeCode)) {
             AlertProductsResult.Failure -> PriorityAlertsResult.Failure
+
             is AlertProductsResult.Success -> PriorityAlertsResult.Success(
                 result.products.mapNotNull { product ->
                     val days = product.expirationDays
