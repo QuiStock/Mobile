@@ -13,7 +13,7 @@ import kotlinx.coroutines.Deferred
 import org.koin.core.context.GlobalContext
 
 /** Keeps UI fixtures independent of Core credentials, device storage, and external images. */
-class ProfileTestDependencies(session: SessionUseCase) {
+class ProfileTestDependencies(session: SessionUseCase, private val role: UserRole = UserRole.EMPLOYEE) {
     private val koin = GlobalContext.get()
     private val previousProfile = koin.get<ProfileUseCase>()
     private val previousPhoto = koin.get<LoadProfilePhotoUseCase>()
@@ -26,7 +26,7 @@ class ProfileTestDependencies(session: SessionUseCase) {
                     id = "1",
                     name = "Fixture operator",
                     email = "fixture@example.test",
-                    role = UserRole.EMPLOYEE,
+                    role = role,
                     status = UserStatus.ACTIVE,
                     photoUrl = null,
                     storeId = 1,

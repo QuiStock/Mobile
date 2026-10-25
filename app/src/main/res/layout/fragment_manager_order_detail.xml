@@ -283,6 +283,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/areaInformacoesPedido">
 
+            <TextView
+                android:id="@+id/managerReviewNotice"
+                android:tag="current_manager_detail_notice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:saveEnabled="false"
+                android:text="@string/manager_request_review_notice"
+                android:textColor="#BFAFC5"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
             <Button
                 android:id="@+id/btnAprovarPedido"
                 android:layout_width="match_parent"

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -30,7 +31,10 @@ import kotlinx.coroutines.withContext
 class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
         if (f is NavHostFragment) return
-        val slots = descendants(v).filter { it.tag is String && (it.tag as String).startsWith("current_profile_") }
+        val slots = descendants(v).filter { view ->
+            val tag = view.tag as? String
+            tag?.startsWith("current_profile_") == true || tag?.startsWith("current_manager_") == true
+        }
         if (slots.isEmpty()) return
         val initial = (model.profile.state.value as? ProfileState.Ready)?.takeIf {
             model.session.state.value == SessionState.Active &&
@@ -64,6 +68,12 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
     }
 
     private fun bind(view: View, ready: ProfileState.Ready?) {
+        if ((view.tag as? String)?.startsWith("current_manager_") == true) {
+            view.isVisible = ManagerReviewPolicy.canShow(
+                ready, model.session.state.value, model.session.snapshot().generation,
+            )
+            return
+        }
         when (view) {
             is ImageView -> {
                 view.setImageResource(R.drawable.ic_profile)
