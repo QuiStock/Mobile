@@ -2,6 +2,7 @@ package com.quistock.quistock.presentation.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,10 +12,8 @@ import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.presentation.common.AlertProductPresentation
 
-class PriorityAlertsAdapter(
-    private val onAction: (PriorityAlert) -> Unit,
-    private val onHelp: () -> Unit,
-) : ListAdapter<PriorityAlert, PriorityAlertsAdapter.Holder>(AlertDiff) {
+class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, private val onHelp: () -> Unit) :
+    ListAdapter<PriorityAlert, PriorityAlertsAdapter.Holder>(AlertDiff) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = Holder(
         ItemAlertaBinding.inflate(LayoutInflater.from(parent.context), parent, false),
     )
@@ -38,7 +37,9 @@ class PriorityAlertsAdapter(
             binding.btnPromocao.setText(
                 if (alert.risk == AlertRisk.STOCKOUT) R.string.home_alerts_order else R.string.home_alerts_promotion,
             )
-            binding.btnPromocao.setOnClickListener { onAction(alert) }
+            binding.btnPromocao.isVisible = alert.hasPrimaryAction
+            binding.layoutBotoes.weightSum = if (alert.hasPrimaryAction) TWO_ACTIONS else ONE_ACTION
+            binding.btnPromocao.setOnClickListener { if (alert.hasPrimaryAction) onAction(alert) }
             binding.btnFefo.setOnClickListener { onHelp() }
         }
     }
@@ -48,5 +49,10 @@ class PriorityAlertsAdapter(
             oldItem.product.id == newItem.product.id
 
         override fun areContentsTheSame(oldItem: PriorityAlert, newItem: PriorityAlert) = oldItem == newItem
+    }
+
+    private companion object {
+        const val TWO_ACTIONS = 2f
+        const val ONE_ACTION = 1f
     }
 }

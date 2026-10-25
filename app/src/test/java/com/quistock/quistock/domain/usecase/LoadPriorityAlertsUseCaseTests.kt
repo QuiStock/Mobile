@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigDecimal
 
 class LoadPriorityAlertsUseCaseTests {
     @Test
@@ -44,15 +45,16 @@ class LoadPriorityAlertsUseCaseTests {
     }
 
     @Test
-    fun `different lot IDs with same name remain separate and valid empty selection retains partial warning`() = runTest {
-        val lots = listOf(product("one", 1, StockFlow.LOW), product("two", 1, StockFlow.LOW))
-            .map { it.copy(name = "Same product") }
+    fun `different consolidated IDs with same name remain separate and empty selection retains partial warning`() =
+        runTest {
+            val lots = listOf(product("one", 1, StockFlow.LOW), product("two", 1, StockFlow.LOW))
+                .map { it.copy(name = "Same product") }
 
-        assertEquals(2, load(lots).alerts.size)
-        val partial = load(listOf(product("adequate", null, StockFlow.MEDIUM)), invalidCount = 1)
-        assertTrue(partial.alerts.isEmpty())
-        assertTrue(partial.partial)
-    }
+            assertEquals(2, load(lots).alerts.size)
+            val partial = load(listOf(product("adequate", null, StockFlow.MEDIUM)), invalidCount = 1)
+            assertTrue(partial.alerts.isEmpty())
+            assertTrue(partial.partial)
+        }
 
     @Test
     fun `repository failure remains a failure instead of empty alerts`() = runTest {
@@ -74,5 +76,6 @@ class LoadPriorityAlertsUseCaseTests {
         return LoadPriorityAlertsUseCase(repository)(17, "store") as PriorityAlertsResult.Success
     }
 
-    private fun product(id: String, days: Int?, flow: StockFlow?) = AlertProduct(id, id, "Category", 5, days, flow)
+    private fun product(id: String, days: Int?, flow: StockFlow?) =
+        AlertProduct(id, id, "Category", BigDecimal("5"), days, flow)
 }

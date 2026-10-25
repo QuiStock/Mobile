@@ -15,6 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Response
 import java.io.IOException
+import java.math.BigDecimal
 
 class RetrofitPriorityAlertsRepositoryTests {
     private val api = mockk<PriorityAlertsApi>()
@@ -27,28 +28,42 @@ class RetrofitPriorityAlertsRepositoryTests {
     }
 
     @Test
-    fun `fractional stock is rejected while integral decimal stock remains valid`() = runTest {
+    fun `fractional and integral decimal stocks remain exact`() = runTest {
         setup("[${product("valid", "5.000")},${product("fractional", "2.5")}]")
 
         val result = repository.read(17, "store") as AlertProductsResult.Success
 
-        assertEquals(listOf("valid"), result.products.map { it.id })
-        assertEquals(5L, result.products.single().stock)
-        assertEquals(1, result.invalidCount)
-        coVerify(exactly = 0) { api.flows("fractional") }
+        assertEquals(listOf("valid", "fractional"), result.products.map { it.id })
+        assertEquals(BigDecimal("5"), result.products.first().stock)
+        assertEquals(BigDecimal("2.5"), result.products.last().stock)
+        assertEquals(0, result.invalidCount)
     }
 
     @Test
-    fun `history is rejected rather than choosing analysis by return order`() = runTest {
+    fun `history selects newest dated analysis rather than return order`() = runTest {
         setup("[${product("history")},${product("valid")}]")
-        coEvery { api.flows("history") } returns json("[${flow("history")},${flow("history")}]")
+        coEvery { api.flows("history") } returns json(
+            "[${flow("history", "new", "2026-10-21T10:00:00Z")},${flow("history", "old")}]",
+        )
         coEvery { api.flows("valid") } returns json("[${flow("valid")}]")
 
         val result = repository.read(17, "store") as AlertProductsResult.Success
 
-        assertEquals(listOf("valid"), result.products.map { it.id })
-        assertEquals(StockFlow.HIGH, result.products.single().flow)
+        assertEquals(listOf("history", "valid"), result.products.map { it.id })
+        assertEquals("new", result.products.first().analysisId)
+        assertEquals(StockFlow.HIGH, result.products.last().flow)
+        assertEquals(0, result.invalidCount)
+    }
+
+    @Test
+    fun `fraction beyond contract precision is omitted with partial count without rounding`() = runTest {
+        setup("[${product("valid", "2.3750")},${product("invalid", "2.3751")}]")
+
+        val result = repository.read(17, "store") as AlertProductsResult.Success
+
+        assertEquals(BigDecimal("2.375"), result.products.single().stock)
         assertEquals(1, result.invalidCount)
+        coVerify(exactly = 0) { api.flows("invalid") }
     }
 
     @Test
@@ -69,7 +84,7 @@ class RetrofitPriorityAlertsRepositoryTests {
 
     @Test
     fun `duplicate product identity and missing mandatory fields fail if no valid items remain`() = runTest {
-        setup("[${product("duplicate")},${product("duplicate")},{"id":"incomplete"}]")
+        setup("[${product("duplicate")},${product("duplicate")},{" id ":" incomplete "}]")
 
         assertEquals(AlertProductsResult.Failure, repository.read(17, "store"))
         coVerify(exactly = 0) { api.flows(any()) }
@@ -94,6 +109,6 @@ class RetrofitPriorityAlertsRepositoryTests {
     private fun product(id: String, stock: String = "5") =
         """{"id":"$id","name":"Fixture product","category":"Category","current_stock":$stock,"branch":"Fixture store"}"""
 
-    private fun flow(productId: String) =
-        """{"id":"analysis","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED"}"""
+    private fun flow(productId: String, id: String = "analysis", date: String = "2026-10-20T10:00:00Z") =
+        """{"id":"$id","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED","analysis_date":"$date"}"""
 }
