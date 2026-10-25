@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.interferences.InterferencesFragment">
 
     <ScrollView
@@ -23,10 +23,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="27dp"
-            android:paddingTop="52dp"
-            android:paddingEnd="27dp">
+            android:paddingStart="24dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="24dp">
 
+            <!-- HEADER -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
@@ -37,12 +38,13 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="Perfil"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/ic_profile" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -50,8 +52,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Loja Av. Paulista"
-                        android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textColor="@color/color_branco"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <TextView android:tag="current_profile_header_name"
@@ -63,24 +65,27 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="19dp"
-                    android:layout_height="23dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:contentDescription="Notificações"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/ic_notification" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="38dp"
+                android:layout_marginTop="24dp"
                 android:text="Interferências"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_branco"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
+            <!-- CARDS DE AÇÃO: PROMOÇÃO / PEDIDO DE ESTOQUE -->
             <LinearLayout
+                android:id="@+id/containerBotoesAcao"
                 android:layout_width="match_parent"
-                android:layout_height="122dp"
+                android:layout_height="115dp"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
@@ -88,47 +93,50 @@
                     android:id="@+id/cardPromocao"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="13dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_card_interference_category"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
                     <ImageView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="Promoção"
+                        android:scaleType="fitCenter"
                         android:src="@drawable/promo" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="4dp"
                         android:text="Promoção"
                         android:textColor="#D8C9E0"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/cardPedidoEstoque"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="13dp"
-                    android:layout_marginEnd="5dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_card_interference_category"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
                     <ImageView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="Pedido de estoque"
+                        android:scaleType="fitCenter"
                         android:src="@drawable/box" />
 
                     <TextView
@@ -137,55 +145,51 @@
                         android:layout_marginTop="4dp"
                         android:text="Pedido de estoque"
                         android:textColor="#D8C9E0"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- INTERFERÊNCIAS ATIVAS -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="19dp"
+                android:layout_marginTop="22dp"
                 android:text="Interferências ativas"
                 android:textColor="#E8D2F0"
-                android:textSize="13sp" />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-            <ScrollView
+            <LinearLayout
                 android:id="@+id/listaInterferenciasAtivas"
                 android:layout_width="match_parent"
-                android:layout_height="102dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fillViewport="false"
-                android:nestedScrollingEnabled="true">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="6dp"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_card_summary"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="13dp"
-                    android:paddingEnd="12dp">
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
 
                     <TextView
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:gravity="center"
                         android:text="%"
-                        android:textColor="#FFFFFF"
-                        android:textSize="25sp"
+                        android:textColor="@color/color_branco"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -193,8 +197,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Promoção Verão 25%"
-                            android:textColor="#FFFFFF"
-                            android:textSize="12sp"
+                            android:textColor="@color/color_branco"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -202,29 +206,30 @@
                             android:layout_height="wrap_content"
                             android:text="Em vigor: 13:39 AM · Expira em 3 dias"
                             android:textColor="#BFAFC5"
-                            android:textSize="9sp" />
+                            android:textSize="11sp" />
                     </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="56dp"
                     android:background="@drawable/bg_card_summary"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="13dp"
-                    android:paddingEnd="12dp">
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
 
                     <ImageView
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
                         android:contentDescription="Pedido de estoque"
+                        android:scaleType="fitCenter"
                         android:src="@drawable/ic_product_control" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -232,8 +237,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Pedido #1014 - Refrigerantes"
-                            android:textColor="#FFFFFF"
-                            android:textSize="12sp"
+                            android:textColor="@color/color_branco"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -241,81 +246,117 @@
                             android:layout_height="wrap_content"
                             android:text="Recebimento pendente · Solicitado: 02:32 AM"
                             android:textColor="#BFAFC5"
-                            android:textSize="9sp" />
+                            android:textSize="11sp" />
                     </LinearLayout>
                 </LinearLayout>
-                </LinearLayout>
-            </ScrollView>
+            </LinearLayout>
 
+            <!-- INTERFERÊNCIAS RECENTES -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="22dp"
                 android:text="Interferências recentes"
                 android:textColor="#E8D2F0"
-                android:textSize="13sp" />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-            <ScrollView
+            <LinearLayout
                 android:id="@+id/listaInterferenciasRecentes"
                 android:layout_width="match_parent"
-                android:layout_height="108dp"
-                android:layout_marginTop="11dp"
-                android:fillViewport="false"
-                android:nestedScrollingEnabled="true">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="6dp"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_card_summary"
                     android:gravity="center_vertical"
-                    android:paddingStart="13dp"
-                    android:paddingEnd="14dp"
-                    android:text="Promoção solicitada                              13:39 AM"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/bg_card_summary"
-                    android:gravity="center_vertical"
-                    android:paddingStart="13dp"
-                    android:paddingEnd="14dp"
-                    android:text="Estoque solicitado                                     02:32 AM"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Promoção solicitada"
+                        android:textColor="@color/color_branco"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_card_summary"
-                    android:gravity="center_vertical"
-                    android:paddingStart="13dp"
-                    android:paddingEnd="14dp"
-                    android:text="Promoção aprovada                                  11:20 AM"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="13:39 AM"
+                        android:textColor="#BFAFC5"
+                        android:textSize="12sp" />
                 </LinearLayout>
-            </ScrollView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_card_summary"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Estoque solicitado"
+                        android:textColor="@color/color_branco"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="02:32 AM"
+                        android:textColor="#BFAFC5"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_card_summary"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Promoção aprovada"
+                        android:textColor="@color/color_branco"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="11:20 AM"
+                        android:textColor="#BFAFC5"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
+    <!-- BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
-        android:layout_height="72dp"
-        android:background="#11061F"
+        android:layout_height="@dimen/nav_bar_height"
+        android:background="@color/color_petroleo"
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="4"
@@ -326,38 +367,49 @@
         <ImageButton
             android:id="@+id/btnHome"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Início"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/btnMovimentacoes"
             android:layout_width="0dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Interferências"
-            android:padding="0dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_interferences_active" />
 
         <ImageButton
             android:id="@+id/btnProdutos"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Produtos"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_product_control" />
 
         <ImageButton
             android:id="@+id/btnFolha"
             android:layout_width="0dp"
-            android:layout_height="25dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="Chat"
+            android:paddingTop="17dp"
+            android:paddingBottom="17dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_chatbot" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
