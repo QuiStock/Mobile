@@ -63,10 +63,22 @@ class DemoPageFragment : Fragment() {
     private fun setupEntry(view: View) {
         if (page == R.id.loginFragment) {
             val enter = view.findViewById<View>(R.id.bt_entrar_login)
+            val density = resources.displayMetrics.density
             (enter.parent as ViewGroup).addView(
                 Button(requireContext()).apply {
                     id = R.id.demo_register
                     setText(R.string.demo_register)
+                    setBackgroundResource(R.drawable.bg_btn_action_reject)
+                    setTextColor(android.graphics.Color.WHITE)
+                    textSize = 15f
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    isAllCaps = false
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        (52 * density).toInt(),
+                    ).apply {
+                        topMargin = (12 * density).toInt()
+                    }
                     setOnClickListener { open(R.id.cadastroPessoalFragment) }
                 },
             )

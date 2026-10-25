@@ -12,7 +12,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.quistock.quistock.R
 
 object PopupFeedback {
-    private const val SNACKBAR_HORIZONTAL_PADDING = 16
+    private const val SNACKBAR_HORIZONTAL_MARGIN_DP = 16
+    private const val SNACKBAR_BOTTOM_MARGIN_DP = 24
     private const val DIALOG_WIDTH_RATIO = 0.82
 
     @JvmStatic
@@ -26,7 +27,18 @@ object PopupFeedback {
         text.text = message
         val snackbarLayout = snackbar.view as ViewGroup
         snackbarLayout.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        snackbarLayout.setPadding(SNACKBAR_HORIZONTAL_PADDING, 0, SNACKBAR_HORIZONTAL_PADDING, 0)
+        snackbarLayout.setPadding(0, 0, 0, 0)
+        val params = snackbarLayout.layoutParams
+        if (params is ViewGroup.MarginLayoutParams) {
+            val density = anchor.resources.displayMetrics.density
+            params.setMargins(
+                (SNACKBAR_HORIZONTAL_MARGIN_DP * density).toInt(),
+                0,
+                (SNACKBAR_HORIZONTAL_MARGIN_DP * density).toInt(),
+                (SNACKBAR_BOTTOM_MARGIN_DP * density).toInt(),
+            )
+            snackbarLayout.layoutParams = params
+        }
         snackbarLayout.removeAllViews()
         snackbarLayout.addView(
             layout,
