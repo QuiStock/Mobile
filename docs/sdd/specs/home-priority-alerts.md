@@ -1,12 +1,12 @@
 # Alertas prioritários da homepage
 
-**Status:** Ready for implementation — correção mobile e avisos; submissão/aprovação Core real fora desta correção  
+**Status:** In progress — correção mobile e avisos implementados; testes/validações delegados ao solicitante; submissão/aprovação Core real fora desta correção  
 **Issue:** none — vínculo específico a confirmar; QUIS-81 trata notificações e QUIS-126 trata Big Numbers, sem estabelecer o escopo desta seção  
 **Product decision owner:** solicitante; responsáveis por Produto e API Core a confirmar
 
 ## Revisão de prontidão — estado normativo de 25/10/2026
 
-Esta seção e os critérios RC abaixo consolidam as decisões mais recentes e prevalecem sobre textos conflitantes nas rodadas e tabelas históricas deste arquivo. Ready significa escopo de correção definido, não código corrigido ou testes aprovados. A implementação inicial ainda precisa ser adaptada. Nenhum código ou teste foi alterado nesta revisão; nenhuma validação foi executada.
+Esta seção e os critérios RC abaixo consolidam as decisões mais recentes e prevalecem sobre textos conflitantes nas rodadas e tabelas históricas deste arquivo. A revisão definiu o escopo Ready para correção, posteriormente implementado conforme o resultado abaixo. A existência de código e testes escritos não comprova aprovação dos checks; nenhuma validação foi executada pelo agente nesta entrega.
 
 ### Escopo pronto para correção
 
@@ -44,6 +44,24 @@ Esta seção e os critérios RC abaixo consolidam as decisões mais recentes e p
 | RC-07 | Dados de outra loja e campos essenciais incompatíveis continuam rejeitados; erro não vira vazio; isolamento de sessão e lifecycle mantidos. | Adaptar testes de repositório/ViewModel; confirmação live da autorização Core fica pendente. |
 
 Não executar testes, builds ou validações nesta revisão. Em futura implementação, seguir a orientação de execução vigente do solicitante; testes escritos ou planejados não representam checks aprovados.
+
+## Resultado da correção mobile — 25/10/2026
+
+Solicitante autorizou implementar em commits semânticos, sem executar validações ou tasks Gradle. Implementação entregue para verificação pelo solicitante. **Não foram executados testes unitários/instrumentados, detekt, build, formatter, lint, preview ou chamadas à API real.** A etapa Red–Green executável foi delegada ao solicitante por sua instrução explícita.
+
+- RC-01: estoque usa BigDecimal no domínio e parser, com precisão efetiva até três casas; navegação preserva representação decimal por string e metadados da análise. Formatação localizada sem unidade nem zeros desnecessários. Dados fora da precisão não são arredondados.
+- RC-02/03: LOW tem o texto aprovado. `HistoricalAnalysisMapper` seleciona por maior instante com offset/UTC, valida cada registro relevante e rejeita data ausente/inválida, conflito de identidade ou empate temporal entre análises distintas. Duplicatas idênticas não viram análises distintas. Não se afirma vigência. Validade permanece a de produtos; exclusão de validade negativa preservada. Mantidas as rotas já existentes: branches, produtos por filial e análises por produto, sem mudança Core.
+- RC-04: card MEDIUM mantém FEFO, oculta promoção e remove seu acionamento; binding de item reciclado restaura o botão para outros tipos. A navegação também verifica elegibilidade da ação. Destinos preservam produto/estoque/análise, sem executar mutação ao navegar.
+- RC-05: avisos na Home e nos detalhes de pedido/promoção são slots do binding compartilhado de perfil, inicialmente ocultos e sem persistência de estado da View. `ManagerReviewPolicy` exige perfil Ready da geração atual, sessão ativa e cargo MANAGER. EMPLOYEE e perfil ausente não exibem esses slots. Não foi exibido timestamp nos detalhes gerenciais porque essas telas ainda não têm solicitação real associada; não se reutilizou uma análise arbitrária para preencher data.
+- RC-06: continua condicional à entrega de aprovação real. Os detalhes gerenciais ainda não integram aprovação remota; não foi criado diálogo que simule decisão registrada nem auditoria fictícia. Os textos/requisito de confirmação permanecem especificados para integração futura com esse fluxo. Esta entrega implementa a orientação informativa, não habilita operações Core ou ERP.
+- RC-07: mantidas validação de loja, política parcial/erro/vazio, cancelamento e publicação protegida por sessão. O binding remove os avisos quando o perfil/sessão deixam de satisfazer a política. Autorização Core foi informada pelo responsável, sem validação live pelo mobile.
+
+Testes adicionados/adaptados, **sem execução**:
+
+- `RetrofitPriorityAlertsRepositoryTests`, `HistoricalAnalysisMapperTests`, `LoadPriorityAlertsUseCaseTests`, `AlertProductPresentationTests`, `ManagerReviewPolicyTests` e fixtures de `HomeViewModelTests`: frações, precisão, data/offset, ambiguidades, riscos e política de gerente por cargo/geração.
+- Instrumentados `AlertProductBindingTests`, `ManagerReviewNoticeTests` e `EmployeeReviewNoticeTests`: round-trip decimal/metadados, reciclagem MEDIUM/LOW, aviso em recriação e ocultação mesmo ao abrir layout gerencial com funcionário. A fixture autenticada isola alertas em repositório falso e admite cargo configurável, sem acesso Core para esses testes.
+
+Permanecem fora do escopo: envio/aprovação remotos, auditoria persistida, associação de solicitações reais aos detalhes e correção de permissões no backend. Essas dependências não foram apresentadas como implementadas. Fuso de negócio Core continua não fixado; mobile consome os dias retornados sem recalcular validade.
 
 ## Registro anterior de refinamento e implementação
 
