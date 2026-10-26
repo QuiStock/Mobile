@@ -345,16 +345,16 @@
 
             <!-- NOTIFICATIONS -->
             <ImageButton
-                android:id="@+id/btnNotificacoesBottom"
+                android:id="@+id/btnProdutosBottom"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:contentDescription="Notificações"
+                android:contentDescription="Controle de produtos"
                 android:paddingTop="17dp"
                 android:paddingBottom="17dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_notification" />
+                android:src="@drawable/ic_product_control" />
 
             <!-- CHATBOT -->
             <ImageButton
