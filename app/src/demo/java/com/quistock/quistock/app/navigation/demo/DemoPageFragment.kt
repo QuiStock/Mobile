@@ -110,9 +110,12 @@ class DemoPageFragment : Fragment() {
                 R.id.btnFuncionariosNav,
                 R.id.btnControleFuncionariosAtivo,
             ),
-            R.id.productControlFragment to listOf(R.id.btnProdutos, R.id.btnProdutosChatbot),
+            R.id.productControlFragment to listOf(
+                R.id.btnProdutosBottom,
+                R.id.btnProdutos,
+                R.id.btnProdutosChatbot,
+            ),
             R.id.notificationsFragment to listOf(
-                R.id.btnNotificacoesBottom,
                 R.id.btnNotificacoesNav,
                 R.id.btnNotificacoesBottomFuncionarios,
             ),

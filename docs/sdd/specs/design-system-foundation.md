@@ -33,7 +33,7 @@ The goal of this change is to establish the centralized Design System Foundation
 - Updating shared drawables (`bg_login_button.xml`, `bg_input_outline.xml`, `bg_card_interference_category.xml`, `bg_alert.xml`, `bg_btn_alert.xml`, `bg_card_active.xml`) to reference central dimension and color tokens.
 
 **Out of scope:**
-- Rewriting individual feature screens (Login, Home/Interferences, Chatbot) — those will be refactored in their dedicated flow branches consuming these foundation tokens.
+- Rewriting individual feature screens (Login, Home/Interferences, Chatbot), except for the manager Home product-control icon requested for this branch.
 
 ## Acceptance criteria and evidence
 
@@ -45,6 +45,7 @@ The goal of this change is to establish the centralized Design System Foundation
 | AC-04 | Responsive tablet dimensions exist in `values-sw600dp/dimens.xml` (8.7" tablet scale). | Resource verification |
 | AC-05 | Shared drawables reference centralized `@dimen` and `@color` attributes. | Compilation and `lintDebug` |
 | AC-06 | All existing unit tests pass without regression. | `.\gradlew.bat testDebugUnitTest` |
+| AC-07 | The manager Home bottom navigation uses the product-control icon in place of notifications and opens product control when selected. | Manual navigation check in the demo flow. |
 
 ## Technical impact
 
@@ -56,4 +57,5 @@ The goal of this change is to establish the centralized Design System Foundation
   - `app/src/main/res/values-night/themes.xml`
   - `app/src/main/res/font/montserrat.xml`
   - `app/src/main/res/drawable/bg_*.xml`
+- Manager Home bottom navigation and demo route to product control.
 - No database or backend migrations required.
