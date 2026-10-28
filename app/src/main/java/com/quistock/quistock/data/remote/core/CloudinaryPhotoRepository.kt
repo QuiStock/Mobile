@@ -25,23 +25,14 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 
-class CloudinaryPhotoRepository(private val cloud: String, private val preset: String) : ProfilePhotoUploadRepository {
+class CloudinaryPhotoRepository internal constructor(
+    private val cloud: String,
+    private val preset: String,
+    private val calls: Call.Factory,
+) : ProfilePhotoUploadRepository {
+    constructor(cloud: String, preset: String) : this(cloud, preset, createCloudinaryClient())
+
     override val available: Boolean = cloud.matches(Regex("[A-Za-z0-9_-]+")) && preset.isNotBlank()
-    private val client = OkHttpClient.Builder()
-        .cookieJar(CookieJar.NO_COOKIES)
-        .retryOnConnectionFailure(false)
-        .followRedirects(false)
-        .followSslRedirects(false)
-        .callTimeout(UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .addInterceptor { chain ->
-            val request = chain.request().newBuilder()
-                .tag(ProfileWriteAttempt::class.java, ProfileWriteAttempt()).build()
-            chain.proceed(request)
-        }
-        .addNetworkInterceptor { chain ->
-            requireNotNull(chain.request().tag(ProfileWriteAttempt::class.java)).send(chain)
-        }
-        .build()
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun upload(jpeg: ByteArray): ProfilePhotoUploadResult = withContext(Dispatchers.IO) {
@@ -64,7 +55,7 @@ class CloudinaryPhotoRepository(private val cloud: String, private val preset: S
     }
 
     private suspend fun send(request: Request): ProfilePhotoUploadResult = suspendCancellableCoroutine { continuation ->
-        val call = client.newCall(request)
+        val call = calls.newCall(request)
         continuation.invokeOnCancellation { call.cancel() }
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, error: IOException) {
@@ -116,7 +107,24 @@ class CloudinaryPhotoRepository(private val cloud: String, private val preset: S
         const val MAX_JPEG_BYTES = 2 * 1024 * 1024
         const val MAX_RESPONSE_BYTES = 64 * 1024L
         const val MAX_URL_LENGTH = 500
-        const val UPLOAD_TIMEOUT_SECONDS = 60L
         const val HTTP_TOO_MANY_REQUESTS = 429
     }
 }
+
+private fun createCloudinaryClient(): OkHttpClient = OkHttpClient.Builder()
+    .cookieJar(CookieJar.NO_COOKIES)
+    .retryOnConnectionFailure(false)
+    .followRedirects(false)
+    .followSslRedirects(false)
+    .callTimeout(UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    .addInterceptor { chain ->
+        val request = chain.request().newBuilder()
+            .tag(ProfileWriteAttempt::class.java, ProfileWriteAttempt()).build()
+        chain.proceed(request)
+    }
+    .addNetworkInterceptor { chain ->
+        requireNotNull(chain.request().tag(ProfileWriteAttempt::class.java)).send(chain)
+    }
+    .build()
+
+private const val UPLOAD_TIMEOUT_SECONDS = 60L

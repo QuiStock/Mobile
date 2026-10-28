@@ -13,11 +13,13 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
-class HttpProfilePhotoRepository : ProfilePhotoRepository {
+class HttpProfilePhotoRepository internal constructor(private val client: OkHttpClient) : ProfilePhotoRepository {
     // No Core interceptor, cookies, redirects, diagnostics, or disk cache on external photo requests.
-    private val client = OkHttpClient.Builder()
-        .followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false)
-        .callTimeout(15, TimeUnit.SECONDS).build()
+    constructor() : this(
+        OkHttpClient.Builder()
+            .followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false)
+            .callTimeout(DOWNLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS).build(),
+    )
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun read(url: String): ByteArray? = withContext(Dispatchers.IO) {
@@ -61,5 +63,6 @@ class HttpProfilePhotoRepository : ProfilePhotoRepository {
 
     private companion object {
         const val MAX_PHOTO_BYTES = 2 * 1024 * 1024
+        const val DOWNLOAD_TIMEOUT_SECONDS = 15L
     }
 }
