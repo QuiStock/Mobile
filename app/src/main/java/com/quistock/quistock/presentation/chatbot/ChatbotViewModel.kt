@@ -29,15 +29,18 @@ class ChatbotViewModel(
     private val _uiState = MutableLiveData<ChatbotUiState>(ChatbotUiState.Idle)
     val uiState: LiveData<ChatbotUiState> = _uiState
     private var sendJob: Job? = null
+    private val mutableMessages = MutableLiveData<List<ChatMessage>>(emptyList())
+    val messages: LiveData<List<ChatMessage>> = mutableMessages
+    private var conversationGeneration: Long? = session?.snapshot()?.generation
 
     init {
         session?.let { current ->
             viewModelScope.launch {
                 current.state.collect { state ->
-                    if (state == SessionState.LoggingOut || state is SessionState.LogoutFailed ||
-                        state is SessionState.LoggedOut
-                    ) {
+                    val generation = current.snapshot().generation
+                    if (generation != conversationGeneration || clearsConversation(state)) {
                         clearConversation()
+                        conversationGeneration = generation
                     }
                 }
             }
@@ -49,6 +52,11 @@ class ChatbotViewModel(
         sendJob = null
         _answer.value = null
         _uiState.value = ChatbotUiState.Idle
+        mutableMessages.value = emptyList()
+    }
+
+    fun rememberQuestion(message: String) {
+        mutableMessages.value = mutableMessages.value.orEmpty() + ChatMessage(message, true)
     }
 
     @Suppress("RethrowCaughtException")
@@ -77,6 +85,7 @@ class ChatbotViewModel(
                 coroutineContext.ensureActive()
                 if (!isCurrent(generation)) return@launch
                 _answer.value = response
+                mutableMessages.value = mutableMessages.value.orEmpty() + ChatMessage(response.answer, false)
                 _uiState.value = ChatbotUiState.Answered
             } catch (cancellation: CancellationException) {
                 throw cancellation
@@ -92,4 +101,11 @@ class ChatbotViewModel(
 
     private fun isCurrent(generation: Long?): Boolean =
         session == null || (session.snapshot().generation == generation && session.state.value == SessionState.Active)
+
+    private fun clearsConversation(state: SessionState): Boolean = when (state) {
+        SessionState.Active, SessionState.Restoring, is SessionState.Failure -> false
+        else -> true
+    }
 }
+
+data class ChatMessage(val text: String, val isUser: Boolean)

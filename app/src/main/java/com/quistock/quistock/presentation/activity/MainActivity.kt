@@ -23,6 +23,7 @@ import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
+import com.quistock.quistock.presentation.navigation.BottomNavigation
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import kotlinx.coroutines.flow.combine
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     val binding: ActivityMainBinding get() = _binding!!
 
     private val sessionViewModel: SessionViewModel by viewModel()
+    private lateinit var bottomNavigation: BottomNavigation
     private val logoutBackBlocker = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = Unit
     }
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
         setContentView(binding.root)
+        bottomNavigation = BottomNavigation(this, binding, sessionViewModel)
         onBackPressedDispatcher.addCallback(this, logoutBackBlocker)
         onBackPressedDispatcher.addCallback(this, recoveryBack)
         binding.sessionRecoveryRetry.setOnClickListener { sessionViewModel.retrySession() }
@@ -69,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            bottomNavigation.keyboardChanged(insets.isVisible(WindowInsetsCompat.Type.ime()))
             insets
         }
     }
@@ -143,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         binding.sessionRecoveryRetry.isEnabled = !recovery.retrying && !recovery.retryBlocked
         binding.sessionRecoveryMessage.setText(gateMessage(state, gate))
         renderLogoutDialog(gate.logoutBlocked)
+        bottomNavigation.update(gate.blocked)
     }
 
     private fun gateMessage(state: SessionState, gate: SessionGate): Int = when {

@@ -12,10 +12,10 @@ import com.quistock.quistock.R
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ChatbotFragment : Fragment() {
-    private val viewModel: ChatbotViewModel by viewModel()
+    private val viewModel: ChatbotViewModel by activityViewModel()
     private var lastMessage: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
@@ -29,6 +29,8 @@ class ChatbotFragment : Fragment() {
         val menuPanel = view.findViewById<View>(R.id.chatMenuPanel)
         val messageInput = view.findViewById<EditText>(R.id.etPerguntaChatbot)
         val messages = view.findViewById<LinearLayout>(R.id.containerMensagens)
+        lastMessage = viewModel.messages.value?.lastOrNull { it.isUser }?.text
+        messageInput.isSaveEnabled = false
 
         view.findViewById<View>(R.id.btnMenuChatbot).setOnClickListener {
             menuOverlay.visibility = View.VISIBLE
@@ -50,19 +52,14 @@ class ChatbotFragment : Fragment() {
                 return@setOnClickListener
             }
             lastMessage = message
-            addMessage(messages, message, isUser = true)
+            viewModel.rememberQuestion(message)
             messageInput.text.clear()
             viewModel.sendMessage(message)
         }
 
-        viewModel.answer.observe(viewLifecycleOwner) { response ->
-            if (response == null) {
-                messages.removeAllViews()
-                messageInput.text.clear()
-                lastMessage = null
-            } else {
-                addMessage(messages, response.answer, isUser = false)
-            }
+        viewModel.messages.observe(viewLifecycleOwner) { conversation ->
+            messages.removeAllViews()
+            conversation.forEach { addMessage(messages, it.text, it.isUser) }
         }
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
