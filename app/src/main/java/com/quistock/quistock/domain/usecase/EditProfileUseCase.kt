@@ -32,7 +32,9 @@ class EditProfileUseCase(
             } else {
                 ProfileEditResult.Rejected()
             }
+
             ProfileResult.Forbidden -> ProfileEditResult.Forbidden
+
             is ProfileResult.Failure -> ProfileEditResult.CheckLater(read.retryAfterMillis)
         }
         return publish(result, expected)
@@ -43,24 +45,25 @@ class EditProfileUseCase(
             is ProfileEditResult.Saved -> {
                 publishSaved(result, expected)
             }
+
             ProfileEditResult.Forbidden -> {
                 session.expire(expected)
                 result
             }
+
             else -> result
         }
 
-    private suspend fun publishSaved(
-        result: ProfileEditResult.Saved,
-        expected: SessionSnapshot,
-    ): ProfileEditResult {
+    private suspend fun publishSaved(result: ProfileEditResult.Saved, expected: SessionSnapshot): ProfileEditResult {
         val rejection = result.profile.rejection()
         return when {
             rejection != null && rejection != ProfileRejection.INVALID -> {
                 session.expire(expected)
                 ProfileEditResult.Forbidden
             }
+
             profile.publishEdit(result.profile, expected) { photo.clear() } -> result
+
             else -> ProfileEditResult.Uncertain
         }
     }

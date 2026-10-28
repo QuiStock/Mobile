@@ -2,11 +2,11 @@ package com.quistock.quistock.presentation.profile
 
 import android.graphics.BitmapFactory
 import androidx.core.view.isVisible
+import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentEditProfileBinding
-import com.quistock.quistock.domain.model.profileNameError
 import com.quistock.quistock.domain.model.ProfileNameError
 import com.quistock.quistock.domain.model.SessionException
-import com.quistock.quistock.R
+import com.quistock.quistock.domain.model.profileNameError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -52,9 +52,13 @@ internal class EditProfileRenderer(
 
     private fun status(state: EditProfileState): Int? = when (state.stage) {
         ProfileEditStage.PREPARING -> R.string.profile_preparing
+
         ProfileEditStage.UPLOADING -> R.string.profile_uploading
+
         ProfileEditStage.SAVING -> R.string.profile_saving
+
         ProfileEditStage.CHECKING -> R.string.profile_checking
+
         ProfileEditStage.IDLE -> error(state.message)
             ?: R.string.profile_upload_unavailable.takeUnless { uploadAvailable }
     }
@@ -74,7 +78,9 @@ internal class EditProfileRenderer(
     private suspend fun renderPhoto(state: EditProfileState) {
         val bytes = when {
             state.original == null || state.removePhoto -> null
+
             state.jpeg != null -> state.jpeg
+
             else -> try {
                 originalPhoto()
             } catch (_: SessionException) {
@@ -89,13 +95,19 @@ internal class EditProfileRenderer(
                     var sample = 1
                     while (maxOf(bounds.outWidth, bounds.outHeight) / sample > MAX_DIMENSION) sample *= 2
                     BitmapFactory.decodeByteArray(
-                        input, 0, input.size, BitmapFactory.Options().apply { inSampleSize = sample },
+                        input,
+                        0,
+                        input.size,
+                        BitmapFactory.Options().apply { inSampleSize = sample },
                     )
                 }
             }
             displayed = bytes
-            if (bitmap == null) binding.profileEditPhoto.setImageResource(R.drawable.ic_profile)
-            else binding.profileEditPhoto.setImageBitmap(bitmap)
+            if (bitmap == null) {
+                binding.profileEditPhoto.setImageResource(R.drawable.ic_profile)
+            } else {
+                binding.profileEditPhoto.setImageBitmap(bitmap)
+            }
         }
     }
 

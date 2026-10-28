@@ -1,6 +1,7 @@
 package com.quistock.quistock.app.di
 
 import android.content.Context
+import com.quistock.quistock.R
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
@@ -26,7 +27,6 @@ import com.quistock.quistock.domain.port.ProfileEditRepository
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
-import com.quistock.quistock.R
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -35,12 +35,12 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.qualifier.named
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.QualifierValue
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 private object LegacyChatbotApi : Qualifier {
     override val value: QualifierValue get() = "api-legacy-chatbot"

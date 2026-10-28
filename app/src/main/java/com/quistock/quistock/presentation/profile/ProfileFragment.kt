@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentProfileBinding
 import com.quistock.quistock.presentation.common.PopupFeedback
-import com.quistock.quistock.R
 
 class ProfileFragment : Fragment() {
     private var binding: FragmentProfileBinding? = null
