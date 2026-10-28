@@ -182,6 +182,35 @@ medidas; aguardam os relatórios do solicitante. Nenhum dado remoto foi alterado
 
 ## Revisão normativa — Core 3.0.0 e Cloudinary, 26/10/2026
 
+### Correções após relatórios do solicitante — 28/10/2026
+
+O relatório `app/build/reports/detekt/detekt.md`, gerado com Detekt 2.0.0-alpha.6
+em 28/10/2026, apresenta 18 achados `MagicNumber`. Foram nomeados limites contratuais,
+ângulos EXIF e campos dos contêineres de imagem; códigos HTTP usam constantes e a
+conversão de nanossegundos usa `TimeUnit`. O seletor despacha pelo recurso da ação,
+sem depender de números fixos para identificar opções. As mesmas constantes HTTP
+foram aplicadas ao upload. Nenhuma regra, exclusão ou gate foi alterado.
+
+O XML instrumentado de 28/10/2026, em
+`app/build/outputs/androidTest-results/connected/debug/`, registra três falhas:
+as duas jornadas `ProfileEditNavigationTests` param na asserção de e-mail não focável;
+`ChatbotFragmentTests.emptyMessage_shouldShowValidationError` encontra a Home, sem o
+botão de envio. `keyListener = null` pode recalcular as flags de foco do TextView;
+a tela agora reaplica explicitamente a proibição de foco normal e por toque após
+remover o listener. As jornadas também verificam listener ausente após recriação.
+
+O IdlingResource de destino foi compartilhado como `NavigationDestinationIdler`,
+com `awaitDestination` para registro/remoção e acesso à navegação na thread principal.
+O chatbot aguarda a entrada inicial na Home antes de navegar, e aguarda seu próprio
+destino antes das interações. Isso elimina a disputa do setup com a navegação inicial,
+sem alterar o fluxo de produção ou usar sleeps.
+
+Achados de `debug.md`/`release.md` datados de agosto, com versão anterior do Detekt,
+não foram tratados como falhas desta rodada. Alterações locais de formatação foram
+preservadas. Estas são correções baseadas nos relatórios fornecidos: testes, Gradle,
+build, formatador e analisadores não foram executados novamente pelo agente.
+AC-01/AC-05/AC-10 e a conformidade do Detekt aguardam a próxima rodada do solicitante.
+
 Esta seção substitui os achados históricos de 25/10/2026 que afirmavam inexistência de escrita. Fonte: `main` remota, commit [`d500f05682bdf92863bb2022cba5d97f8bfeb239`](https://github.com/QuiStock/DS_Backend/commit/d500f05682bdf92863bb2022cba5d97f8bfeb239), [contrato 3.0.0 de 26/10/2026](https://github.com/QuiStock/DS_Backend/blob/d500f05682bdf92863bb2022cba5d97f8bfeb239/api-contract.md), seção 0.1.1. Conferidos também ProfileController, UpdateProfileRequest, UserProfileService e UserAccountWriteRepository nesse commit.
 
 ### Contrato confirmado

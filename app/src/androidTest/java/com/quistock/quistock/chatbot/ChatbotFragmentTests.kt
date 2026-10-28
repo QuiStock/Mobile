@@ -22,6 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
+import com.quistock.quistock.awaitDestination
 import com.quistock.quistock.domain.model.ChatbotResponse
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.chatbot.ChatbotUiState
@@ -136,11 +137,12 @@ class ChatbotFragmentTests {
         lateinit var navController: NavController
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitDestination(scenario, NavGraph.Destinations.HOME)
             scenario.onActivity { activity ->
                 navController = activity.binding.navHostFragment.findNavController()
                 navController.navigate(NavGraph.Destinations.CHATBOT)
             }
-
+            awaitDestination(scenario, NavGraph.Destinations.CHATBOT)
             test(navController)
         }
     }

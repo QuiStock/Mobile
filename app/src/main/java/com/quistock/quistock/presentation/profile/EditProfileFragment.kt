@@ -10,9 +10,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentEditProfileBinding
 import com.quistock.quistock.presentation.activity.SessionViewModel
-import com.quistock.quistock.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -28,6 +28,8 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentEditProfileBinding.bind(view)
         binding.profileEmailInput.keyListener = null
+        binding.profileEmailInput.isFocusable = false
+        binding.profileEmailInput.isFocusableInTouchMode = false
         val renderer = EditProfileRenderer(binding, model.uploadAvailable) { sessionModel.photoBytes() }
         sources.cleanInterruptedCamera()
         binding.profileFullNameInput.doAfterTextChanged { model.rename(it.toString()) }
@@ -35,9 +37,12 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         binding.profileSaveChangesButton.setOnClickListener { model.save() }
         binding.profileCancelButton.setOnClickListener { leave() }
         binding.editProfileBackControl.setOnClickListener { leave() }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = leave()
-        })
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() = leave()
+            },
+        )
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collectLatest { state ->
