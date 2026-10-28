@@ -27,6 +27,18 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Navegação inferior por cargo implementada em 28/10/2026 conforme
+  `specs/role-based-bottom-navigation.md`: barra compartilhada na Activity normal,
+  quatro abas para EMPLOYEE e Funcionários adicional para MANAGER; destinos,
+  histórico de retorno à aba anterior, confirmação de saída na Home, ocultação
+  com teclado e estado de busca/rolagem em memória por geração da sessão.
+  Chatbot usa ViewModel da Activity com conversa em memória, preservada entre
+  abas/recriação e descartada na expiração/logout/troca de geração. Demo mantém
+  sua navegação e seus layouts. Testes unitários/instrumentados escritos e mocks
+  do Chatbot adaptados; nenhuma execução, build ou validação pelo agente, por
+  instrução do solicitante. Compilação, gates e checks de acessibilidade/visual
+  aguardam os relatórios e a rodada manual do solicitante.
+
 - Edição do próprio perfil implementada em 28/10/2026 conforme `specs/profile-edit.md`:
   PATCH parcial e conferência de resultado incerto, rascunho em ViewModel, galeria/câmera,
   preparo JPEG com orientação e upload unsigned isolado Cloudinary. Configuração pública usa
