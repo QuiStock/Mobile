@@ -180,6 +180,40 @@ não evidência de execução. Nenhum teste, validação, Gradle, build, upload 
 implantado foi executado nesta implementação. Cobertura e conformidade dos gates não foram
 medidas; aguardam os relatórios do solicitante. Nenhum dado remoto foi alterado.
 
+## Ampliação de cobertura após relatório combinado — 28/10/2026
+
+O XML de `jacocoTestReport`, produzido pelo solicitante através de
+`jacocoTestCoverageVerification`, registra 2.587/3.193 linhas (81,0%) e 1.421/2.176
+branches (65,3%). O limite de linhas foi atingido; o de branches permanece abaixo
+dos 70%. Esses números descrevem a execução recebida, antes dos novos testes abaixo.
+
+Foram acrescentados testes de comportamento para:
+
+- AC-02/AC-06/AC-07/AC-09: envelopes Cloudinary inválidos, limites, URL insegura,
+  multipart sem credenciais, IDs novos, rate limit, falha de rede, cancelamento da
+  chamada, estados HTTP Core e preservação da classificação de resultado incerto.
+- AC-03/AC-04: download limitado mesmo sem Content-Length, placeholders em falhas,
+  validação de contêineres truncados, cache de foto invalidado mesmo com URL igual
+  e descarte de download concluído após substituição do perfil.
+- AC-01/AC-05/AC-08/AC-10: seleção concorrente, rascunho preservado ao falhar preparo,
+  origem inacessível, confirmação que bloqueia nova edição, rate limit sem envio
+  automático, geração divergente, descarte e limpeza do temporário privado.
+- AC-03/AC-07/AC-11: instrumentados de renderização dos estados de progresso/erro,
+  nome inválido, conferência pendente e configuração ausente; opções de câmera,
+  galeria e remoção são verificadas sem abrir apps externos.
+
+Os transportes de upload/download receberam construtores internos com dependência
+de transporte substituível. Os construtores públicos continuam criando os mesmos
+clientes isolados e políticas de segurança; não houve alteração de contrato remoto.
+Os testes de transporte usam respostas sintéticas, sem sockets ou escrita remota.
+Os novos instrumentados usam a fixture autenticada, restauração dos bindings Koin
+e espera explícita pelo destino; não usam sleeps nem aplicativos de câmera reais.
+
+Nenhuma regra de cobertura, exclusão ou gate foi alterado. Nenhum teste, build,
+formatador ou validação foi executado pelo agente. O novo percentual combinado só
+poderá ser informado após o solicitante repetir `jacocoTestCoverageVerification`;
+não se afirma que o gate passou com base apenas na escrita dos testes.
+
 ## Revisão normativa — Core 3.0.0 e Cloudinary, 26/10/2026
 
 ### Correções após relatórios do solicitante — 28/10/2026
