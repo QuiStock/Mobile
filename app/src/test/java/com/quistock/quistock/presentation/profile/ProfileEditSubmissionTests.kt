@@ -25,7 +25,14 @@ class ProfileEditSubmissionTests {
     private val editor = mockk<EditProfileUseCase>()
     private val photos = mockk<EditProfilePhotoUseCase>()
     private val original = UserProfile(
-        "1", "Fixture", "fixture@example.test", UserRole.EMPLOYEE, UserStatus.ACTIVE, null, 1, "Store",
+        "1",
+        "Fixture",
+        "fixture@example.test",
+        UserRole.EMPLOYEE,
+        UserStatus.ACTIVE,
+        null,
+        1,
+        "Store",
     )
     private val jpeg = byteArrayOf(1, 2)
     private val state = MutableStateFlow(EditProfileState(original, photo = ProfileEditPhoto(jpeg)))

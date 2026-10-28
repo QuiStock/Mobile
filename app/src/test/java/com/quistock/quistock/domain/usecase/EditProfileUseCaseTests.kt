@@ -3,12 +3,12 @@ package com.quistock.quistock.domain.usecase
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.ProfileChanges
 import com.quistock.quistock.domain.model.ProfileEditResult
-import com.quistock.quistock.domain.model.profileNameError
 import com.quistock.quistock.domain.model.ProfileResult
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.model.UserStatus
+import com.quistock.quistock.domain.model.profileNameError
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ProfileEditRepository
 import com.quistock.quistock.domain.port.ProfileRepository
@@ -16,8 +16,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.async
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -35,7 +35,14 @@ class EditProfileUseCaseTests {
     private val edit = EditProfileUseCase(writer, reader, profile, photos, session)
 
     private fun user(name: String = "Fixture") = UserProfile(
-        "fixture", name, "fixture@example.test", UserRole.EMPLOYEE, UserStatus.ACTIVE, null, 1, "Store",
+        "fixture",
+        name,
+        "fixture@example.test",
+        UserRole.EMPLOYEE,
+        UserStatus.ACTIVE,
+        null,
+        1,
+        "Store",
     )
 
     private suspend fun ready() {
