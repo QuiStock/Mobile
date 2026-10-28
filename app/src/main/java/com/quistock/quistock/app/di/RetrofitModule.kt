@@ -1,7 +1,6 @@
 package com.quistock.quistock.app.di
 
 import android.content.Context
-import com.quistock.quistock.R
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
@@ -11,7 +10,10 @@ import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
 import com.quistock.quistock.data.remote.core.HttpProfilePhotoRepository
 import com.quistock.quistock.data.remote.core.PriorityAlertsApi
 import com.quistock.quistock.data.remote.core.ProfileApi
+import com.quistock.quistock.data.remote.core.ProfileEditApi
+import com.quistock.quistock.data.remote.core.ProfileWriteAttempt
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
+import com.quistock.quistock.data.remote.core.RetrofitProfileEditRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
@@ -20,9 +22,11 @@ import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
+import com.quistock.quistock.domain.port.ProfileEditRepository
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
+import com.quistock.quistock.R
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -31,12 +35,12 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.QualifierValue
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.Retrofit
 
 private object LegacyChatbotApi : Qualifier {
     override val value: QualifierValue get() = "api-legacy-chatbot"
@@ -57,6 +61,14 @@ val retrofitSdkModule = module {
 }
 
 val retrofitModule = module {
+    single<ProfileEditApi> {
+        Retrofit.Builder()
+            .baseUrl(get<Context>().getString(R.string.core_base_url))
+            .client(get<OkHttpClient>(named("CoreHttpClient")))
+            .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
+            .build().create(ProfileEditApi::class.java)
+    }
+    single<ProfileEditRepository> { RetrofitProfileEditRepository(get()) }
     single<PriorityAlertsApi> {
         Retrofit.Builder()
             .baseUrl(get<Context>().getString(R.string.core_base_url))
@@ -118,7 +130,19 @@ internal fun createCoreHttpClient(
     logger: Logger? = null,
 ): OkHttpClient = OkHttpClient.Builder()
     .cookieJar(CookieJar.NO_COOKIES)
+    .addInterceptor { chain ->
+        val request = chain.request()
+        val tagged = if (request.method == "PATCH") {
+            request.newBuilder().tag(ProfileWriteAttempt::class.java, ProfileWriteAttempt()).build()
+        } else {
+            request
+        }
+        chain.proceed(tagged)
+    }
     .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
+    .addNetworkInterceptor { chain ->
+        chain.request().tag(ProfileWriteAttempt::class.java)?.send(chain) ?: chain.proceed(chain.request())
+    }
     .retryOnConnectionFailure(false)
     .followRedirects(false)
     .followSslRedirects(false)
