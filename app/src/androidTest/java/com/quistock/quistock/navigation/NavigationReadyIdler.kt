@@ -15,14 +15,14 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import com.quistock.quistock.R
 import com.quistock.quistock.presentation.activity.MainActivity
+import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 
 /** All lifecycle/View reads and listener installation/removal happen on the main thread. */
 internal class NavigationReadyIdler(
     private val activity: MainActivity,
     private val destination: Int,
     private val condition: (MainActivity) -> Boolean,
-) :
-    FragmentManager.FragmentLifecycleCallbacks(),
+) : FragmentManager.FragmentLifecycleCallbacks(),
     IdlingResource,
     AutoCloseable {
     private val host = activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -42,8 +42,11 @@ internal class NavigationReadyIdler(
         val entry = host.navController.currentBackStackEntry
         val fragment = host.childFragmentManager.findFragmentByTag(entry?.id)
         val resumed = fragment?.lifecycle?.currentState == Lifecycle.State.RESUMED
-        val laidOut = fragment?.view?.isLaidOut == true
-        val ready = host.navController.currentDestination?.id == destination && resumed && laidOut
+        val view = fragment?.view
+        val laidOut = view?.run { isLaidOut && isShown } == true
+        val uncovered = view?.findViewWithTag<android.view.View>(SkeletonLoadingScreen.OVERLAY_TAG) == null
+        val settled = resumed && laidOut && uncovered
+        val ready = host.navController.currentDestination?.id == destination && settled
         return ready && condition(activity)
     }
 

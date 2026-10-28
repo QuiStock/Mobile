@@ -32,6 +32,8 @@ enum class SkeletonScreenType {
 
 /** Adds a short, non-interactive loading skeleton over an existing destination. */
 object SkeletonLoadingScreen {
+    const val OVERLAY_TAG = "screen_loading_overlay"
+
     @Volatile
     var enabled: Boolean = true
 
@@ -72,6 +74,7 @@ private class SkeletonOverlay(context: Context, type: SkeletonScreenType) : Fram
     }
 
     init {
+        tag = SkeletonLoadingScreen.OVERLAY_TAG
         setBackgroundColor(SCREEN_COLOR)
         isClickable = true
         isFocusable = true

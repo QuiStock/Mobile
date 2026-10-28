@@ -16,6 +16,7 @@ import androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,6 +32,7 @@ import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -87,7 +89,8 @@ class ChatbotFragmentTests {
 
         onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
-        onView(withText(message)).check(matches(isDisplayed()))
+        onView(allOf(withText(message), withParent(withId(R.id.containerMensagens))))
+            .check(matches(isDisplayed()))
         verify(exactly = 1) { viewModel.sendMessage(message) }
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -137,7 +140,8 @@ class ChatbotFragmentTests {
         val message = "Mensagem anterior"
         onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
-        onView(withText(message)).check(matches(isDisplayed()))
+        onView(allOf(withText(message), withParent(withId(R.id.containerMensagens))))
+            .check(matches(isDisplayed()))
 
         onView(withId(R.id.btnMenuChatbot)).perform(click())
         onView(withId(R.id.btnNewChat)).perform(click())

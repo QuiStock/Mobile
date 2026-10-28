@@ -1,6 +1,5 @@
 package com.quistock.quistock.order
 
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -16,9 +15,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
 import com.quistock.quistock.app.navigation.NavGraph
+import com.quistock.quistock.awaitDestination
 import com.quistock.quistock.presentation.activity.MainActivity
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.`is`
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,18 +37,18 @@ class OrderAndPromotionFragmentTests {
 
     @Test
     fun orderForm_withRequiredFields_shouldConfirmSubmission() =
-        runInstrumented(NavGraph.Destinations.ORDER) { navController ->
+        runInstrumented(NavGraph.Destinations.ORDER) { scenario ->
             onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
             onView(withId(R.id.etOrderDate)).perform(scrollTo(), replaceText("15 ago"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
                 .check(matches(withText(R.string.popup_order_confirm)))
             onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
-            assertDestination(navController, NavGraph.Destinations.ORDER)
+            awaitDestination(scenario, NavGraph.Destinations.ORDER)
 
             onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
-            assertDestination(navController, NavGraph.Destinations.ORDER_SENT)
+            awaitDestination(scenario, NavGraph.Destinations.ORDER_SENT)
         }
 
     @Test
@@ -66,34 +64,28 @@ class OrderAndPromotionFragmentTests {
 
     @Test
     fun promotionForm_withRequiredFields_shouldConfirmSubmission() =
-        runInstrumented(NavGraph.Destinations.PROMOTION) { navController ->
+        runInstrumented(NavGraph.Destinations.PROMOTION) { scenario ->
             onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
             onView(withId(R.id.etPromotionDuration)).perform(scrollTo(), replaceText("3"), closeSoftKeyboard())
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
                 .check(matches(withText(R.string.popup_promotion_confirm)))
             onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
-            assertDestination(navController, NavGraph.Destinations.PROMOTION)
+            awaitDestination(scenario, NavGraph.Destinations.PROMOTION)
 
             onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
             onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
-            assertDestination(navController, NavGraph.Destinations.PROMO_SENT)
+            awaitDestination(scenario, NavGraph.Destinations.PROMO_SENT)
         }
 
-    private fun runInstrumented(destinationId: Int, test: (NavController) -> Unit) {
-        lateinit var navController: NavController
-
+    private fun runInstrumented(destinationId: Int, test: (ActivityScenario<MainActivity>) -> Unit) {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitDestination(scenario, NavGraph.Destinations.HOME)
             scenario.onActivity { activity ->
-                navController = activity.binding.navHostFragment.findNavController()
-                navController.navigate(destinationId)
+                activity.binding.navHostFragment.findNavController().navigate(destinationId)
             }
-
-            test(navController)
+            awaitDestination(scenario, destinationId)
+            test(scenario)
         }
-    }
-
-    private fun assertDestination(navController: NavController, destinationId: Int) {
-        assertThat(navController.currentDestination?.id, `is`(destinationId))
     }
 }
