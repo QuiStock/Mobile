@@ -1,9 +1,15 @@
 # Editar o próprio perfil e adicionar foto
 
-**Status:** Ready for implementation — decisões fechadas; implementação não iniciada  
+**Status:** Implemented — aguardando validações do solicitante  
 **Issue:** none  
 **Product decision owner:** solicitante  
-**Data:** 25/10/2026; revisada em 26/10/2026
+**Data:** 25/10/2026; implementação autorizada e registrada em 28/10/2026
+
+> A solicitação de implementação de 28/10/2026 autoriza o código Mobile descrito abaixo.
+> As referências históricas desta spec à entrega exclusivamente documental e à implementação
+> futura descrevem a preparação de 25–26/10 e não restringem esta autorização posterior.
+> O solicitante determinou não executar testes ou validações nesta entrega; execução Red–Green,
+> build, qualidade, instrumentação e relatórios ficam pendentes para sua rodada de validação.
 
 ## Problema e objetivo
 
@@ -125,7 +131,50 @@ Para fechar um item, registrar decisão, autor/fonte e data, atualizar fluxo e c
 
 ## Resultado da implementação
 
-Não iniciada. Entrega documental de 25–26/10/2026: esta spec, revisada após leitura do repositório remoto pelo conector GitHub e documentação oficial Cloudinary. Testes, Gradle, build, upload, chamadas ao Core implantado e validação visual não foram executados. Nenhum dado remoto foi alterado. Todos os pontos de decisão estão fechados; provisionamento Cloudinary e verificações práticas ainda não foram realizados.
+Implementação Mobile escrita em 28/10/2026: PATCH parcial, publicação do UserDTO na geração
+atual, invalidação da foto compartilhada, edição com ViewModel, recuperação por conferência,
+upload unsigned isolado, galeria/câmera e preparo de JPEG. A barreira de sessão permanece
+prioritária; chamadas PATCH carregam a geração esperada antes de obter credenciais.
+Follow-ups HTTP implícitos são bloqueados, preservando apenas a repetição Core após 401.
+
+Rascunho e seleção não entram no SavedStateHandle nem no estado salvo dos inputs. Câmera usa
+FileProvider restrito ao cache privado; arquivos são removidos após leitura/cancelamento,
+descarte, encerramento do ViewModel e invalidação, com limpeza de resíduos na abertura.
+AndroidX ExifInterface 1.4.2 fornece leitura de orientação uniforme para os formatos aceitos;
+os pixels são recodificados sem transportar os metadados de entrada.
+
+Configuração de build: `CLOUDINARY_CLOUD_NAME` e `CLOUDINARY_UPLOAD_PRESET`, ambas opcionais.
+Não há chave secreta no cliente. Provisionar o preset exclusivo unsigned conforme O-03 antes
+do teste integrado; ausência de configuração mantém nome e remoção disponíveis. O app usa
+IDs aleatórios novos, não exclui ativos remotos e não configura o preset por conta própria.
+Documentação consultada: [Upload API](https://cloudinary.com/documentation/image_upload_api_reference)
+e [AndroidX ExifInterface](https://developer.android.com/jetpack/androidx/releases/exifinterface).
+Descoberta pública Orbit indisponível nesta sessão; o contrato aprovado e a documentação
+oficial orientaram a integração, sem alterações de contrato ou chamadas de escrita remotas.
+
+### Rastreabilidade da implementação (testes escritos, não executados)
+
+| Critérios | Evidência preparada / pendência |
+| --- | --- |
+| AC-01, AC-02 | `EditProfileViewModelTests`, `ProfileEditContractTests`, `EditProfileUseCaseTests`: rascunho, validação, omissão de campos e remoção vazia; instrumentado verifica e-mail sem foco de edição. |
+| AC-03 | `StaticProfileImageTests` e `ProfileImagePreparationTests`: contêineres animados, limites, PNG, JPEG e orientação/metadados. Seletores, cancelamento, WebP real e permissões dependem de check manual com apps de mídia/câmera do dispositivo. |
+| AC-04 | `EditProfileUseCaseTests` verifica publicação compartilhada sem GET adicional; `ProfileEditNavigationTests` verifica conclusão e retorno. Headers e avatar padrão em falha de download permanecem check visual manual. |
+| AC-05 | `EditProfileViewModelTests` bloqueia submissão/edição concorrente; `ProfileEditNavigationTests` mantém PATCH suspenso explicitamente durante recriação. |
+| AC-06 | `ProfileEditSubmissionTests`, `EditProfileUseCaseTests` e `ProfileEditContractTests`: upload falho, reutilização da URL, resposta perdida/incompatível, coincidência/divergência e nova conferência sem PATCH. |
+| AC-07 | Testes de contrato distinguem 403/resultado incerto; testes de submissão cobrem prazo 429. `ProfileWriteAttemptTests` cobre bloqueio de follow-up 503 e limite da repetição 401. Recuperação integrada de Auth e HTTP reais permanece pendente. |
+| AC-08 | Testes de ViewModel e caso de uso controlam resposta atrasada e encerramento da sessão. Troca de conta em dispositivo durante câmera/upload exige check manual. |
+| AC-09 | Cliente Cloudinary próprio sem interceptador Core, cookies, redirects, cache ou logger; DTO restrito. Inspeção integrada de headers/logs/arquivos permanece manual, pois exige ambiente e dispositivo autorizados. |
+| AC-10 | Instrumentado cobre confirmação de descarte e conservação do rascunho após rotação; equivalência Cancelar/Voltar/gesto usa o mesmo handler. Gesto e descarte sem alterações ficam também no roteiro manual. |
+| AC-11 | Check manual com TalkBack, fonte ampliada e teclado, justificado pela UI de sistema e apresentação assistiva. Labels e região de progresso/erros foram adicionados. |
+| AC-12 | Check manual em homologação com conta de teste: reabrir nova sessão e conferir persistência, e-mail e enum; nenhum dado real utilizado nesta entrega. |
+| AC-13, AC-14 | `ProfileWriteAttemptTests` verifica ausência de configuração; IDs/URL novos e ausência de exclusão estão no transporte. Provisionamento, retenção e concorrência real ficam no check manual Cloudinary/Core. |
+
+Os instrumentados usam respostas suspensas e um IdlingResource de destino, com registro e
+remoção explícitos e restauração dos bindings Koin após cada cenário. Não usam sleeps para
+aguardar navegação nem leem Views fora da thread principal. Isso é estratégia escrita,
+não evidência de execução. Nenhum teste, validação, Gradle, build, upload ou chamada ao Core
+implantado foi executado nesta implementação. Cobertura e conformidade dos gates não foram
+medidas; aguardam os relatórios do solicitante. Nenhum dado remoto foi alterado.
 
 ## Revisão normativa — Core 3.0.0 e Cloudinary, 26/10/2026
 

@@ -6,8 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentProfileBinding
+import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.R
 
 class ProfileFragment : Fragment() {
     private var binding: FragmentProfileBinding? = null
@@ -19,6 +20,14 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        findNavController().currentBackStackEntry?.savedStateHandle
+            ?.getLiveData<Boolean>("profile_updated")?.observe(viewLifecycleOwner) { updated ->
+                if (updated) {
+                    PopupFeedback.showStatus(view, getString(R.string.profile_updated), isError = false)
+                    findNavController().currentBackStackEntry?.savedStateHandle?.remove<Boolean>("profile_updated")
+                }
+            }
 
         binding?.profileEditButton?.setOnClickListener {
             findNavController().navigate(R.id.editProfileFragment)

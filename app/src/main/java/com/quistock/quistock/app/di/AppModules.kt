@@ -16,6 +16,7 @@ val appInternalModule = module {
         observabilityModule,
         preferencesModule,
         retrofitModule,
+        profileEditModule,
     )
 }
 

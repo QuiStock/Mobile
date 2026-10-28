@@ -25,6 +25,14 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Edição do próprio perfil implementada em 28/10/2026 conforme `specs/profile-edit.md`:
+  PATCH parcial e conferência de resultado incerto, rascunho em ViewModel, galeria/câmera,
+  preparo JPEG com orientação e upload unsigned isolado Cloudinary. Build usa
+  `CLOUDINARY_CLOUD_NAME` e `CLOUDINARY_UPLOAD_PRESET`; sem configuração, nome/remoção
+  continuam disponíveis. Testes unitários/instrumentados escritos; nenhuma execução,
+  build ou validação por orientação expressa do solicitante. Provisionamento do preset,
+  integração real e acessibilidade visual/assistiva aguardam sua rodada de validação.
+
 - Home integra alertas Core via `/branches`, `/products` e `/flows`, com seleção no domínio e estados no ViewModel. Correção de 25/10/2026 usa estoque BigDecimal com até três casas efetivas e exibição sem unidade; cada produto consolida lotes por produto/loja. Histórico é selecionado pelo maior instante analysis_date, sem afirmar vigência; datas inválidas/ausentes ou empate ambíguo são incompatíveis. Validade usa produto e continua excluindo negativos, com possível ocultação de saldo válido aceita pelo solicitante. LOW mostra “Risco de excesso ou vencimento”; MEDIUM próximo da validade não tem promoção. Avisos de conferência ERP na Home e detalhes são exclusivos para MANAGER Ready da sessão ativa/geração atual, pelo binding compartilhado; nenhum timestamp foi inventado para detalhes sem solicitação real. Envios/aprovações remotas e auditoria seguem fora do escopo, sem simular confirmação registrada. Core autoriza por loja segundo seu responsável; fuso de negócio e permissão de aprovação de funcionário continuam pendências backend. Testes unitários/instrumentados escritos, sem execução, build, Gradle ou outras validações por instrução do solicitante. Ver `specs/home-priority-alerts.md`.
 
 | Topic | Source |
