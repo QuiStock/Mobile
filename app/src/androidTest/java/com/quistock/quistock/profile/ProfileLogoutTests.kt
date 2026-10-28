@@ -11,41 +11,33 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
-import com.quistock.quistock.domain.model.AuthResult
+import com.quistock.quistock.awaitDestination
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.LogoutRequest
-import com.quistock.quistock.domain.port.StoredSession
-import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.core.context.GlobalContext
 
 @RunWith(AndroidJUnit4::class)
 class ProfileLogoutTests {
     private val auth = mockk<AuthRepository>(relaxed = true)
+    @get:Rule val authenticatedSession = AuthenticatedSessionRule(auth = auth)
     private val remote = CompletableDeferred<Boolean>()
 
     @Before fun setup() {
-        coEvery { auth.restore(any()) } returns StoredSession.AVAILABLE
-        coEvery { auth.refresh(any()) } returns AuthResult.Success
-        every { auth.hasAccess(any()) } returns true
         every { auth.prepareLogout(any()) } returns LogoutRequest { remote.await() }
-        val session = SessionUseCase(auth)
-        runBlocking { session.restore() }
-        GlobalContext.get().declare(session, allowOverride = true)
     }
 
     @Test fun cancellingConfirmationPreservesSessionWithoutCallingLogout() {
@@ -65,6 +57,7 @@ class ProfileLogoutTests {
             openProfile(scenario)
             scenario.onActivity { assertEquals(R.id.profileFragment, nav(it).currentDestination?.id) }
             onView(withId(R.id.profile_back_control)).perform(click())
+            awaitDestination(scenario, R.id.homeFragment)
             scenario.onActivity { assertEquals(R.id.homeFragment, nav(it).currentDestination?.id) }
         }
     }
@@ -83,6 +76,7 @@ class ProfileLogoutTests {
             }
             onView(withText(R.string.logout_progress)).inRoot(isDialog()).check(matches(isDisplayed()))
             scenario.onActivity { remote.complete(false) }
+            awaitDestination(scenario, R.id.loginFragment)
             onView(withText(R.string.logout_remote_warning_message)).inRoot(isDialog()).check(matches(isDisplayed()))
             onView(withText(R.string.logout_understood)).inRoot(isDialog()).perform(click())
             scenario.onActivity {
@@ -95,10 +89,9 @@ class ProfileLogoutTests {
     }
 
     private fun openProfile(scenario: ActivityScenario<MainActivity>) {
-        scenario.onActivity {
-            nav(it).navigate(R.id.homeFragment)
-        }
+        awaitDestination(scenario, R.id.homeFragment)
         onView(withId(R.id.btnPerfil)).perform(click())
+        awaitDestination(scenario, R.id.profileFragment)
     }
 
     private fun nav(activity: MainActivity) =
