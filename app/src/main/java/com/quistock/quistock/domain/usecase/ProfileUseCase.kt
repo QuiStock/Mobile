@@ -11,9 +11,9 @@ import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.ProfileRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -30,6 +30,21 @@ class ProfileUseCase(
 
     @Volatile private var generation: Long? = null
     private var pending: Pair<Long, CompletableDeferred<Unit>>? = null
+
+    suspend fun publishEdit(
+        profile: UserProfile,
+        expected: SessionSnapshot,
+        invalidatePhoto: () -> Unit,
+    ): Boolean = session.withCurrentSession(expected) {
+        val current = state.value as? ProfileState.Ready
+        val valid = current != null && current.generation == expected.generation && current.profile.id == profile.id
+        val accepted = valid && profile.rejection() == null
+        if (accepted) {
+            invalidatePhoto()
+            mutableState.value = ProfileState.Ready(expected.generation, profile)
+        }
+        accepted
+    }
 
     fun clear() {
         generation = null

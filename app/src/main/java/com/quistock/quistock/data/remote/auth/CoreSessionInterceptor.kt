@@ -43,6 +43,8 @@ class CoreSessionInterceptor(
         // A failed renewal waits for explicit recovery; background calls cannot retry it.
         requireHealthySession()
         val initial = session.snapshot()
+        val expected = request.tag(SessionSnapshot::class.java)
+        if (expected != null && expected.generation != initial.generation) throw SessionException()
         diagnostics.sessionInspected(initial)
         val current = if (!initial.hasAccess || session.state.value is SessionState.Failure) {
             renew(initial, "access_unavailable", diagnostics)
