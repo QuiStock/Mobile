@@ -42,6 +42,13 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
   Chatbot com o IdlingResource de navegação compartilhado. Sem nova execução de
   testes/validações pelo agente; confirmação aguarda a próxima rodada do solicitante.
 
+- Rodada combinada JaCoCo recebida em 28/10/2026: 81,0% de linhas e 65,3% de
+  branches, abaixo do mínimo de branches. Testes adicionais de upload/download,
+  cache, erros/concorrência do editor e renderização/opções de foto foram escritos.
+  Transportes aceitam dependências internas substituíveis, preservando os clientes
+  públicos isolados. Sem execução pelo agente e sem alterar gates/exclusões;
+  novo percentual depende de outra execução do solicitante. Ver `profile-edit.md`.
+
 - Home integra alertas Core via `/branches`, `/products` e `/flows`, com seleção no domínio e estados no ViewModel. Correção de 25/10/2026 usa estoque BigDecimal com até três casas efetivas e exibição sem unidade; cada produto consolida lotes por produto/loja. Histórico é selecionado pelo maior instante analysis_date, sem afirmar vigência; datas inválidas/ausentes ou empate ambíguo são incompatíveis. Validade usa produto e continua excluindo negativos, com possível ocultação de saldo válido aceita pelo solicitante. LOW mostra “Risco de excesso ou vencimento”; MEDIUM próximo da validade não tem promoção. Avisos de conferência ERP na Home e detalhes são exclusivos para MANAGER Ready da sessão ativa/geração atual, pelo binding compartilhado; nenhum timestamp foi inventado para detalhes sem solicitação real. Envios/aprovações remotas e auditoria seguem fora do escopo, sem simular confirmação registrada. Core autoriza por loja segundo seu responsável; fuso de negócio e permissão de aprovação de funcionário continuam pendências backend. Testes unitários/instrumentados escritos, sem execução, build, Gradle ou outras validações por instrução do solicitante. Ver `specs/home-priority-alerts.md`.
 
 | Topic | Source |
