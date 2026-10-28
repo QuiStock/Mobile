@@ -202,14 +202,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        resValue(
-            "string", "profile_cloudinary_cloud",
-            providers.environmentVariable("CLOUDINARY_CLOUD_NAME").orElse("").get(),
-        )
-        resValue(
-            "string", "profile_cloudinary_preset",
-            providers.environmentVariable("CLOUDINARY_UPLOAD_PRESET").orElse("").get(),
-        )
     }
 
     buildTypes {

@@ -7,7 +7,9 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 - `QuiStock` is an Android project with one Gradle module, `:app`, Kotlin, Java 17, Views/XML, ViewBinding, and the `com.quistock.quistock` package.
 - The README describes Clean Architecture with MVVM and the dependency direction `presentation -> domain <- data`. The current structure uses `domain/port` and Koin dependency injection; follow the existing code where the guide is illustrative.
 - The code includes login, personal registration, home, and chatbot areas. Login uses the DS_Auth contract through `RetrofitAuthRepository` and `SessionUseCase`, with isolated response-cookie capture, generation-checked commits and encrypted refresh persistence. For the CSRF correction, root routes on the same HTTPS Auth origin and compatible cookie attributes were confirmed by the requester; real deployment smoke verification remains pending. The chatbot uses a use case and a Retrofit repository for an internal API. These files do not establish that the product flows are complete.
-- The backend URL comes from `BACKEND_BASE_URL` in the build process. `.env.example` explains its format; Gradle does not load `.env` automatically. A dummy URL is used when the variable is absent. Do not record private endpoints in specs.
+- Public Auth/Core URLs come from `auth_base_url` and `core_base_url` in
+  `app/src/main/res/values/config.xml`. Cloudinary public configuration uses that file too;
+  Gradle does not load `.env` automatically. Do not record private endpoints in specs.
 - There are unit tests for domain, ViewModel, dependency injection, and infrastructure, plus an instrumented login test. Their presence does not imply complete coverage of every flow.
 
 - The cancelled indicator branch is no longer part of the login stack. Home retains main's static layout; SessionUseCase has no indicator/cache dependency. Login retains the Logger/Logcat adapter used for safe diagnostics.
@@ -27,8 +29,9 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 - Edição do próprio perfil implementada em 28/10/2026 conforme `specs/profile-edit.md`:
   PATCH parcial e conferência de resultado incerto, rascunho em ViewModel, galeria/câmera,
-  preparo JPEG com orientação e upload unsigned isolado Cloudinary. Build usa
-  `CLOUDINARY_CLOUD_NAME` e `CLOUDINARY_UPLOAD_PRESET`; sem configuração, nome/remoção
+  preparo JPEG com orientação e upload unsigned isolado Cloudinary. Configuração pública usa
+  `profile_cloudinary_cloud` e `profile_cloudinary_preset` em `res/values/config.xml`;
+  sem configuração, nome/remoção
   continuam disponíveis. Testes unitários/instrumentados escritos; nenhuma execução,
   build ou validação por orientação expressa do solicitante. Provisionamento do preset,
   integração real e acessibilidade visual/assistiva aguardam sua rodada de validação.

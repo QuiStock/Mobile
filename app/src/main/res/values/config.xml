@@ -15,4 +15,7 @@
     <string name="core_base_url" translatable="false">
         https://api-core-49tp.onrender.com
     </string>
+    <!-- Public unsigned-upload configuration. Keep empty until the preset is provisioned. -->
+    <string name="profile_cloudinary_cloud" translatable="false"></string>
+    <string name="profile_cloudinary_preset" translatable="false"></string>
 </resources>
