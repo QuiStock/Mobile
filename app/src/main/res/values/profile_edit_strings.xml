@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_name_required">Informe seu nome.</string>
+    <string name="profile_name_too_long">Use até 150 caracteres no nome.</string>
+    <string name="profile_email_readonly">O e-mail não pode ser alterado por aqui.</string>
+    <string name="profile_discard_title">Descartar alterações?</string>
+    <string name="profile_continue_editing">Continuar editando</string>
+    <string name="profile_discard">Descartar</string>
+    <string name="profile_uploading">Enviando foto…</string>
+    <string name="profile_saving">Salvando perfil…</string>
+    <string name="profile_preparing">Preparando foto…</string>
+    <string name="profile_checking">Conferindo salvamento…</string>
+    <string name="profile_upload_failed">Não foi possível enviar sua foto. Tente novamente.</string>
+    <string name="profile_edit_failed">Não foi possível salvar seu perfil. Tente novamente.</string>
+    <string name="profile_edit_invalid">Revise os dados do perfil e tente novamente.</string>
+    <string name="profile_edit_uncertain">Não foi possível confirmar o salvamento.</string>
+    <string name="profile_check_again">Conferir salvamento</string>
+    <string name="profile_image_format">Escolha uma imagem JPEG, PNG ou WebP estática.</string>
+    <string name="profile_image_too_large">Escolha uma imagem de até 10 MiB.</string>
+    <string name="profile_image_preparation">Não foi possível preparar essa imagem. Escolha outra.</string>
+    <string name="profile_gallery_unavailable">Não foi possível abrir a galeria. Use outra opção.</string>
+    <string name="profile_camera_unavailable">Não foi possível abrir a câmera. Use outra opção.</string>
+    <string name="profile_permission">Permita o acesso nas configurações ou escolha outra opção.</string>
+    <string name="profile_upload_unavailable">O envio de fotos está indisponível nesta versão.</string>
+    <string name="profile_updated">Perfil atualizado.</string>
+    <string name="profile_choose_gallery">Escolher da galeria</string>
+    <string name="profile_take_photo">Tirar foto</string>
+    <string name="profile_remove_photo">Remover foto</string>
+    <string name="profile_open_settings">Abrir configurações</string>
+</resources>

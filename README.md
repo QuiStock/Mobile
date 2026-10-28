@@ -172,6 +172,15 @@ payload, account/store field, exception message or stack trace. See
 
 ### Tests
 
+Profile editing uses partial `PATCH /profile` requests and keeps the draft only in its
+ViewModel. Unsigned photo upload uses the optional build environment variables
+`CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_UPLOAD_PRESET`. Provision a dedicated unsigned
+preset accepting JPEG up to 2 MiB, unique assets without overwrite and public HTTPS
+delivery. Never configure an API secret in the app. Without these variables, name edits
+and removal of an existing photo remain available. Old, removed and orphaned assets
+remain in Cloudinary for manual retention/cleanup. See
+[the editing specification](docs/sdd/specs/profile-edit.md) for recovery and pending checks.
+
 - Tests for use cases, ViewModels, repositories, and mappers belong in `app/src/test`, using the
   same package as the class under test.
 - Tests that depend on an `Activity`, `Fragment`, Android resources, or a device belong in

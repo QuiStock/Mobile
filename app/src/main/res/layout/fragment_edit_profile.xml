@@ -125,7 +125,8 @@
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
 
-                <ImageView android:tag="current_profile_photo"
+                <ImageView
+                    android:id="@+id/profile_edit_photo"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
                     android:importantForAccessibility="no"
@@ -133,7 +134,8 @@
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="40dp"
                     android:gravity="center"
                     android:text="@string/profile_change_photo"
                     android:textColor="@color/white"
@@ -144,14 +146,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
+                android:labelFor="@id/profile_full_name_input"
                 android:text="@string/profile_full_name_label"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 
-            <EditText android:tag="current_profile_name_input"
+            <EditText
                 android:id="@+id/profile_full_name_input"
+                android:saveEnabled="false"
+                android:importantForAutofill="no"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:layout_marginTop="6dp"
                 android:background="@drawable/bg_input_outline"
                 android:hint="@string/profile_full_name_hint"
@@ -168,29 +174,54 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="12dp"
+                android:labelFor="@id/profile_email_input"
                 android:text="@string/profile_email_label"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 
-            <EditText android:tag="current_profile_email_input"
+            <EditText
                 android:id="@+id/profile_email_input"
+                android:saveEnabled="false"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:importantForAutofill="no"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:layout_marginTop="6dp"
                 android:background="@drawable/bg_input_outline"
                 android:hint="@string/profile_email_hint"
-                android:inputType="textEmailAddress"
+                android:inputType="none"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:singleLine="true"
+                android:singleLine="false"
                 android:textColor="@color/white"
                 android:textColorHint="#805A8A"
                 android:textSize="13sp" />
 
             <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_email_readonly"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/profile_edit_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:accessibilityLiveRegion="polite"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <TextView
                 android:id="@+id/profile_save_changes_button"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
                 android:layout_marginTop="42dp"
                 android:background="@drawable/bg_card_active"
                 android:clickable="true"
@@ -204,7 +235,10 @@
             <TextView
                 android:id="@+id/profile_cancel_button"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
