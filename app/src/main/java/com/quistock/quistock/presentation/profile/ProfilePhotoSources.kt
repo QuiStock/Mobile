@@ -8,17 +8,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.R
+import com.quistock.quistock.presentation.common.PopupFeedback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
-internal class ProfilePhotoSources(
-    private val fragment: Fragment,
-    private val model: () -> EditProfileViewModel,
-) {
+internal class ProfilePhotoSources(private val fragment: Fragment, private val model: () -> EditProfileViewModel) {
     private val gallery = fragment.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { selected(it) }
     }
@@ -35,19 +32,28 @@ internal class ProfilePhotoSources(
         val state = model().state.value
         if (state.busy || state.pending != null) return
         val actions = intArrayOf(
-            R.string.profile_choose_gallery, R.string.profile_take_photo,
-            R.string.profile_remove_photo, R.string.profile_open_settings,
+            R.string.profile_choose_gallery,
+            R.string.profile_take_photo,
+            R.string.profile_remove_photo,
+            R.string.profile_open_settings,
         )
         AlertDialog.Builder(fragment.requireContext())
             .setItems(actions.map { fragment.getString(it) }.toTypedArray()) { _, index ->
-                when (index) {
-                    0 -> launch(R.string.profile_gallery_unavailable) { gallery.launch("image/*") }
-                    1 -> launchCamera()
-                    2 -> model().removePhoto()
-                    3 -> launch(R.string.profile_permission) {
+                when (actions[index]) {
+                    R.string.profile_choose_gallery -> launch(R.string.profile_gallery_unavailable) {
+                        gallery.launch("image/*")
+                    }
+
+                    R.string.profile_take_photo -> launchCamera()
+
+                    R.string.profile_remove_photo -> model().removePhoto()
+
+                    R.string.profile_open_settings -> launch(R.string.profile_permission) {
                         val context = fragment.requireContext()
-                        fragment.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            .setData(Uri.parse("package:${context.packageName}")))
+                        fragment.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                .setData(Uri.parse("package:${context.packageName}")),
+                        )
                     }
                 }
             }.show()

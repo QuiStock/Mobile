@@ -20,14 +20,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import java.net.HttpURLConnection
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 
-class CloudinaryPhotoRepository(
-    private val cloud: String,
-    private val preset: String,
-) : ProfilePhotoUploadRepository {
+class CloudinaryPhotoRepository(private val cloud: String, private val preset: String) : ProfilePhotoUploadRepository {
     override val available: Boolean = cloud.matches(Regex("[A-Za-z0-9_-]+")) && preset.isNotBlank()
     private val client = OkHttpClient.Builder()
         .cookieJar(CookieJar.NO_COOKIES)
@@ -86,7 +84,7 @@ class CloudinaryPhotoRepository(
         source?.request(MAX_RESPONSE_BYTES + 1)
         val size = minOf(source?.buffer?.size ?: 0, MAX_RESPONSE_BYTES + 1)
         val text = source?.readByteArray(size) ?: byteArrayOf()
-        val url = if (response.code != 200 || text.size > MAX_RESPONSE_BYTES) {
+        val url = if (response.code != HttpURLConnection.HTTP_OK || text.size > MAX_RESPONSE_BYTES) {
             null
         } else {
             val fields = Json.parseToJsonElement(text.toString(Charsets.UTF_8)).jsonObject
@@ -100,7 +98,11 @@ class CloudinaryPhotoRepository(
             }
         }
         return url?.let { ProfilePhotoUploadResult.Uploaded(it) } ?: ProfilePhotoUploadResult.Failed(
-            retryAfterMillis = if (response.code == 429) retryAfterMillis(response.header("Retry-After")) else 0,
+            retryAfterMillis = if (response.code == HTTP_TOO_MANY_REQUESTS) {
+                retryAfterMillis(response.header("Retry-After"))
+            } else {
+                0
+            },
         )
     }
 
@@ -115,5 +117,6 @@ class CloudinaryPhotoRepository(
         const val MAX_RESPONSE_BYTES = 64 * 1024L
         const val MAX_URL_LENGTH = 500
         const val UPLOAD_TIMEOUT_SECONDS = 60L
+        const val HTTP_TOO_MANY_REQUESTS = 429
     }
 }
