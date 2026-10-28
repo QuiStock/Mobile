@@ -202,6 +202,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue(
+            "string", "profile_cloudinary_cloud",
+            providers.environmentVariable("CLOUDINARY_CLOUD_NAME").orElse("").get(),
+        )
+        resValue(
+            "string", "profile_cloudinary_preset",
+            providers.environmentVariable("CLOUDINARY_UPLOAD_PRESET").orElse("").get(),
+        )
     }
 
     buildTypes {
@@ -249,6 +257,7 @@ tasks.configureEach {
 dependencies {
     // Android UI (Views and Material)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
