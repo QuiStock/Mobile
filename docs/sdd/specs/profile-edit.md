@@ -143,7 +143,11 @@ descarte, encerramento do ViewModel e invalidação, com limpeza de resíduos na
 AndroidX ExifInterface 1.4.2 fornece leitura de orientação uniforme para os formatos aceitos;
 os pixels são recodificados sem transportar os metadados de entrada.
 
-Configuração de build: `CLOUDINARY_CLOUD_NAME` e `CLOUDINARY_UPLOAD_PRESET`, ambas opcionais.
+Configuração pública em `app/src/main/res/values/config.xml`: recursos opcionais
+`profile_cloudinary_cloud` e `profile_cloudinary_preset`, inicialmente vazios, seguindo
+`auth_base_url` e `core_base_url`. Por solicitação posterior do solicitante em 28/10/2026,
+essa definição substitui as variáveis de ambiente de build da implementação inicial.
+Editar os recursos e reconstruir o app aplica a configuração; não há leitura de `.env`.
 Não há chave secreta no cliente. Provisionar o preset exclusivo unsigned conforme O-03 antes
 do teste integrado; ausência de configuração mantém nome e remoção disponíveis. O app usa
 IDs aleatórios novos, não exclui ativos remotos e não configura o preset por conta própria.

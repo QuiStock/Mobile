@@ -124,8 +124,8 @@ this implementation are deferred at the requester's instruction.
 Both clients disable redirects and connection retries. Renewal happens on demand, without timers.
 
 Auth reads auth_base_url from app/src/main/res/values/config.xml; Gradle does not override it.
-CORE_BASE_URL remains a build environment variable with an invalid dummy default.
-Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
+Core also reads core_base_url from that config.xml file. These public settings are Android
+resources; Gradle does not load .env automatically. Auth uses root-relative /login and /refresh routes;
 The cookie jar isolates /refresh and /logout attempts on the configured Auth origin.
 CSRF is received only from /csrf on that origin. Cookie path metadata remains unchanged.
 
@@ -173,10 +173,12 @@ payload, account/store field, exception message or stack trace. See
 ### Tests
 
 Profile editing uses partial `PATCH /profile` requests and keeps the draft only in its
-ViewModel. Unsigned photo upload uses the optional build environment variables
-`CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_UPLOAD_PRESET`. Provision a dedicated unsigned
+ViewModel. Unsigned photo upload reads the optional public resources
+`profile_cloudinary_cloud` and `profile_cloudinary_preset` from
+`app/src/main/res/values/config.xml`, following the Auth/Core URL configuration. Set the
+cloud name and unsigned upload preset there, then rebuild the app. Provision a dedicated unsigned
 preset accepting JPEG up to 2 MiB, unique assets without overwrite and public HTTPS
-delivery. Never configure an API secret in the app. Without these variables, name edits
+delivery. Never configure an API secret in the app. With these resources empty, name edits
 and removal of an existing photo remain available. Old, removed and orphaned assets
 remain in Cloudinary for manual retention/cleanup. See
 [the editing specification](docs/sdd/specs/profile-edit.md) for recovery and pending checks.
