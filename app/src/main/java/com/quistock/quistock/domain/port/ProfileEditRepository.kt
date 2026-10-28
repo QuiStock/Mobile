@@ -10,5 +10,10 @@ interface ProfileEditRepository {
 
 interface ProfilePhotoUploadRepository {
     val available: Boolean
-    suspend fun upload(jpeg: ByteArray): String?
+    suspend fun upload(jpeg: ByteArray): ProfilePhotoUploadResult
+}
+
+sealed interface ProfilePhotoUploadResult {
+    class Uploaded(val url: String) : ProfilePhotoUploadResult
+    class Failed(val retryAfterMillis: Long = 0) : ProfilePhotoUploadResult
 }
