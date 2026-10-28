@@ -29,6 +29,7 @@ class ChatbotFragment : Fragment() {
         val menuPanel = view.findViewById<View>(R.id.chatMenuPanel)
         val messageInput = view.findViewById<EditText>(R.id.etPerguntaChatbot)
         val messages = view.findViewById<LinearLayout>(R.id.containerMensagens)
+        viewModel.synchronizeSession()
         lastMessage = viewModel.messages.value?.lastOrNull { it.isUser }?.text
         messageInput.isSaveEnabled = false
 

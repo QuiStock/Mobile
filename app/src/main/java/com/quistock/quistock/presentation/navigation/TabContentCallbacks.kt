@@ -25,7 +25,7 @@ internal class TabContentCallbacks(
         f.viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) {
                 val tab = MainTab.atRoot(destination(f))
-                memory.content[tab]?.let { state ->
+                tab?.let { memory.content[it] }?.let { state ->
                     if (access.ready() != null) TabContent.restore(v, state, owner)
                 }
             }
@@ -70,7 +70,7 @@ internal class TabContentCallbacks(
 
     private fun bindNotifications(root: View) {
         TabContent.descendants(root).filter { it.contentDescription == "Notificações" }.forEach { view ->
-            view.setOnClickListener { notifications() }
+            view.setOnClickListener { if (view.isAttachedToWindow) notifications() }
         }
     }
 }

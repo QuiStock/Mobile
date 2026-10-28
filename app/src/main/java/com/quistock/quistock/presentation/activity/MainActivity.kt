@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val bottom = maxOf(systemBars.bottom, insets.getInsets(WindowInsetsCompat.Type.ime()).bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottom)
             bottomNavigation.keyboardChanged(insets.isVisible(WindowInsetsCompat.Type.ime()))
             insets
         }

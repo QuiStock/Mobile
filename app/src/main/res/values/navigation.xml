@@ -17,4 +17,5 @@
     <item name="navigation_products" type="id" />
     <item name="navigation_employees" type="id" />
     <item name="navigation_chatbot" type="id" />
+    <item name="navigation_position_restorer" type="id" />
 </resources>

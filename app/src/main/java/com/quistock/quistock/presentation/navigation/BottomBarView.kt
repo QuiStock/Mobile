@@ -2,7 +2,6 @@ package com.quistock.quistock.presentation.navigation
 
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
@@ -13,19 +12,25 @@ import com.quistock.quistock.domain.model.UserRole
 
 internal class BottomBarView(private val container: LinearLayout, private val onSelect: (MainTab) -> Unit) {
     private var tabs = emptyList<MainTab>()
+    private var generation: Long? = null
 
-    fun render(role: UserRole?, selected: MainTab?, visible: Boolean) {
+    fun render(role: UserRole?, selected: MainTab?, visible: Boolean, currentGeneration: Long?) {
         val next = role?.let(MainTab::forRole).orEmpty()
-        if (tabs != next) {
+        if (tabs != next || generation != currentGeneration) {
             tabs = next
+            generation = currentGeneration
             container.removeAllViews()
             tabs.forEach { container.addView(button(it)) }
         }
-        tabs.forEachIndexed { index, tab -> update(container.getChildAt(index) as AppCompatTextView, tab, selected) }
+        tabs.forEachIndexed { index, tab ->
+            update(container.getChildAt(index) as AppCompatTextView, tab, selected)
+        }
         container.isVisible = visible && tabs.isNotEmpty()
     }
 
-    private fun button(tab: MainTab): AppCompatTextView = AppCompatTextView(container.context).apply {
+    private fun button(tab: MainTab): AppCompatTextView = object : AppCompatTextView(container.context) {
+        override fun getAccessibilityClassName(): CharSequence = android.widget.Button::class.java.name
+    }.apply {
         id = buttonId(tab)
         setText(tab.label)
         gravity = Gravity.CENTER
@@ -37,11 +42,13 @@ internal class BottomBarView(private val container: LinearLayout, private val on
         isFocusable = true
         isClickable = true
         ViewCompat.setAccessibilityHeading(this, false)
-        setOnClickListener { onSelect(tab) }
+        setOnClickListener { if (parent === container) onSelect(tab) }
     }
 
     private fun update(button: AppCompatTextView, tab: MainTab, selected: MainTab?) {
         button.isSelected = tab == selected
+        val style = if (button.isSelected) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
+        button.setTypeface(button.typeface, style)
         val icon = if (button.isSelected) tab.activeIcon else tab.icon
         val drawable = ContextCompat.getDrawable(container.context, icon)
         val size = container.resources.getDimensionPixelSize(R.dimen.nav_bar_icon_size)
