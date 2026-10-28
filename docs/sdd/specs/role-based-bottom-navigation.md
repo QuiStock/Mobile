@@ -193,3 +193,45 @@ Nenhum teste, build, lint, Detekt, check de diff ou outra validação foi
 executado durante a implementação, conforme instrução do solicitante. Não há
 afirmação de compilação, aprovação dos testes ou cobertura atingida. A entrega
 aguarda os relatórios do solicitante e os checks manuais indicados acima.
+
+### Correção após relatórios de 28/10/2026
+
+Relatórios locais fornecidos pelo solicitante, lidos sem nova execução:
+
+| Relatório | Resultado observado |
+| --- | --- |
+| `app/build/reports/tests/testDebugUnitTest/index.html` e XMLs correspondentes, 17:32 | 268 testes, nenhuma falha ou erro |
+| `app/build/reports/androidTests/connected/debug/index.html` e XML conectado, 17:38 | 70 testes, 14 falhas, nenhum erro; saída da instrumentação igual a 1 |
+| `app/build/reports/jacoco/jacocoTestReport/html/index.html` e XML, 11:50 | Artefato anterior à rodada; 81,0% linhas e 65,3% branches, sem o pacote de navegação novo; não representa a cobertura atual |
+
+`jacocoTestReport` depende dos unitários e dos instrumentados, e
+`jacocoTestCoverageVerification` depende desse relatório. A falha na instrumentação
+interrompe essa cadeia; o artefato antigo não comprova o resultado do gate atual.
+Nenhum limite, exclusão ou configuração de qualidade foi alterado.
+
+Correções escritas para as causas identificadas:
+
+- Quatro falhas no Chatbot, quatro em pedido/promoção e uma em Notificações:
+  a espera por destino não garantia uma tela interativa. O skeleton ainda podia
+  interceptar o toque. A espera compartilhada passa a observar o fragmento
+  retomado, visível, com layout e sem overlay de carregamento. O overlay recebe
+  uma tag estável sem alterar sua aparência, duração ou comportamento de toque.
+  Os formulários também aguardam a entrada protegida antes de navegar, e o
+  Chatbot verifica mensagens no container, sem confundi-las com o texto do input.
+- Uma falha de teclado: o log do Samsung Android 12 registra cancelamento por
+  `servedView != view`, com solicitação do InsetsController para o DecorView.
+  O teste toca o editor e solicita o IME pelo InputMethodManager nesse editor;
+  aguarda tanto o inset visível quanto a barra oculta, sem ampliar timeout.
+- Uma falha de aviso gerencial: o teste antigo tentava manter um funcionário em
+  detalhes exclusivos do gerente. Agora verifica o redirecionamento à Home e a
+  ausência do aviso, respeitando a barreira de cargo em vez de contorná-la.
+- Três falhas de logout: a fixture substituía somente SessionUseCase, deixando
+  perfil e alertas ligados a dependências anteriores. A regra autenticada aceita
+  o AuthRepository controlado pelo teste e instala/restaura o conjunto isolado de
+  sessão, perfil e alertas. A abertura de perfil aguarda a Home real; retorno e
+  conclusão do logout também aguardam os destinos esperados.
+
+As correções preservam as alterações locais de formatação já existentes na
+branch. Nenhum teste, build ou validação foi executado pelo agente nesta rodada.
+A resolução das 14 falhas e os percentuais combinados dependem de nova execução
+do solicitante; não há afirmação de que a nova rodada passou.

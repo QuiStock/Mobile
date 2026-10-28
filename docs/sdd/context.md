@@ -27,6 +27,15 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Rodada de navegação recebida em 28/10/2026: relatório unitário das 17:32 tem
+  268 testes sem falhas; instrumentação das 17:38 tem 70 testes com 14 falhas.
+  JaCoCo disponível é das 11:50, anterior à rodada e sem o pacote novo de
+  navegação; não estabelece a cobertura atual. Correções escritas para espera
+  pela remoção do skeleton, pedido de IME ao editor no Samsung Android 12,
+  isolamento de perfil/alertas nos testes de logout e teste de funcionário
+  coerente com a barreira gerencial. Sem nova execução ou validação pelo agente;
+  gates e exclusões preservados. Ver `specs/role-based-bottom-navigation.md`.
+
 - Navegação inferior por cargo implementada em 28/10/2026 conforme
   `specs/role-based-bottom-navigation.md`: barra compartilhada na Activity normal,
   quatro abas para EMPLOYEE e Funcionários adicional para MANAGER; destinos,
