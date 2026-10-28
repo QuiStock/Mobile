@@ -1,5 +1,6 @@
 package com.quistock.quistock.navigation
 
+import android.view.inputmethod.InputMethodManager
 import android.widget.ScrollView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -140,13 +141,17 @@ class BottomNavigationTests {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             awaitNavigationReady(scenario, R.id.homeFragment)
             visit(scenario, R.id.navigation_products, R.id.productControlFragment)
+            onView(withId(R.id.etBuscaProduto)).perform(click())
             scenario.onActivity { activity ->
                 val input = activity.findViewById<android.view.View>(R.id.etBuscaProduto)
-                input.requestFocus()
-                ViewCompat.getWindowInsetsController(input)?.show(WindowInsetsCompat.Type.ime())
+                // Samsung Android 12 rejects an InsetsController request sent with DecorView.
+                val manager = requireNotNull(activity.getSystemService(InputMethodManager::class.java))
+                manager.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
             }
             awaitNavigationReady(scenario, R.id.productControlFragment) {
-                !it.binding.mainBottomNavigation.isShown
+                val visible = ViewCompat.getRootWindowInsets(it.binding.root)
+                    ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+                visible && !it.binding.mainBottomNavigation.isShown
             }
             onView(withId(R.id.etBuscaProduto)).perform(closeSoftKeyboard())
             awaitNavigationReady(scenario, R.id.productControlFragment) {
