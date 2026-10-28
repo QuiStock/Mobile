@@ -39,7 +39,8 @@ internal object StaticProfileImage {
         return valid && offset == bytes.size
     }
 
-    private fun text(bytes: ByteArray, offset: Int): String = String(bytes, offset, CHUNK_FIELD_BYTES, Charsets.US_ASCII)
+    private fun text(bytes: ByteArray, offset: Int): String =
+        String(bytes, offset, CHUNK_FIELD_BYTES, Charsets.US_ASCII)
 
     private val PNG_HEADER = byteArrayOf(0x89.toByte(), 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
     private const val MIN_HEADER = 12

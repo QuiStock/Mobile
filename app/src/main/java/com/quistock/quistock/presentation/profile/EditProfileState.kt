@@ -1,8 +1,8 @@
 package com.quistock.quistock.presentation.profile
 
 import com.quistock.quistock.domain.model.ProfileChanges
-import com.quistock.quistock.domain.model.profileNameError
 import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.profileNameError
 
 enum class ProfileEditStage { IDLE, PREPARING, UPLOADING, SAVING, CHECKING }
 enum class ProfileEditMessage { UPLOAD, SAVE, INVALID, UNCERTAIN, FORMAT, TOO_LARGE, PREPARATION, ACCESS }

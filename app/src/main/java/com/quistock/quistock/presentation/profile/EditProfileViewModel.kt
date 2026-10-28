@@ -11,10 +11,10 @@ import com.quistock.quistock.domain.usecase.EditProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.EditProfileUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
 
@@ -55,7 +55,10 @@ class EditProfileViewModel(
         val state = state.value
         if (!state.busy && state.pending == null) {
             mutableState.value = state.copy(
-                photo = null, uploadedUrl = null, removePhoto = state.original?.photoUrl != null, message = null,
+                photo = null,
+                uploadedUrl = null,
+                removePhoto = state.original?.photoUrl != null,
+                message = null,
             )
         }
     }
@@ -75,9 +78,12 @@ class EditProfileViewModel(
             coroutineContext.ensureActive()
             when (image) {
                 is PreparedProfileImage.Ready -> mutableState.value = state.value.copy(
-                    stage = ProfileEditStage.IDLE, photo = ProfileEditPhoto(image.jpeg),
-                    uploadedUrl = null, removePhoto = false,
+                    stage = ProfileEditStage.IDLE,
+                    photo = ProfileEditPhoto(image.jpeg),
+                    uploadedUrl = null,
+                    removePhoto = false,
                 )
+
                 is PreparedProfileImage.Failed -> mediaError(image.reason)
             }
         }
