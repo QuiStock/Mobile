@@ -45,3 +45,13 @@ Delivered shared error/success snackbars, input validation feedback, order and p
 ### Instrumented fixture isolation — 2026-10-19
 
 A user-produced run reported five chatbot interaction failures and three order/promotion visibility/scroll failures. These feature tests launched protected destinations without an authenticated session fixture. `ChatbotFragmentTests` and `OrderAndPromotionFragmentTests` now use `AuthenticatedSessionRule`, which restores a synthetic session before Activity launch and reinstates the previous Koin session afterward. This is a test setup correction, with no change to feature behavior, layouts or Espresso visibility constraints. The requester prohibited rerunning tests; no successful execution is claimed. See the instrumented-report entry in [the CSRF specification](auth-refresh-csrf.md).
+
+### Initial navigation synchronization — 2026-10-28
+
+The requester-produced instrumented XML reports `emptyMessage_shouldShowValidationError`
+failing to find the send button while Home is visible. The test setup now awaits initial
+Home navigation using the shared `NavigationDestinationIdler`, then navigates to Chatbot
+and awaits that destination before interacting. All chatbot journeys use this setup;
+AC-01/AC-03/AC-04 assertions remain intact. This fixes a test setup race without changing
+production behavior or adding sleeps. No tests or validation tasks were rerun by the
+agent, as previously requested; confirmation awaits the requester's next report.
