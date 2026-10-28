@@ -51,18 +51,24 @@ class AndroidProfileImagePreparation : ProfileImagePreparation {
         val matrix = Matrix()
         when (orientation) {
             ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.setScale(-1f, 1f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.setRotate(180f)
+
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.setRotate(HALF_TURN_DEGREES)
+
             ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.setScale(1f, -1f)
+
             ExifInterface.ORIENTATION_TRANSPOSE -> {
-                matrix.setRotate(90f)
+                matrix.setRotate(QUARTER_TURN_DEGREES)
                 matrix.postScale(-1f, 1f)
             }
-            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.setRotate(90f)
+
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.setRotate(QUARTER_TURN_DEGREES)
+
             ExifInterface.ORIENTATION_TRANSVERSE -> {
-                matrix.setRotate(270f)
+                matrix.setRotate(THREE_QUARTER_TURN_DEGREES)
                 matrix.postScale(-1f, 1f)
             }
-            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.setRotate(270f)
+
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.setRotate(THREE_QUARTER_TURN_DEGREES)
         }
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
@@ -84,5 +90,8 @@ class AndroidProfileImagePreparation : ProfileImagePreparation {
         const val MAX_OUTPUT = 2 * 1024 * 1024
         const val MAX_DIMENSION = 1024
         const val JPEG_QUALITY = 90
+        const val QUARTER_TURN_DEGREES = 90f
+        const val HALF_TURN_DEGREES = 180f
+        const val THREE_QUARTER_TURN_DEGREES = 270f
     }
 }

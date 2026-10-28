@@ -17,7 +17,7 @@ class ProfileChanges(val name: String? = null, val photoUrl: String? = null) {
 private fun validPhotoUrl(value: String): Boolean = try {
     val url = java.net.URI(value)
     val publicHttps = url.scheme == "https" && !url.host.isNullOrBlank() && url.userInfo == null
-    publicHttps && value.length <= 500
+    publicHttps && value.length <= MAX_PROFILE_PHOTO_URL_LENGTH
 } catch (_: java.net.URISyntaxException) {
     false
 }
@@ -34,6 +34,9 @@ enum class ProfileNameError { REQUIRED, TOO_LONG }
 
 fun profileNameError(name: String): ProfileNameError? = when {
     name.isBlank() -> ProfileNameError.REQUIRED
-    name.length > 150 -> ProfileNameError.TOO_LONG
+    name.length > MAX_PROFILE_NAME_LENGTH -> ProfileNameError.TOO_LONG
     else -> null
 }
+
+private const val MAX_PROFILE_NAME_LENGTH = 150
+private const val MAX_PROFILE_PHOTO_URL_LENGTH = 500

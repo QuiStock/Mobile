@@ -5,26 +5,21 @@ import com.quistock.quistock.domain.model.ProfileEditResult
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.port.ProfileEditRepository
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.PATCH
 import retrofit2.http.Tag
-import retrofit2.Response
+import java.net.HttpURLConnection
 
 interface ProfileEditApi {
     @PATCH("profile")
-    suspend fun update(
-        @Body request: ProfileEditRequest,
-        @Tag expected: SessionSnapshot,
-    ): Response<ProfileResponse>
+    suspend fun update(@Body request: ProfileEditRequest, @Tag expected: SessionSnapshot): Response<ProfileResponse>
 }
 
 @Serializable
-class ProfileEditRequest(
-    val name: String? = null,
-    @SerialName("profile_photo_url") val photoUrl: String? = null,
-)
+class ProfileEditRequest(val name: String? = null, @SerialName("profile_photo_url") val photoUrl: String? = null)
 
 class RetrofitProfileEditRepository(private val api: ProfileEditApi) : ProfileEditRepository {
     @Suppress("TooGenericExceptionCaught")
@@ -40,15 +35,26 @@ class RetrofitProfileEditRepository(private val api: ProfileEditApi) : ProfileEd
     private fun map(response: Response<ProfileResponse>): ProfileEditResult {
         response.errorBody()?.close()
         return when (response.code()) {
-            200 -> response.body()?.let { ProfileEditResult.Saved(it.toDomain()) }
+            HttpURLConnection.HTTP_OK -> response.body()?.let { ProfileEditResult.Saved(it.toDomain()) }
                 ?: ProfileEditResult.Uncertain
-            400 -> ProfileEditResult.Rejected(invalidInput = true)
-            403 -> ProfileEditResult.Forbidden
-            429 -> ProfileEditResult.Rejected(
+
+            HttpURLConnection.HTTP_BAD_REQUEST -> ProfileEditResult.Rejected(invalidInput = true)
+
+            HttpURLConnection.HTTP_FORBIDDEN -> ProfileEditResult.Forbidden
+
+            HTTP_TOO_MANY_REQUESTS -> ProfileEditResult.Rejected(
                 retryAfterMillis = retryAfterMillis(response.headers()["Retry-After"]),
             )
-            in 400..499 -> ProfileEditResult.Rejected()
+
+            in HttpURLConnection.HTTP_BAD_REQUEST until HttpURLConnection.HTTP_INTERNAL_ERROR -> {
+                ProfileEditResult.Rejected()
+            }
+
             else -> ProfileEditResult.Uncertain
         }
+    }
+
+    private companion object {
+        const val HTTP_TOO_MANY_REQUESTS = 429
     }
 }

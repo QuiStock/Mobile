@@ -7,6 +7,7 @@ import com.quistock.quistock.domain.usecase.EditProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.EditProfileUseCase
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.coroutineContext
 
 /** One owner (the ViewModel) serializes edits and submissions on the main dispatcher. */
@@ -25,7 +26,8 @@ internal class ProfileEditSubmission(
             coroutineContext.ensureActive()
             if (upload is ProfilePhotoUploadResult.Failed) {
                 state.value = draft.copy(
-                    stage = ProfileEditStage.IDLE, message = ProfileEditMessage.UPLOAD,
+                    stage = ProfileEditStage.IDLE,
+                    message = ProfileEditMessage.UPLOAD,
                     retryAt = deadline(upload.retryAfterMillis),
                 )
                 return
@@ -55,16 +57,20 @@ internal class ProfileEditSubmission(
         val idle = state.value.copy(stage = ProfileEditStage.IDLE)
         state.value = when (result) {
             is ProfileEditResult.Saved -> EditProfileState(saved = true)
+
             is ProfileEditResult.Rejected -> idle.copy(
                 pending = null,
                 message = if (result.invalidInput) ProfileEditMessage.INVALID else ProfileEditMessage.SAVE,
                 retryAt = deadline(result.retryAfterMillis),
             )
+
             ProfileEditResult.Uncertain -> idle.copy(message = ProfileEditMessage.UNCERTAIN)
+
             is ProfileEditResult.CheckLater -> idle.copy(
                 message = ProfileEditMessage.UNCERTAIN,
                 retryAt = deadline(result.retryAfterMillis),
             )
+
             ProfileEditResult.Forbidden -> EditProfileState()
         }
     }
@@ -75,4 +81,4 @@ internal class ProfileEditSubmission(
     }
 }
 
-internal fun profileEditNowMillis(): Long = System.nanoTime() / 1_000_000
+internal fun profileEditNowMillis(): Long = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())
