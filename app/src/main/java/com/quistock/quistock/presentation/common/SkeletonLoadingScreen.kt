@@ -238,6 +238,7 @@ private class SkeletonLayoutFactory(
     }
 
     private fun bottomBar(): View = LinearLayout(context).apply {
+        tag = "navigation_skeleton_bar"
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER
         repeat(4) { index ->

@@ -1,0 +1,61 @@
+package com.quistock.quistock.presentation.navigation
+
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.View
+import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
+import com.quistock.quistock.R
+import com.quistock.quistock.domain.model.UserRole
+
+internal class BottomBarView(private val container: LinearLayout, private val onSelect: (MainTab) -> Unit) {
+    private var tabs = emptyList<MainTab>()
+
+    fun render(role: UserRole?, selected: MainTab?, visible: Boolean) {
+        val next = role?.let(MainTab::forRole).orEmpty()
+        if (tabs != next) {
+            tabs = next
+            container.removeAllViews()
+            tabs.forEach { container.addView(button(it)) }
+        }
+        tabs.forEachIndexed { index, tab -> update(container.getChildAt(index) as AppCompatTextView, tab, selected) }
+        container.isVisible = visible && tabs.isNotEmpty()
+    }
+
+    private fun button(tab: MainTab): AppCompatTextView = AppCompatTextView(container.context).apply {
+        id = buttonId(tab)
+        setText(tab.label)
+        gravity = Gravity.CENTER
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.navigation_label_size))
+        val padding = resources.getDimensionPixelSize(R.dimen.navigation_item_padding)
+        setPadding(padding, padding, padding, padding)
+        minHeight = resources.getDimensionPixelSize(R.dimen.navigation_bar_min_height)
+        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        isFocusable = true
+        isClickable = true
+        ViewCompat.setAccessibilityHeading(this, false)
+        setOnClickListener { onSelect(tab) }
+    }
+
+    private fun update(button: AppCompatTextView, tab: MainTab, selected: MainTab?) {
+        button.isSelected = tab == selected
+        val icon = if (button.isSelected) tab.activeIcon else tab.icon
+        val drawable = ContextCompat.getDrawable(container.context, icon)
+        val size = container.resources.getDimensionPixelSize(R.dimen.nav_bar_icon_size)
+        drawable?.setBounds(0, 0, size, size)
+        button.setCompoundDrawables(null, drawable, null, null)
+        val color = if (button.isSelected) R.color.color_limao else R.color.color_branco
+        button.setTextColor(ContextCompat.getColor(container.context, color))
+    }
+
+    private fun buttonId(tab: MainTab): Int = when (tab) {
+        MainTab.HOME -> R.id.navigation_home
+        MainTab.INTERFERENCES -> R.id.navigation_interferences
+        MainTab.PRODUCTS -> R.id.navigation_products
+        MainTab.EMPLOYEES -> R.id.navigation_employees
+        MainTab.CHATBOT -> R.id.navigation_chatbot
+    }
+}
