@@ -16,7 +16,10 @@ import org.junit.runner.Description
 import org.koin.core.context.GlobalContext
 
 /** Feature UI tests own their session instead of restoring credentials from the device. */
-class AuthenticatedSessionRule(private val role: UserRole = UserRole.EMPLOYEE) : TestWatcher() {
+class AuthenticatedSessionRule(
+    private val role: UserRole = UserRole.EMPLOYEE,
+    private val auth: AuthRepository = mockk(relaxed = true),
+) : TestWatcher() {
     private lateinit var previous: SessionUseCase
     private lateinit var profileDependencies: ProfileTestDependencies
     private lateinit var previousAlerts: PriorityAlertsRepository
@@ -24,7 +27,6 @@ class AuthenticatedSessionRule(private val role: UserRole = UserRole.EMPLOYEE) :
     override fun starting(description: Description) {
         val koin = GlobalContext.get()
         previous = koin.get()
-        val auth = mockk<AuthRepository>(relaxed = true)
         every { auth.hasAccess(any()) } returns true
         coEvery { auth.restore(any()) } returns StoredSession.AVAILABLE
         coEvery { auth.refresh(any()) } returns AuthResult.Success
