@@ -56,11 +56,21 @@ class ChatbotViewModel(
     }
 
     fun rememberQuestion(message: String) {
+        synchronizeSession()
         mutableMessages.value = mutableMessages.value.orEmpty() + ChatMessage(message, true)
+    }
+
+    fun synchronizeSession() {
+        val generation = session?.snapshot()?.generation
+        if (generation != conversationGeneration) {
+            clearConversation()
+            conversationGeneration = generation
+        }
     }
 
     @Suppress("RethrowCaughtException")
     fun sendMessage(message: String) {
+        synchronizeSession()
         if (_uiState.value == ChatbotUiState.Loading) return
         val generation = session?.snapshot()?.generation
         val userId = if (session == null || session.state.value == SessionState.Active) {

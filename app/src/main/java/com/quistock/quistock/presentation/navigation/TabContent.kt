@@ -6,8 +6,8 @@ import android.widget.EditText
 import android.widget.ScrollView
 import androidx.core.view.doOnPreDraw
 import androidx.core.widget.NestedScrollView
-import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.RecyclerView
 import com.quistock.quistock.R
 
 /** Captures only navigation UI state, never headers, profile fields or credentials. */
@@ -16,8 +16,10 @@ internal object TabContent {
 
     fun capture(root: View): TabContentState {
         val views = descendants(root)
-        val scroll = views.filter { it is ScrollView || it is NestedScrollView }.associate { it.id to it.scrollY }
-        val lists = views.filterIsInstance<RecyclerView>().associate { it.id to it.layoutManager?.onSaveInstanceState() }
+        val scroll = views.filter { it is ScrollView || it is NestedScrollView }
+            .associate { it.id to it.scrollY }
+        val lists = views.filterIsInstance<RecyclerView>()
+            .associate { it.id to it.layoutManager?.onSaveInstanceState() }
         val inputs = views.filterIsInstance<EditText>().filter { it.id in filterIds }
             .associate { it.id to it.text.toString() }
         return TabContentState(scroll, lists, inputs)
@@ -36,9 +38,16 @@ internal object TabContent {
     fun reselect(root: View, tab: MainTab) {
         descendants(root).forEach { view ->
             when (view) {
-                is ScrollView -> view.fullScroll(if (tab == MainTab.CHATBOT) View.FOCUS_DOWN else View.FOCUS_UP)
-                is NestedScrollView -> view.fullScroll(View.FOCUS_UP)
-                is RecyclerView -> view.scrollToPosition(0)
+                is ScrollView -> {
+                    val y = if (tab == MainTab.CHATBOT) view.getChildAt(0)?.height ?: 0 else 0
+                    view.scrollTo(0, y)
+                }
+                is NestedScrollView -> view.scrollTo(0, 0)
+                is RecyclerView -> {
+                    (view.getTag(R.id.navigation_position_restorer) as? ListPositionRestorer)?.cancel()
+                    view.setTag(R.id.navigation_position_restorer, null)
+                    view.scrollToPosition(0)
+                }
             }
         }
     }

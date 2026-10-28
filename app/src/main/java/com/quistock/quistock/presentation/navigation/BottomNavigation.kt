@@ -63,7 +63,7 @@ internal class BottomNavigation(
         val available = !blocked && ready != null
         if (!available) ExitAppDialog.hide(activity.supportFragmentManager)
         back.isEnabled = available && tab != null
-        bar.render(role, tab, available && tab != null && !keyboard)
+        bar.render(role, tab, available && tab != null && !keyboard, ready?.generation)
         if (available && access.rejects(nav.currentDestination?.id)) {
             binding.navHostFragment.isVisible = false
             open(MainTab.HOME)
@@ -120,7 +120,8 @@ internal class BottomNavigation(
     private fun canNavigate(): Boolean {
         val ready = !blocked && !transitioning && access.ready() != null
         val resumed = content()?.lifecycle?.currentState == Lifecycle.State.RESUMED
-        return ready && !activity.supportFragmentManager.isStateSaved && resumed
+        val current = resumed && content()?.tag == nav.currentBackStackEntry?.id
+        return ready && !activity.supportFragmentManager.isStateSaved && current
     }
 
     private fun content(): Fragment? = host.childFragmentManager.primaryNavigationFragment
