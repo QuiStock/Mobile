@@ -25,11 +25,13 @@ import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.awaitDestination
 import com.quistock.quistock.domain.model.ChatbotResponse
 import com.quistock.quistock.presentation.activity.MainActivity
+import com.quistock.quistock.presentation.chatbot.ChatMessage
 import com.quistock.quistock.presentation.chatbot.ChatbotUiState
 import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,16 +44,26 @@ class ChatbotFragmentTests {
 
     private lateinit var viewModel: ChatbotViewModel
     private lateinit var uiState: MutableLiveData<ChatbotUiState>
-    private lateinit var answer: MutableLiveData<ChatbotResponse?>
+    private lateinit var messages: MutableLiveData<List<ChatMessage>>
+    private lateinit var previousViewModel: ChatbotViewModel
 
     @Before
     fun setup() {
         uiState = MutableLiveData(ChatbotUiState.Idle)
-        answer = MutableLiveData(null)
+        previousViewModel = GlobalContext.get().get()
+        messages = MutableLiveData(emptyList())
         viewModel = mockk(relaxed = true)
         every { viewModel.uiState } returns uiState
-        every { viewModel.answer } returns answer
+        every { viewModel.messages } returns messages
+        every { viewModel.rememberQuestion(any()) } answers {
+            messages.value = messages.value.orEmpty() + ChatMessage(firstArg(), true)
+        }
+        every { viewModel.clearConversation() } answers { messages.value = emptyList() }
         GlobalContext.get().declare<ChatbotViewModel>(instance = viewModel, allowOverride = true)
+    }
+
+    @After fun restoreViewModel() {
+        GlobalContext.get().declare(previousViewModel, allowOverride = true)
     }
 
     @Test
@@ -79,7 +91,7 @@ class ChatbotFragmentTests {
         verify(exactly = 1) { viewModel.sendMessage(message) }
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            answer.value = response
+            messages.value = messages.value.orEmpty() + ChatMessage(response.answer, false)
             uiState.value = ChatbotUiState.Answered
         }
 
