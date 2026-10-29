@@ -23,6 +23,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatbotConversationTests {
     @get:Rule val instant = InstantTaskExecutorRule()
+
     @get:Rule val main = MainDispatcherRule()
 
     @Test fun conversationRetainsQuestionsAndAnswersUntilExplicitClear() = runTest {
