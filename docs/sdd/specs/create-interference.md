@@ -1,6 +1,6 @@
 # Criar nova interferência — pedido de compra ou promoção
 
-**Status:** In progress — implementação escrita; testes, compilação, lint, cobertura e AC-17 pendentes
+**Status:** In progress — rodada inicial aprovada pelo solicitante exceto Detekt; refatorações aguardam nova validação
 **Issue:** none
 **Product decision owner:** solicitante
 
@@ -265,7 +265,7 @@ Implementação escrita em 29/10/2026; funcionalidade ainda em andamento.
 | AC-15 | Manual com TalkBack, fonte ampliada e teclado, justificado pela navegação de foco, anúncios e dimensões dependerem do Android real. Labels escritos não comprovam acessibilidade. |
 | AC-17 | Teste obrigatório na versão final: registrar versão, pedido, promoção e recusas por cargo/loja sem dados pessoais. Pendente. |
 
-Nenhum teste foi executado; etapas Red/Green não foram observadas. Nenhuma task
+Na implementação inicial pelo agente, nenhum teste foi executado; etapas Red/Green não foram observadas. Nenhuma task
 Gradle, compilação, build, formatação Gradle, Spotless, Detekt, Android Lint ou
 cobertura foi executada por instrução expressa do solicitante devido à limitação
 do wrapper no sandbox. Nenhuma escrita real ao Core foi feita. Revisão estática
@@ -291,3 +291,35 @@ Instrumentação/cobertura combinada exigem dispositivo/emulador. Gate combinado
 continua 80% de linhas e 70% de branches; relatório unitário não o substitui.
 Executar também a rodada manual e AC-17. Implementação/PR draft não concluem
 esta funcionalidade antes das verificações pertinentes e do teste real final.
+
+### Rodada do solicitante e correção do Detekt — 29/10/2026
+
+O solicitante informou aprovação das validações, exceto Detekt. Relatórios locais
+lidos pelo agente (não executados por ele) registram:
+
+- JUnit `app/build/test-results/testDebugUnitTest`: 290 testes, zero falhas/erros/skips.
+- Instrumentação `app/build/outputs/androidTest-results/connected/debug`: 68 testes,
+  zero falhas/erros/skips.
+- JaCoCo combinado `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`:
+  87,5% de linhas (3917 cobertas / 560 não cobertas) e 71,7% de branches
+  (2404 cobertas / 948 não cobertas), acima dos gates preservados.
+- Lint `app/build/reports/lint-results-debug.xml`: zero erros/fatais; 612 avisos.
+  Aprovação de builds/Spotless e demais verificações é informação do solicitante.
+- `app/build/reports/detekt/detekt.xml`: cinco apontamentos, três `ReturnCount`
+  (`interceptCore`, `CurrentAnalysisMapper.select`, `CreateInterferenceUseCase.forward`)
+  e dois `CyclomaticComplexMethod` (`CreationFields.render`, `CreationFragment.render`).
+
+As alterações locais de formatação da rodada foram preservadas em commit separado.
+Correção escrita separa tratamento de 401, mapeamento de análise, condições de
+encaminhamento, visibilidade dos campos e renderização das ações, reduzindo retornos
+por função e complexidade sem modificar comportamento, contratos, gates ou supressões.
+Testes existentes de recuperação sem replay, análise ausente/insuficiente,
+autorização e formulários continuam como regressão; não há comportamento novo
+exigindo uma nova spec ou testes que apenas reproduzam essa extração de métodos.
+
+Após as refatorações, somente revisão estática e `git diff --check` pelo agente.
+Nenhuma task Gradle executada; não se declara Detekt corrigido com aprovação de
+execução. A evidência acima antecede estas mudanças e não valida o novo commit.
+Solicitante deve repetir `detekt`, `spotlessCheck` e as verificações de regressão
+pertinentes fora do sandbox. A evidência detalhada de versão/cenários reais de
+AC-17 não foi registrada nesta rodada; a funcionalidade permanece em andamento.

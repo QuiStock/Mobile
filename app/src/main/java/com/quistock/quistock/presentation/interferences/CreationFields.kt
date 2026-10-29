@@ -43,6 +43,14 @@ internal class CreationFields(
 
     fun render(state: CreationState) {
         rendering = true
+        renderVisibility(state)
+        inputs.forEach { (field, input) -> renderInput(field, input, state) }
+        rendering = false
+        if (state.errors != previousErrors) focusError(state)
+        previousErrors = state.errors
+    }
+
+    private fun renderVisibility(state: CreationState) {
         val order = state.type == ActionType.ORDER
         val form = state.phase == CreationPhase.FORM || state.phase == CreationPhase.REVIEW
         listOf(views.creationQuantityLabel, views.creationOrderDateLabel).forEach { it.isVisible = form && order }
@@ -52,19 +60,19 @@ internal class CreationFields(
         inputs.forEach { (field, input) ->
             input.isVisible = form && ((field == ActionField.QUANTITY || field == ActionField.ORDER_DATE) == order)
             input.isEnabled = state.phase == CreationPhase.FORM && !state.loading
-            val value = when (field) {
-                ActionField.QUANTITY -> state.draft.quantity
-                ActionField.ORDER_DATE -> state.draft.orderDate
-                ActionField.DISCOUNT -> state.draft.discount
-                ActionField.START -> state.draft.start
-                ActionField.END -> state.draft.end
-            }
-            if (input.text.toString() != value) input.setText(value)
-            input.error = if (field in state.errors) input.context.getString(error(field)) else null
         }
-        rendering = false
-        if (state.errors != previousErrors) focusError(state)
-        previousErrors = state.errors
+    }
+
+    private fun renderInput(field: ActionField, input: EditText, state: CreationState) {
+        val value = when (field) {
+            ActionField.QUANTITY -> state.draft.quantity
+            ActionField.ORDER_DATE -> state.draft.orderDate
+            ActionField.DISCOUNT -> state.draft.discount
+            ActionField.START -> state.draft.start
+            ActionField.END -> state.draft.end
+        }
+        if (input.text.toString() != value) input.setText(value)
+        input.error = if (field in state.errors) input.context.getString(error(field)) else null
     }
 
     private fun focusError(state: CreationState) {

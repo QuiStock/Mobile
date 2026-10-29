@@ -77,6 +77,19 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         fields?.render(state)
         views.creationTitle.setText(CreationPresentation.type(state.type))
         views.creationProgress.isVisible = state.loading || state.busy
+        renderActions(views, state)
+        views.creationProduct.text = state.product?.let { CreationPresentation.product(requireContext(), it) }.orEmpty()
+        views.creationSummary.text = state.action?.let { CreationPresentation.action(requireContext(), it) }.orEmpty()
+        val message = getString(message(state))
+        if (views.creationMessage.text.toString() != message) views.creationMessage.text = message
+        views.creationProgress.contentDescription = getString(
+            if (state.busy) R.string.creation_sending else R.string.creation_loading,
+        )
+        renderProducts(state)
+        if (state.phase == CreationPhase.REVIEW && dialog?.isShowing != true) showReview(state)
+    }
+
+    private fun renderActions(views: FragmentCreationBinding, state: CreationState) {
         views.creationBack.isEnabled = !state.busy
         views.creationSubmit.isVisible = state.phase == CreationPhase.FORM
         views.creationSubmit.isEnabled = !state.loading
@@ -95,15 +108,6 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
             CreationPhase.EXISTING,
             CreationPhase.EMPTY,
         )
-        views.creationProduct.text = state.product?.let { CreationPresentation.product(requireContext(), it) }.orEmpty()
-        views.creationSummary.text = state.action?.let { CreationPresentation.action(requireContext(), it) }.orEmpty()
-        val message = getString(message(state))
-        if (views.creationMessage.text.toString() != message) views.creationMessage.text = message
-        views.creationProgress.contentDescription = getString(
-            if (state.busy) R.string.creation_sending else R.string.creation_loading,
-        )
-        renderProducts(state)
-        if (state.phase == CreationPhase.REVIEW && dialog?.isShowing != true) showReview(state)
     }
 
     private fun renderProducts(state: CreationState) {

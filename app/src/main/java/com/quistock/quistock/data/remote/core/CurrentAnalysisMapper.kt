@@ -19,7 +19,14 @@ internal object CurrentAnalysisMapper {
         require(row["store_id"]?.jsonPrimitive?.longOrNull == storeId)
         require(row["is_current"]?.jsonPrimitive?.booleanOrNull == true)
         require(row.text("classifier") == "SALES_PERCENTILES_V1")
-        if (row.text("status") == "INSUFFICIENT_DATA") return product
+        return if (row.text("status") == "INSUFFICIENT_DATA") {
+            product
+        } else {
+            analyzed(product, row)
+        }
+    }
+
+    private fun analyzed(product: AlertProduct, row: JsonObject): AlertProduct {
         require(row.text("status") == "ANALYZED")
         val risks = requireNotNull(row["risks"] as? JsonArray).map {
             CreationRisk.valueOf(it.jsonPrimitive.content)

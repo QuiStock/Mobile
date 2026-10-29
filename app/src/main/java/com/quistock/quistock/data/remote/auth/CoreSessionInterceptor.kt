@@ -57,7 +57,20 @@ class CoreSessionInterceptor(
         }
         val response = diagnostics.send(chain, authorized(request, current.generation, diagnostics), 1)
         requireCurrentSession(current, response, diagnostics)
-        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return enforceStoreEligibility(response, current)
+        return if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            handleUnauthorized(chain, request, response, current, diagnostics)
+        } else {
+            enforceStoreEligibility(response, current)
+        }
+    }
+
+    private suspend fun handleUnauthorized(
+        chain: Interceptor.Chain,
+        request: Request,
+        response: Response,
+        current: SessionSnapshot,
+        diagnostics: CoreTransportDiagnostics,
+    ): Response {
         if (!replayWrites && request.method != "GET") {
             try {
                 renew(current, "unauthorized", diagnostics)

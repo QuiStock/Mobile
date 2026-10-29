@@ -41,6 +41,17 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Rodada de criação recebida em 29/10/2026: solicitante informa aprovação das
+  validações exceto Detekt. Relatórios locais lidos (sem execução pelo agente):
+  290 unitários e 68 instrumentados sem falhas; JaCoCo combinado com 87,5% de
+  linhas e 71,7% de branches; Lint sem erros/fatais, com 612 avisos. Detekt registra
+  três ReturnCount e duas funções render com complexidade excessiva. Refatorações
+  escritas preservam os comportamentos e a formatação local do solicitante,
+  sem alterar gates/supressões. Sem nova execução de Gradle/testes/build/lint;
+  aprovação do novo commit depende de outra rodada. AC-17 continua sem evidência
+  detalhada registrada. Ver `specs/create-interference.md`.
+
+
 - Relatório instrumentado de 29/10/2026 registra 69 aprovações e uma falha em
   70 testes. A falha restante de logout é uma espera pela raiz da Activity sem
   foco enquanto o aviso remoto está aberto. Teste ajustado para verificar e
