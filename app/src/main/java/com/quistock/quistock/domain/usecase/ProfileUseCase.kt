@@ -117,9 +117,7 @@ class ProfileUseCase(
                         rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
                     }
 
-                    is ProfileResult.Failure -> if (!result.transient || state.value !is ProfileState.Ready) {
-                        mutableState.value = ProfileState.Failure(result.retryAfterMillis, result.transient)
-                    }
+                    is ProfileResult.Failure -> applyFailure(result)
                 }
                 rejection?.let { mutableState.value = it }
             }
@@ -137,6 +135,12 @@ class ProfileUseCase(
                 ),
             )
             if (current) mutableState.value = ProfileState.Failure()
+        }
+    }
+
+    private fun applyFailure(result: ProfileResult.Failure) {
+        if (!result.transient || state.value !is ProfileState.Ready) {
+            mutableState.value = ProfileState.Failure(result.retryAfterMillis, result.transient)
         }
     }
 

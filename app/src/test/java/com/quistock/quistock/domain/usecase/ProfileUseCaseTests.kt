@@ -82,6 +82,18 @@ class ProfileUseCaseTests {
         coVerify(exactly = 1) { auth.login(any(), any(), any()) }
     }
 
+    @Test fun forcedRevalidationRetainsProfileOnlyForTransientFailure() = runTest {
+        login()
+        coEvery { repository.read() } returns ProfileResult.Success(valid())
+        profile.load()
+        coEvery { repository.read() } returns ProfileResult.Failure(transient = true)
+        profile.load(force = true)
+        assertTrue(profile.state.value is ProfileState.Ready)
+        coEvery { repository.read() } returns ProfileResult.Failure()
+        profile.load(force = true)
+        assertFalse((profile.state.value as ProfileState.Failure).transient)
+    }
+
     @Test fun forbiddenRevokesSessionAndPreservesRejectionReason() = runTest {
         login()
         coEvery { repository.read() } returns ProfileResult.Forbidden
