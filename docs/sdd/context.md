@@ -4,6 +4,20 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Criação de pedido de compra/promoção escrita em 29/10/2026 conforme
+  `specs/create-interference.md`, ainda em andamento: funcionário ativo,
+  riscos/análises de `/flows/current`, parâmetros humanos explícitos, pré-checagem
+  de pendências, geração e encaminhamento separados. Rascunho em memória na
+  Activity; transporte dedicado sem replay de escrita, com 30 segundos por chamada.
+  Hub consulta ações reais; somente SENT_TO_MANAGER confirma envio. Home passa a
+  usar riscos Core em vez de HIGH/LOW ou histórico para criação. Processamento de
+  análise no login não foi integrado; sem análise atual elegível, seleção vazia.
+  Nenhum Gradle/teste/build/lint/cobertura ou escrita real ao Core executado por
+  instrução expressa do solicitante (wrapper limitado no sandbox). Testes escritos,
+  revisão estática e PR draft não concluem a funcionalidade. AC-17 exige teste real
+  na versão final. Ver comandos/rastreabilidade na spec. Gates preservados.
+
+
 - `QuiStock` is an Android project with one Gradle module, `:app`, Kotlin, Java 17, Views/XML, ViewBinding, and the `com.quistock.quistock` package.
 - The README describes Clean Architecture with MVVM and the dependency direction `presentation -> domain <- data`. The current structure uses `domain/port` and Koin dependency injection; follow the existing code where the guide is illustrative.
 - The code includes login, personal registration, home, and chatbot areas. Login uses the DS_Auth contract through `RetrofitAuthRepository` and `SessionUseCase`, with isolated response-cookie capture, generation-checked commits and encrypted refresh persistence. For the CSRF correction, root routes on the same HTTPS Auth origin and compatible cookie attributes were confirmed by the requester; real deployment smoke verification remains pending. The chatbot uses a use case and a Retrofit repository for an internal API. These files do not establish that the product flows are complete.

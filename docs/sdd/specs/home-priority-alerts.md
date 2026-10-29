@@ -4,6 +4,28 @@
 **Issue:** none — vínculo específico a confirmar; QUIS-81 trata notificações e QUIS-126 trata Big Numbers, sem estabelecer o escopo desta seção  
 **Product decision owner:** solicitante; responsáveis por Produto e API Core a confirmar
 
+## Precedência para criação — 29/10/2026
+
+[create-interference.md](create-interference.md) prevalece sobre regras antigas
+conflitantes abaixo, inclusive RC-02/03/04 e itens 4–8 da revisão de 25/10:
+
+- Home consulta `/flows/current` da loja com identidade, classificador atual,
+  `is_current`, status e riscos conferidos. Não seleciona histórico para criar.
+  Atual significa último processamento, sem garantir estoque ERP atual.
+- STOCKOUT permite Pedido de compra; NEAR_EXPIRY/EXPIRATION sem EXPIRED permite
+  Promoção independentemente de HIGH/MEDIUM/LOW. Ambos permitem escolha explícita.
+  EXPIRED impede promoção; STOCKOUT ainda permite pedido. Avisos consultivos e estoque sem unidade
+  inferida permanecem. Datas/preços/regras de criação seguem a nova spec.
+- Somente EMPLOYEE atual da loja cria. MANAGER consulta alertas e mantém seus
+  avisos; aprovação gerencial continua fora deste trabalho. Navegar não escreve.
+- Home transfere seleção em memória; criação reconsulta/revalida antes de enviar.
+  Carga, falha e vazio seguem distintos. Textos conflitantes abaixo são históricos.
+
+Testes de seleção, repositório e binding adaptados, sem execução. Gradle,
+compilação, lint, cobertura, acessibilidade e integração real continuam pendentes
+por instrução expressa do solicitante. Ver comandos e evidência na spec de criação.
+A funcionalidade não está concluída.
+
 ## Revisão de prontidão — estado normativo de 25/10/2026
 
 Esta seção e os critérios RC abaixo consolidam as decisões mais recentes e prevalecem sobre textos conflitantes nas rodadas e tabelas históricas deste arquivo. A revisão definiu o escopo Ready para correção, posteriormente implementado conforme o resultado abaixo. A existência de código e testes escritos não comprova aprovação dos checks; nenhuma validação foi executada pelo agente nesta entrega.
