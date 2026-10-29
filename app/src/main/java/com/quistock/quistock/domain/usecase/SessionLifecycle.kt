@@ -51,6 +51,6 @@ internal val SessionState.blocksLogout: Boolean
 
 internal val SessionState.canRefresh: Boolean
     get() = when (this) {
-        SessionState.Restoring, SessionState.Active, is SessionState.Failure -> true
+        SessionState.Restoring, SessionState.Active, is SessionState.Failure, is SessionState.OfflineReadOnly -> true
         else -> false
     }

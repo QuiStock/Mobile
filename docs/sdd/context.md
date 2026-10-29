@@ -97,3 +97,20 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 - Confirm backend contracts, copy, navigation, permissions, and business rules against the request or an explicit source. Do not infer them from class names or layouts.
 - CI runs debug/release builds, Spotless, Lint, Detekt, unit tests, and instrumented tests; the combined JaCoCo gate requires 80% line coverage and 70% branch coverage.
 - Changes involving Firebase, the backend, or persistence must state the environment, affected data, and expected failures in the relevant spec.
+
+## Home summary and local read-only access (2026-10-29)
+
+PR #44 supersedes earlier global-summary and no-offline-cache assumptions. Core's
+`dashboard/summary?store_id=` supplies the four card metrics; HomeViewModel preserves
+priority alerts while loading summary separately. The encrypted refresh record now owns
+an opaque local session ID and a validated Core user/store binding. A separate summary
+key uses the same DataStore transaction boundary for atomic invalidation on revocation
+or identity replacement; no Room/SQLite dependency is added. No tokens enter summary cache.
+
+A distinct OfflineReadOnly session state permits only saved Home indicators, manual
+recovery and logout until refresh expiry; it never authorizes Core calls. Missing/expired
+binding, protocol errors and definitive eligibility failures cannot unlock local Home.
+Server revocation while disconnected is detected at recovery or local expiry. Auth now
+requires an active store for mobile EMPLOYEE/MANAGER at login/refresh; no-store users
+are blocked, superseding the old PR #44 blank-cards/retained-session decision. Documentation
+of planned checks is not test evidence; final executed results belong in the PR.

@@ -33,7 +33,7 @@ class EditProfileUseCase(
                 ProfileEditResult.Rejected()
             }
 
-            ProfileResult.Forbidden -> ProfileEditResult.Forbidden
+            ProfileResult.Forbidden, ProfileResult.NoActiveStore -> ProfileEditResult.Forbidden
 
             is ProfileResult.Failure -> ProfileEditResult.CheckLater(read.retryAfterMillis)
         }

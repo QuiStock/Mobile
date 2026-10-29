@@ -37,7 +37,7 @@ class ProfileLogoutIntegrationTests {
         every { profile.clear() } answers { profileState.value = ProfileState.Empty }
         val photos = mockk<LoadProfilePhotoUseCase>()
         every { photos.clear() } returns Unit
-        SessionViewModel(session, profile, photos)
+        SessionViewModel(session, profile, photos, mockk(relaxed = true))
         runCurrent()
         assertSame(rejection, profileState.value)
 

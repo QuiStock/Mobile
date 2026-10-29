@@ -12,6 +12,12 @@ interface AuthRepository {
     suspend fun clear(generation: Long)
     fun retryDelayMillis(): Long = 0
     fun hasAccess(generation: Long): Boolean
+    fun currentBinding(generation: Long): com.quistock.quistock.domain.model.SessionBinding? = null
+    suspend fun bindProfile(
+        generation: Long,
+        userId: String,
+        storeId: Long,
+    ): com.quistock.quistock.domain.model.SessionBinding? = null
 }
 
 /** Single-use remote operation; credential custody stays entirely inside data. */

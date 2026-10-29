@@ -8,6 +8,7 @@ sealed interface SessionState {
     data object LocalFailure : SessionState
     data object SignedOut : SessionState
     data object Active : SessionState
+    data class OfflineReadOnly(val reason: SessionFailure) : SessionState
     data object Expired : SessionState
     data class Failure(val reason: SessionFailure) : SessionState
 }

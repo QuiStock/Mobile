@@ -51,6 +51,7 @@ sealed interface ProfileResult {
     class Success(val profile: UserProfile) : ProfileResult
     class Failure(val retryAfterMillis: Long = 0) : ProfileResult
     data object Forbidden : ProfileResult
+    data object NoActiveStore : ProfileResult
 }
 
 sealed interface ProfileState {

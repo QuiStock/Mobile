@@ -218,3 +218,19 @@ the regular `connectedDebugAndroidTest` suite remains selected. See
 - Run instrumentation tests (requires a connected device): `./gradlew connectedDebugAndroidTest`
 - Validate local combined coverage (requires a connected device): `./gradlew jacocoTestCoverageVerification`
 - CI validates downloaded unit and instrumented coverage with `jacocoAggregateCoverageVerification`.
+
+### Home indicators and offline eligibility
+
+Home reads the authenticated Core `dashboard/summary?store_id=` route and displays
+near-expiry, combined stockout/overstock and active-action counts. Existing alerts are
+preserved. Summary cache is isolated by protected local session ID, Core user and SQL
+store, and expires for local access with the refresh cookie. It uses a dedicated DataStore
+key, atomically invalidated with credential replacement/revocation; no SQLite is required.
+OfflineReadOnly shows only cached indicators, reconnection and logout. It is never an
+Active authenticated session and cannot call protected APIs. Reconnection is manual.
+Store eligibility errors (`no_active_store` from Auth, `NO_ACTIVE_STORE` from Core)
+are terminal and distinct from CSRF failures. See [the feature spec](docs/sdd/specs/home-big-numbers-core.md).
+
+Deployment dependency: apply the Auth SQL SELECT grants, publish the Core/Auth eligibility
+changes, then release Mobile. Old server refresh sessions without platform require login;
+old local records remain online-restorable but need profile validation before offline use.

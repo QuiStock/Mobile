@@ -132,6 +132,7 @@ class LoginFragment : Fragment() {
             LoginError.InvalidCredentials -> R.string.erro_login_credenciais_invalidas
             LoginError.RateLimited -> R.string.session_rate_limit
             LoginError.PlatformNotAllowed -> R.string.login_platform_not_allowed
+            LoginError.NoActiveStore -> R.string.summary_no_store
             LoginError.UnexpectedError -> R.string.erro_login_erro_inesperado
         }
 

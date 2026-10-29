@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.auth
 
+import com.quistock.quistock.domain.model.SessionBinding
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -7,6 +8,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import java.util.UUID
 
 /** Per-request jars stage response cookies; only a generation-checked durable commit publishes them. */
 class AuthCookieCustody(
@@ -16,7 +18,14 @@ class AuthCookieCustody(
 ) {
     private val mutex = Mutex()
 
-    private data class CookieState(val generation: Long, val cookies: List<Cookie>)
+    private data class CookieState(
+        val generation: Long,
+        val cookies: List<Cookie>,
+        val sessionId: String = UUID.randomUUID().toString(),
+        val userId: String? = null,
+        val storeId: Long? = null,
+        val persisted: Boolean = false,
+    )
 
     @Volatile private var state = CookieState(0, emptyList())
     private val generation get() = state.generation
@@ -32,7 +41,8 @@ class AuthCookieCustody(
 
     suspend fun restore(expected: Long): RestoreCookies = mutex.withLock {
         if (generation != expected) return@withLock RestoreCookies.MISSING
-        val saved = store.read()
+        val batch = store.readSession()
+        val saved = batch.records
         if (saved.isEmpty()) return@withLock RestoreCookies.MISSING
         val restored = saved.map { it.cookie() }
         require(restored.all { allowed(it) && it.name == REFRESH }) { "Invalid credential scope" }
@@ -41,11 +51,63 @@ class AuthCookieCustody(
             clearLocked()
             RestoreCookies.EXPIRED
         } else {
-            if (valid.size != restored.size) store.write(valid.map(RefreshCookieRecord::from))
-            cookies = valid
+            state = CookieState(
+                expected,
+                valid,
+                batch.sessionId ?: state.sessionId,
+                batch.userId,
+                batch.storeId,
+                batch.version == 2 && batch.sessionId != null && batch.userId != null && batch.storeId != null,
+            )
+            if (valid.size != restored.size) store.writeSession(batch(valid))
             RestoreCookies.AVAILABLE
         }
     }
+
+    fun binding(expected: Long): SessionBinding? {
+        val captured = state
+        val expiry = captured.cookies.filter {
+            it.name == REFRESH && it.expiresAt > now() &&
+                it.matches(requireNotNull(origin.resolve(REFRESH_PATH)))
+        }
+            .minOfOrNull { it.expiresAt } ?: return null
+        if (expected != captured.generation) return null
+        return SessionBinding(
+            captured.sessionId,
+            captured.userId ?: return null,
+            captured.storeId ?: return null,
+            expiry,
+            captured.persisted,
+        ).takeIf { it.validAt(now()) }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun bindProfile(expected: Long, userId: String, storeId: Long): SessionBinding? =
+        withContext(NonCancellable) {
+            mutex.withLock {
+                if (expected != generation || access(expected) == null || userId.isBlank() ||
+                    storeId <= 0
+                ) {
+                    return@withLock null
+                }
+                state = state.copy(userId = userId, storeId = storeId, persisted = false)
+                try {
+                    store.writeSession(batch(cookies))
+                    state = state.copy(persisted = true)
+                } catch (_: Exception) {
+                    // An old store binding must not survive a failed identity replacement.
+                    store.revoke()
+                }
+                binding(expected)
+            }
+        }
+
+    private fun batch(values: List<Cookie>) = RefreshCookieBatch(
+        values.filter { it.name == REFRESH }.map(RefreshCookieRecord::from),
+        sessionId = state.sessionId,
+        userId = state.userId,
+        storeId = state.storeId,
+    )
 
     fun access(expected: Long): String? {
         val captured = state
@@ -95,7 +157,7 @@ class AuthCookieCustody(
                 }
                 try {
                     if (received.isNotEmpty()) {
-                        store.write(next.filter { it.name == REFRESH }.map(RefreshCookieRecord::from))
+                        store.writeSession(batch(next))
                     }
                     cookies = next
                     true

@@ -14,31 +14,38 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.security.KeyStore
 
-private val Context.authCookieDataStore by preferencesDataStore(name = "auth_cookies")
+internal val Context.authCookieDataStore by preferencesDataStore(name = "auth_cookies")
 
 class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
     private val dataStore = context.applicationContext.authCookieDataStore
     private val cipher = SecretCipher(ALIAS)
-    private val recordKey = stringPreferencesKey("refresh_cookie_v1")
+    private val recordKey = authRecordKey
 
-    override suspend fun read(): List<RefreshCookieRecord> = withContext(Dispatchers.IO) {
-        // Values without HTTP expiry/scope are never interpreted as cookies.
+    override suspend fun read(): List<RefreshCookieRecord> = readSession().records
+
+    override suspend fun readSession(): RefreshCookieBatch = withContext(Dispatchers.IO) {
         removeLegacyAuthCredential(context)
-        val saved = dataStore.data.first()[recordKey] ?: return@withContext emptyList()
-        val plaintext = cipher.decrypt(recordKey.name, Base64.decode(saved, Base64.NO_WRAP))
-        val batch = Json.decodeFromString<RefreshCookieBatch>(plaintext.toString(Charsets.UTF_8))
-        require(batch.version == 1) { "Unsupported credential version" }
-        batch.records
+        val saved = dataStore.data.first()[recordKey] ?: return@withContext RefreshCookieBatch(emptyList())
+        decodeAuthRecord(saved)
     }
 
-    override suspend fun write(records: List<RefreshCookieRecord>) = withContext(Dispatchers.IO) {
-        if (records.isEmpty()) {
+    override suspend fun write(records: List<RefreshCookieRecord>) = writeSession(RefreshCookieBatch(records))
+
+    override suspend fun writeSession(session: RefreshCookieBatch) = withContext(Dispatchers.IO) {
+        if (session.records.isEmpty()) {
             revoke()
         } else {
-            val plaintext = Json.encodeToString(RefreshCookieBatch.serializer(), RefreshCookieBatch(records))
-                .toByteArray(Charsets.UTF_8)
+            val plaintext = Json.encodeToString(RefreshCookieBatch.serializer(), session).toByteArray(Charsets.UTF_8)
             val encrypted = Base64.encodeToString(cipher.encrypt(recordKey.name, plaintext), Base64.NO_WRAP)
-            dataStore.edit { it[recordKey] = encrypted }
+            dataStore.edit { saved ->
+                val previous = saved[recordKey]?.let { runCatching { decodeAuthRecord(it) }.getOrNull() }
+                if (previous?.sessionId != session.sessionId || previous?.userId != session.userId ||
+                    previous?.storeId != session.storeId
+                ) {
+                    saved.remove(homeSummaryKey)
+                }
+                saved[recordKey] = encrypted
+            }
         }
         Unit
     }
@@ -48,7 +55,12 @@ class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
         val current = runCatching {
             revokeCredential(
                 { KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry(ALIAS) },
-                { dataStore.edit { it.remove(recordKey) } },
+                {
+                    dataStore.edit {
+                        it.remove(recordKey)
+                        it.remove(homeSummaryKey)
+                    }
+                },
             )
         }
         val legacy = runCatching { removeLegacyAuthCredential(context) }
@@ -58,6 +70,17 @@ class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
     }
 
     companion object {
-        private const val ALIAS = "quistock_auth_cookies_v1"
+        private const val ALIAS = AUTH_KEY_ALIAS
     }
+}
+
+internal const val AUTH_KEY_ALIAS = "quistock_auth_cookies_v1"
+internal val authRecordKey = stringPreferencesKey("refresh_cookie_v1")
+internal val homeSummaryKey = stringPreferencesKey("home_summary_v1")
+
+internal fun decodeAuthRecord(saved: String): RefreshCookieBatch {
+    val bytes = SecretCipher(AUTH_KEY_ALIAS).decrypt(authRecordKey.name, Base64.decode(saved, Base64.NO_WRAP))
+    val batch = Json.decodeFromString<RefreshCookieBatch>(bytes.toString(Charsets.UTF_8))
+    require(batch.version in 1..2) { "Unsupported credential version" }
+    return batch
 }

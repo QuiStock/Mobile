@@ -2,17 +2,20 @@ package com.quistock.quistock.app.di
 
 import android.content.Context
 import com.quistock.quistock.R
+import com.quistock.quistock.data.preferences.DataStoreHomeSummaryCache
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
 import com.quistock.quistock.data.remote.auth.AuthHttpAttempt
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
 import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
+import com.quistock.quistock.data.remote.core.DashboardApi
 import com.quistock.quistock.data.remote.core.HttpProfilePhotoRepository
 import com.quistock.quistock.data.remote.core.PriorityAlertsApi
 import com.quistock.quistock.data.remote.core.ProfileApi
 import com.quistock.quistock.data.remote.core.ProfileEditApi
 import com.quistock.quistock.data.remote.core.ProfileWriteAttempt
+import com.quistock.quistock.data.remote.core.RetrofitHomeSummaryRepository
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileEditRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
@@ -21,6 +24,8 @@ import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotReposit
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
+import com.quistock.quistock.domain.port.HomeSummaryCache
+import com.quistock.quistock.domain.port.HomeSummaryRepository
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.port.ProfileEditRepository
@@ -61,6 +66,13 @@ val retrofitSdkModule = module {
 }
 
 val retrofitModule = module {
+    single<DashboardApi> {
+        Retrofit.Builder().baseUrl(get<Context>().getString(R.string.core_base_url).trim())
+            .client(get<OkHttpClient>(named("CoreHttpClient"))).build().create(DashboardApi::class.java)
+    }
+    single<HomeSummaryRepository> { RetrofitHomeSummaryRepository(get()) }
+    single<HomeSummaryCache> { DataStoreHomeSummaryCache(get()) }
+
     single<ProfileEditApi> {
         Retrofit.Builder()
             .baseUrl(get<Context>().getString(R.string.core_base_url))
