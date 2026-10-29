@@ -235,3 +235,22 @@ As correções preservam as alterações locais de formatação já existentes n
 branch. Nenhum teste, build ou validação foi executado pelo agente nesta rodada.
 A resolução das 14 falhas e os percentuais combinados dependem de nova execução
 do solicitante; não há afirmação de que a nova rodada passou.
+
+### Rodada instrumentada de 29/10/2026
+
+O XML conectado do SM-A115M, com timestamp `2026-10-29T10:01:17`, registra
+70 testes, uma falha e nenhum erro. As outras 69 execuções foram aprovadas no
+relatório fornecido; o agente não executou essa rodada.
+
+A falha restante é
+`ProfileLogoutTests.recreationKeepsOneLogoutAndFailureWarningAppearsOverClearedLoginStack`:
+`RootViewWithoutFocusException` dentro da espera pela tela de Login. O aviso
+remoto já detém o foco, mas o helper tenta interagir com a raiz da Activity.
+
+O teste agora seleciona a raiz do diálogo que contém a mensagem esperada,
+verifica o aviso e o fecha; somente depois aguarda o Login pela raiz da Activity.
+Preserva as verificações de recriação, uma única operação remota, limpeza local
+e pilha protegida removida. A seleção específica também evita confundir o aviso
+com o diálogo de progresso que o precede. Sem sleeps, aumento de timeout ou
+alteração do comportamento de produção. Nenhum teste ou validação foi executado
+para confirmar esta correção; aguarda a próxima rodada do solicitante.
