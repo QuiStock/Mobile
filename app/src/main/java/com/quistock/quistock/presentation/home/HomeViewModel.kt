@@ -11,6 +11,7 @@ import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.SummaryFailure
+import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.usecase.GetHomeSummaryUseCase
 import com.quistock.quistock.domain.usecase.LoadPriorityAlertsUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
@@ -197,6 +198,9 @@ class HomeViewModel(
         it.generation == session.snapshot().generation && session.state.value == SessionState.Active &&
             (profile.state.value as? ProfileState.Ready)?.profile?.storeId == it.storeId
     } == true
+
+    fun canCreate(): Boolean = canNavigate() &&
+        (profile.state.value as? ProfileState.Ready)?.profile?.role == UserRole.EMPLOYEE
 
     private fun reload() {
         val expected = context ?: return

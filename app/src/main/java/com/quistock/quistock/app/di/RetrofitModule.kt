@@ -152,6 +152,7 @@ internal fun createCoreHttpClient(
     session: SessionUseCase,
     custody: AuthCookieCustody,
     logger: Logger? = null,
+    replayWrites: Boolean = true,
 ): OkHttpClient = OkHttpClient.Builder()
     .cookieJar(CookieJar.NO_COOKIES)
     .addInterceptor { chain ->
@@ -163,7 +164,7 @@ internal fun createCoreHttpClient(
         }
         chain.proceed(tagged)
     }
-    .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
+    .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger, replayWrites))
     .addNetworkInterceptor { chain ->
         chain.request().tag(ProfileWriteAttempt::class.java)?.send(chain) ?: chain.proceed(chain.request())
     }

@@ -26,8 +26,14 @@ internal class NavigationAccess(private val model: SessionViewModel) {
         return ready?.takeIf { current && active && it.profile.role.hasAccess }
     }
 
-    fun rejects(destination: Int?): Boolean =
-        ready()?.profile?.role == UserRole.EMPLOYEE && destination in managerDestinations
+    fun rejects(destination: Int?): Boolean = when (ready()?.profile?.role) {
+        UserRole.EMPLOYEE -> destination in managerDestinations
+        UserRole.MANAGER -> destination in setOf(
+            R.id.orderFragment, R.id.promotionFragment, R.id.orderSentFragment, R.id.promoSentFragment,
+            R.id.interferencesFragment,
+        )
+        else -> false
+    }
 
     fun shouldClear(): Boolean = when (model.session.state.value) {
         SessionState.Active, SessionState.Restoring, is SessionState.Failure -> false

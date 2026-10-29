@@ -2,6 +2,7 @@ package com.quistock.quistock.presentation.common
 
 import android.os.Bundle
 import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.StockFlow
 import java.math.BigDecimal
 import java.time.Instant
@@ -17,6 +18,7 @@ object AlertProductNavigation {
     private const val FLOW = "priority_alert_flow"
     private const val ANALYSIS_ID = "priority_alert_analysis_id"
     private const val ANALYSIS_DATE = "priority_alert_analysis_date"
+    private const val RISKS = "priority_alert_risks"
     private const val DECIMAL_PLACES = 3
 
     fun arguments(product: AlertProduct) = Bundle().apply {
@@ -28,6 +30,7 @@ object AlertProductNavigation {
         putString(FLOW, product.flow?.name)
         putString(ANALYSIS_ID, product.analysisId)
         putString(ANALYSIS_DATE, product.analysisDate?.toString())
+        putStringArrayList(RISKS, ArrayList(product.risks.map { it.name }))
     }
 
     fun product(arguments: Bundle?): AlertProduct? {
@@ -43,6 +46,9 @@ object AlertProductNavigation {
                 StockFlow.entries.find { it.name == args.getString(FLOW) },
                 args.getString(ANALYSIS_ID),
                 args.analysisDate(),
+                args.getStringArrayList(RISKS).orEmpty().mapNotNull { name ->
+                    CreationRisk.entries.find { it.name == name }
+                }.toSet(),
             )
         } else {
             null

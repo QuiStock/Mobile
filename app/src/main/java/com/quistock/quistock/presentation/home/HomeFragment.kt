@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -13,14 +14,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentHomeBinding
-import com.quistock.quistock.domain.model.AlertRisk
+import com.quistock.quistock.domain.model.ActionType
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.presentation.activity.SessionViewModel
-import com.quistock.quistock.presentation.common.AlertProductNavigation
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType
+import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
+import com.quistock.quistock.presentation.interferences.CreationPresentation
 import com.quistock.quistock.presentation.profile.LogoutConfirmationDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -34,6 +36,7 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModel()
     private val sessionViewModel: SessionViewModel by activityViewModel()
     private var navigating = false
+    private val creationModel: CreateInterferenceViewModel by activityViewModel()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         SkeletonLoadingScreen.wrap(
@@ -110,6 +113,7 @@ class HomeFragment : Fragment() {
         views.alertsProgress.isVisible = state == HomeAlertsState.Loading
         views.alertsRetry.isVisible = state == HomeAlertsState.Error
         views.rvAlertas.isVisible = ready != null
+        adapter.creationAllowed = viewModel.canCreate()
         adapter.submitList(ready?.alerts.orEmpty())
         val message = when {
             state == HomeAlertsState.Error -> R.string.home_alerts_error
@@ -125,16 +129,27 @@ class HomeFragment : Fragment() {
         val controller = findNavController()
         val current = viewModel.state.value as? HomeAlertsState.Ready ?: return
         val isActionable = alert in current.alerts && alert.hasPrimaryAction
-        val canOpen = isActionable && !navigating && viewModel.canNavigate()
+        val canOpen = isActionable && !navigating && viewModel.canCreate()
         if (!canOpen || controller.currentDestination?.id != R.id.homeFragment) return
+        val types = alert.product.actionTypes().toList()
+        if (types.size > 1) {
+            AlertDialog.Builder(requireContext())
+                .setItems(types.map { getString(CreationPresentation.type(it)) }.toTypedArray()) { _, index -> navigateAction(alert, types[index]) }.show()
+        } else {
+            types.singleOrNull()?.let { navigateAction(alert, it) }
+        }
+    }
+
+    private fun navigateAction(alert: PriorityAlert, type: ActionType) {
+        if (!viewModel.canCreate() || navigating) return
         navigating = true
-        controller.navigate(
-            if (alert.risk == AlertRisk.STOCKOUT) {
+        creationModel.enter(type, alert.product.id)
+        findNavController().navigate(
+            if (type == ActionType.ORDER) {
                 R.id.action_homeFragment_to_orderFragment
             } else {
                 R.id.action_homeFragment_to_promotionFragment
             },
-            AlertProductNavigation.arguments(alert.product),
         )
     }
 }

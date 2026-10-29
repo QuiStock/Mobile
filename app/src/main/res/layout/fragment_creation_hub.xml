@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/color_petroleo" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="24dp">
+        <TextView android:id="@+id/creationStore" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:tag="current_profile_store" />
+        <TextView android:id="@+id/creationUser" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:tag="current_profile_header_name" />
+        <TextView android:id="@+id/creationTitle" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="22sp" android:text="@string/creation_title" />
+        <Button android:id="@+id/creationOrder" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_order" />
+        <Button android:id="@+id/creationPromotion" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_promotion" />
+        <Button android:id="@+id/creationResume" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_resume" />
+        <Button android:id="@+id/creationRetry" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_retry" />
+        <TextView android:id="@+id/creationMessage" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" />
+        <TextView android:id="@+id/creationHistory" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:text="@string/creation_history" />
+        <LinearLayout android:id="@+id/creationActions" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" />
+    </LinearLayout>
+</ScrollView>
