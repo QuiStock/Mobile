@@ -1,6 +1,6 @@
 # Criar nova interferência — pedido de compra ou promoção
 
-**Status:** In progress — rodada inicial aprovada pelo solicitante exceto Detekt; refatorações aguardam nova validação
+**Status:** In progress — validações automatizadas aprovadas pelo solicitante; correção de textos aguarda conferência visual
 **Issue:** none
 **Product decision owner:** solicitante
 
@@ -323,3 +323,19 @@ execução. A evidência acima antecede estas mudanças e não valida o novo com
 Solicitante deve repetir `detekt`, `spotlessCheck` e as verificações de regressão
 pertinentes fora do sandbox. A evidência detalhada de versão/cenários reais de
 AC-17 não foi registrada nesta rodada; a funcionalidade permanece em andamento.
+
+### Correção mecânica de codificação — 29/10/2026
+
+Após informar aprovação das validações automatizadas, o solicitante identificou
+caracteres especiais corrompidos na tela de criação. Corrigidas 27 mensagens de
+`app/src/main/res/values/creation.xml`, restaurando acentos, reticências, travessão
+e separador de estoque em UTF-8. Nomes dos recursos, parâmetros de formatação e
+escapes de quebra de linha foram preservados, sem mudança de comportamento.
+Correção mecânica coberta por esta spec, sem necessidade de nova especificação.
+
+Verificações independentes de Gradle realizadas: decodificação UTF-8 estrita,
+parsing XML, comparação de nomes/atributos, parâmetros e escapes antes/depois,
+inspeção de caracteres corrompidos e `git diff --check`. Nenhum Gradle/teste/build
+executado pelo agente. Aprovação automatizada informada antecede esta correção;
+conferência visual no APK recompilado e os cenários práticos de AC-17 continuam
+pendentes de registro. Não se declara conclusão funcional nesta correção.
