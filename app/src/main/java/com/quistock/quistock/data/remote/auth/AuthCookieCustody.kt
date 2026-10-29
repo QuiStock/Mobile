@@ -25,7 +25,14 @@ class AuthCookieCustody(
         val userId: String? = null,
         val storeId: Long? = null,
         val persisted: Boolean = false,
-    )
+    ) {
+        fun record(values: List<Cookie>) = RefreshCookieBatch(
+            values.filter { it.name == REFRESH }.map(RefreshCookieRecord::from),
+            sessionId = sessionId,
+            userId = userId,
+            storeId = storeId,
+        )
+    }
 
     @Volatile private var state = CookieState(0, emptyList())
     private val generation get() = state.generation
@@ -59,40 +66,36 @@ class AuthCookieCustody(
                 batch.storeId,
                 batch.version == 2 && batch.sessionId != null && batch.userId != null && batch.storeId != null,
             )
-            if (valid.size != restored.size) store.writeSession(batch(valid))
+            if (valid.size != restored.size) store.writeSession(state.record(valid))
             RestoreCookies.AVAILABLE
         }
     }
 
     fun binding(expected: Long): SessionBinding? {
         val captured = state
-        val expiry = captured.cookies.filter {
-            it.name == REFRESH && it.expiresAt > now() &&
-                it.matches(requireNotNull(origin.resolve(REFRESH_PATH)))
-        }
-            .minOfOrNull { it.expiresAt } ?: return null
         if (expected != captured.generation) return null
-        return SessionBinding(
-            captured.sessionId,
-            captured.userId ?: return null,
-            captured.storeId ?: return null,
-            expiry,
-            captured.persisted,
-        ).takeIf { it.validAt(now()) }
+        val expiry = captured.cookies.filter {
+            it.name == REFRESH && it.expiresAt > now() && it.matches(requireNotNull(origin.resolve(REFRESH_PATH)))
+        }.minOfOrNull { it.expiresAt }
+        return when {
+            captured.userId == null || captured.storeId == null || expiry == null -> null
+
+            else -> SessionBinding(captured.sessionId, captured.userId, captured.storeId, expiry, captured.persisted)
+                .takeIf { it.validAt(now()) }
+        }
     }
 
     @Suppress("TooGenericExceptionCaught")
     suspend fun bindProfile(expected: Long, userId: String, storeId: Long): SessionBinding? =
         withContext(NonCancellable) {
             mutex.withLock {
-                if (expected != generation || access(expected) == null || userId.isBlank() ||
-                    storeId <= 0
-                ) {
+                val validIdentity = userId.isNotBlank() && storeId > 0
+                if (expected != generation || access(expected) == null || !validIdentity) {
                     return@withLock null
                 }
                 state = state.copy(userId = userId, storeId = storeId, persisted = false)
                 try {
-                    store.writeSession(batch(cookies))
+                    store.writeSession(state.record(cookies))
                     state = state.copy(persisted = true)
                 } catch (_: Exception) {
                     // An old store binding must not survive a failed identity replacement.
@@ -101,13 +104,6 @@ class AuthCookieCustody(
                 binding(expected)
             }
         }
-
-    private fun batch(values: List<Cookie>) = RefreshCookieBatch(
-        values.filter { it.name == REFRESH }.map(RefreshCookieRecord::from),
-        sessionId = state.sessionId,
-        userId = state.userId,
-        storeId = state.storeId,
-    )
 
     fun access(expected: Long): String? {
         val captured = state
@@ -157,7 +153,7 @@ class AuthCookieCustody(
                 }
                 try {
                     if (received.isNotEmpty()) {
-                        store.writeSession(batch(next))
+                        store.writeSession(state.record(next))
                     }
                     cookies = next
                     true

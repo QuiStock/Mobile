@@ -72,7 +72,7 @@ class AuthenticatedSessionRule(
     }
 
     fun goOffline() = runBlocking {
-        active.openOffline(active.snapshot(), scope, com.quistock.quistock.domain.model.SessionFailure.NETWORK)
+        active.local.openOffline(active.snapshot(), scope, com.quistock.quistock.domain.model.SessionFailure.NETWORK)
     }
 
     override fun finished(description: Description) {

@@ -156,3 +156,13 @@ e retry após indisponibilidade, sem registrar credenciais, payload pessoal ou U
 
 Implementation in progress; do not treat planned checks as executed evidence.
 Completar no PR de implementação: critérios entregues, evidência executada e diferenças aprovadas.
+
+### Implementation responsibilities
+
+SessionLocalAccess owns protected identity and read-only transitions under the existing
+session lifecycle. SessionUseCase retains online login/refresh/logout coordination.
+CoreSessionInterceptor rejects read-only requests before any automatic refresh and revokes
+local eligibility for confirmed NO_ACTIVE_STORE responses without treating generic 403 as
+store loss. Offline expiry rechecks state and current cookie validity under the session
+mutex, so an old timer cannot revoke a successfully renewed online session. Auth and Core
+share the existing Retry-After parsing behavior through one data-layer helper.

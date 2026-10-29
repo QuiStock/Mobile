@@ -105,10 +105,10 @@ class SessionViewModel(
                 if (state is SessionState.Failure) summary.openOffline()
                 if (state is SessionState.OfflineReadOnly) {
                     val expected = session.snapshot()
-                    session.binding()?.let { scope ->
+                    session.local.binding()?.let { scope ->
                         offlineExpiry = viewModelScope.launch {
                             delay((scope.expiresAt - System.currentTimeMillis()).coerceAtLeast(1))
-                            session.expire(expected)
+                            session.local.expireOffline(expected)
                         }
                     }
                 }

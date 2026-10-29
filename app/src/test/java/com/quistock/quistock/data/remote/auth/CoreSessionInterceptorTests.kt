@@ -36,6 +36,45 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CoreSessionInterceptorTests {
+    @Test fun offlineReadOnlyCannotSendOrAutomaticallyRenewACoreRequest() {
+        val snapshot = SessionSnapshot(1, false)
+        val session = activeSession(snapshot)
+        every {
+            session.state
+        } returns MutableStateFlow<SessionState>(
+            SessionState.OfflineReadOnly(com.quistock.quistock.domain.model.SessionFailure.NETWORK),
+        )
+        val custody = mockk<AuthCookieCustody>()
+        val origin = "https://core.example.test/".toHttpUrl()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns Request.Builder().url(origin).build()
+        assertTrue(
+            runCatching { CoreSessionInterceptor(origin, session, custody).intercept(chain) }
+                .exceptionOrNull() is SessionException,
+        )
+        verify(exactly = 0) { chain.proceed(any()) }
+        coVerify(exactly = 0) { session.refresh(any()) }
+    }
+
+    @Test fun confirmedStoreLossExpiresTheSessionWithoutRefreshingAndPreservesTheErrorBody() {
+        val snapshot = SessionSnapshot(1, true)
+        val session = activeSession(snapshot)
+        coEvery { session.expire(snapshot) } returns Unit
+        val custody = mockk<AuthCookieCustody>()
+        every { custody.access(any()) } returns "fixture"
+        val origin = "https://core.example.test/".toHttpUrl()
+        val request = Request.Builder().url(origin).build()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns request
+        every { chain.proceed(any()) } returns Response.Builder().request(request).protocol(Protocol.HTTP_1_1)
+            .code(403).message("fixture").body("""{"error":"NO_ACTIVE_STORE"}""".toResponseBody()).build()
+        CoreSessionInterceptor(origin, session, custody).intercept(chain).use {
+            assertEquals("""{"error":"NO_ACTIVE_STORE"}""", it.body!!.string())
+        }
+        coVerify(exactly = 1) { session.expire(snapshot) }
+        coVerify(exactly = 0) { session.refresh(any()) }
+    }
+
     @Test fun missingAccessCookieFailsAsSessionExceptionWithoutSendingRequest() {
         val snapshot = SessionSnapshot(1, true)
         val session = activeSession(snapshot)
