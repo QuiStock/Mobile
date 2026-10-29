@@ -23,7 +23,9 @@ data class AlertProduct(
         if (CreationRisk.STOCKOUT in risks) add(ActionType.ORDER)
         if (CreationRisk.EXPIRED !in risks &&
             (CreationRisk.NEAR_EXPIRY in risks || CreationRisk.EXPIRATION in risks)
-        ) add(ActionType.PROMOTION)
+        ) {
+            add(ActionType.PROMOTION)
+        }
     }
 }
 

@@ -45,7 +45,13 @@ class OrderAndPromotionFragmentTests {
     private lateinit var previousActions: InterferenceRepository
     private val actions = mockk<InterferenceRepository>()
     private val product = AlertProduct(
-        "product", "Fixture product", "Category", BigDecimal("2.375"), null, StockFlow.MEDIUM, "flow",
+        "product",
+        "Fixture product",
+        "Category",
+        BigDecimal("2.375"),
+        null,
+        StockFlow.MEDIUM,
+        "flow",
         risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION),
     )
 

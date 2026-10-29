@@ -18,9 +18,12 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
                     val risk = when {
                         CreationRisk.NEAR_EXPIRY in product.risks &&
                             CreationRisk.EXPIRED !in product.risks -> AlertRisk.EXPIRY
+
                         CreationRisk.STOCKOUT in product.risks -> AlertRisk.STOCKOUT
+
                         CreationRisk.EXPIRATION in product.risks &&
                             CreationRisk.EXPIRED !in product.risks -> AlertRisk.OVERSTOCK
+
                         else -> null
                     }
                     risk?.let { PriorityAlert(product, it) }

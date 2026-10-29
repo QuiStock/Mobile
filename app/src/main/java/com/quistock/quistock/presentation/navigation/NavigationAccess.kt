@@ -28,10 +28,15 @@ internal class NavigationAccess(private val model: SessionViewModel) {
 
     fun rejects(destination: Int?): Boolean = when (ready()?.profile?.role) {
         UserRole.EMPLOYEE -> destination in managerDestinations
+
         UserRole.MANAGER -> destination in setOf(
-            R.id.orderFragment, R.id.promotionFragment, R.id.orderSentFragment, R.id.promoSentFragment,
+            R.id.orderFragment,
+            R.id.promotionFragment,
+            R.id.orderSentFragment,
+            R.id.promoSentFragment,
             R.id.interferencesFragment,
         )
+
         else -> false
     }
 

@@ -59,8 +59,10 @@ class CreateInterferenceViewModel(
                 (current as? ProfileState.Ready)?.takeIf {
                     val status = session.state.value
                     it.generation == session.snapshot().generation &&
-                        (status == SessionState.Active ||
-                            status is SessionState.Failure) &&
+                        (
+                            status == SessionState.Active ||
+                                status is SessionState.Failure
+                            ) &&
                         it.profile.role == UserRole.EMPLOYEE && it.profile.rejection() == null
                 }
                     ?.let { it.generation to it.profile.storeId }
@@ -74,7 +76,8 @@ class CreateInterferenceViewModel(
                 if (session.state.value is SessionState.Failure && state.value.busy) {
                     submission.cancel()
                     mutableState.value = state.value.copy(
-                        phase = CreationPhase.ERROR, failure = ActionFailure.UNCERTAIN,
+                        phase = CreationPhase.ERROR,
+                        failure = ActionFailure.UNCERTAIN,
                     )
                 }
             }
@@ -142,8 +145,12 @@ class CreateInterferenceViewModel(
     internal fun select(product: AlertProduct) {
         if (state.value.busy || state.value.loading || product !in state.value.products) return
         mutableState.value = state.value.copy(
-            phase = CreationPhase.FORM, product = product, action = null, failure = null,
-            draft = ActionDraft(), errors = emptySet(),
+            phase = CreationPhase.FORM,
+            product = product,
+            action = null,
+            failure = null,
+            draft = ActionDraft(),
+            errors = emptySet(),
         )
     }
 
@@ -175,8 +182,12 @@ class CreateInterferenceViewModel(
     internal fun showExisting(action: InterferenceAction) {
         if (state.value.busy || action !in state.value.actions) return
         mutableState.value = state.value.copy(
-            phase = CreationPhase.EXISTING, action = action, type = action.type, failure = null,
-            product = null, draft = ActionDraft(),
+            phase = CreationPhase.EXISTING,
+            action = action,
+            type = action.type,
+            failure = null,
+            product = null,
+            draft = ActionDraft(),
         )
     }
 

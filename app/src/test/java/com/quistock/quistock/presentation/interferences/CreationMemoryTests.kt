@@ -43,13 +43,28 @@ class CreationMemoryTests {
     private val profile = mockk<ProfileUseCase>()
     private val status = MutableStateFlow<SessionState>(SessionState.Active)
     private val ready = ProfileState.Ready(
-        1, UserProfile("fixture", "Fixture", "fixture@example.test", UserRole.EMPLOYEE,
-            UserStatus.ACTIVE, null, 17, "Store"),
+        1,
+        UserProfile(
+            "fixture",
+            "Fixture",
+            "fixture@example.test",
+            UserRole.EMPLOYEE,
+            UserStatus.ACTIVE,
+            null,
+            17,
+            "Store",
+        ),
     )
     private val profileState = MutableStateFlow<ProfileState>(ready)
     private val expected = SessionSnapshot(1, true)
     private val product = AlertProduct(
-        "product", "Product", "Category", BigDecimal.ONE, null, StockFlow.MEDIUM, "flow",
+        "product",
+        "Product",
+        "Category",
+        BigDecimal.ONE,
+        null,
+        StockFlow.MEDIUM,
+        "flow",
         risks = setOf(CreationRisk.STOCKOUT),
     )
 

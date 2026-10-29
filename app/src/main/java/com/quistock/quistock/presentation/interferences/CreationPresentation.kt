@@ -20,19 +20,26 @@ internal object CreationPresentation {
     }
 
     fun product(context: Context, product: AlertProduct): String = context.getString(
-        R.string.creation_product_summary, product.name, product.category,
-        product.stock.stripTrailingZeros().toPlainString(), product.analysisDate?.toString().orEmpty(),
+        R.string.creation_product_summary,
+        product.name,
+        product.category,
+        product.stock.stripTrailingZeros().toPlainString(),
+        product.analysisDate?.toString().orEmpty(),
     )
 
     fun action(context: Context, action: InterferenceAction): String {
         val summary = context.getString(
-            R.string.creation_action_summary, context.getString(type(action.type)), action.productId,
-            context.getString(status(action.status)), values(context, action.type, action.values),
+            R.string.creation_action_summary,
+            context.getString(type(action.type)),
+            action.productId,
+            context.getString(status(action.status)),
+            values(context, action.type, action.values),
         )
         return if (action.type == ActionType.PROMOTION) {
             summary + "\n" + context.getString(
                 R.string.creation_prices,
-                action.referencePrice?.toPlainString(), action.promotionalPrice?.toPlainString(),
+                action.referencePrice?.toPlainString(),
+                action.promotionalPrice?.toPlainString(),
             )
         } else {
             summary

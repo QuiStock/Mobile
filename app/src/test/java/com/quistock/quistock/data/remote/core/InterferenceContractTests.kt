@@ -36,7 +36,8 @@ class InterferenceContractTests {
         val order = InterferenceMapper.request("flow", ActionType.ORDER, draft)
         assertEquals(setOf("flow_id", "action_type", "quantity", "desired_order_date"), order.keys)
         val promo = InterferenceMapper.request(
-            "flow", ActionType.PROMOTION,
+            "flow",
+            ActionType.PROMOTION,
             ActionDraft(discount = "15,25", start = "2026-11-05", end = "2026-11-06"),
         )
         assertEquals("15.25", promo["discount_percentage"].toString())
@@ -68,7 +69,10 @@ class InterferenceContractTests {
         val sent = repository.forward(generated.action, expected) as ActionResult.Found
         assertEquals(ActionStatus.SENT_TO_MANAGER, sent.action.status)
         assertEquals(draft, sent.action.values)
-        coEvery { api.forward("action", any(), expected) } coAnswers { delay(30_001); error("Unreachable") }
+        coEvery { api.forward("action", any(), expected) } coAnswers {
+            delay(30_001)
+            error("Unreachable")
+        }
         val timeout = repository.forward(generated.action, expected) as ActionResult.Failed
         assertEquals(ActionFailure.UNCERTAIN, timeout.reason)
         coVerify(exactly = 1) { api.generate(any(), expected) }
@@ -77,8 +81,13 @@ class InterferenceContractTests {
     @Test
     fun `disconnect after write and incompatible action body remain uncertain`() = runTest {
         coEvery { api.generate(any(), expected) } throws IOException()
-        assertEquals(ActionFailure.UNCERTAIN, (repository.generate(product, 17, ActionType.ORDER, draft, expected)
-            as ActionResult.Failed).reason)
+        assertEquals(
+            ActionFailure.UNCERTAIN,
+            (
+                repository.generate(product, 17, ActionType.ORDER, draft, expected)
+                    as ActionResult.Failed
+                ).reason,
+        )
         coEvery { api.generate(any(), expected) } returns response(
             """{"flow_id":"flow","generated_actions":[${actionJson.replace("product", "other")}]}""",
         )
