@@ -7,6 +7,8 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -22,6 +24,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -33,6 +36,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ProfileLogoutTests {
     private val auth = mockk<AuthRepository>(relaxed = true)
+
     @get:Rule val authenticatedSession = AuthenticatedSessionRule(auth = auth)
     private val remote = CompletableDeferred<Boolean>()
 
@@ -76,9 +80,15 @@ class ProfileLogoutTests {
             }
             onView(withText(R.string.logout_progress)).inRoot(isDialog()).check(matches(isDisplayed()))
             scenario.onActivity { remote.complete(false) }
+            val warningRoot = allOf(
+                isDialog(),
+                withDecorView(hasDescendant(withText(R.string.logout_remote_warning_message))),
+            )
+            // The warning owns focus; the Activity root is actionable only after dismissing it.
+            onView(withText(R.string.logout_remote_warning_message)).inRoot(warningRoot)
+                .check(matches(isDisplayed()))
+            onView(withText(R.string.logout_understood)).inRoot(warningRoot).perform(click())
             awaitDestination(scenario, R.id.loginFragment)
-            onView(withText(R.string.logout_remote_warning_message)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withText(R.string.logout_understood)).inRoot(isDialog()).perform(click())
             scenario.onActivity {
                 assertEquals(R.id.loginFragment, nav(it).currentDestination?.id)
                 assertFalse(nav(it).popBackStack())

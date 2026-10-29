@@ -27,6 +27,12 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Sources of truth
 
+- Relatório instrumentado de 29/10/2026 registra 69 aprovações e uma falha em
+  70 testes. A falha restante de logout é uma espera pela raiz da Activity sem
+  foco enquanto o aviso remoto está aberto. Teste ajustado para verificar e
+  fechar a raiz específica do aviso antes de aguardar Login. Sem nova execução
+  ou validação pelo agente; ver `specs/role-based-bottom-navigation.md`.
+
 - Rodada de navegação recebida em 28/10/2026: relatório unitário das 17:32 tem
   268 testes sem falhas; instrumentação das 17:38 tem 70 testes com 14 falhas.
   JaCoCo disponível é das 11:50, anterior à rodada e sem o pacote novo de
