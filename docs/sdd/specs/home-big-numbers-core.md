@@ -1,29 +1,28 @@
 # Big numbers da Home com dados da API Core
 
-**Status:** Implemented — contracts approved on 2026-10-29; execution checks in progress.
-**Issue:** none
-**Product decision owner:** solicitante (decisões de produto recebidas em 16/10/2026)
+**Status:** Implemented — contracts approved on 2026-10-29; execution evidence in [PR #44](https://github.com/QuiStock/Mobile/pull/44).
+**Issue:** [QUIS-126](https://quistock.atlassian.net/browse/QUIS-126)
+**Product decision owner:** solicitante (plano de implementação aprovado em 29/10/2026)
 
 ## Problema e objetivo
 
-A Home exibe valores fixos para Vencimento curto, Ruptura/Excesso e Ações ativas.
-Substituir esses exemplos pelos dados reais da Core, com estados observáveis de
-carregamento, indisponibilidade e recuperação, respeitando a sessão existente.
-Fonte do requisito: solicitação de 16/10/2026 nesta conversa. Esta entrega prepara
-a especificação; não autoriza iniciar a implementação antes de resolver todos os Open.
+A Home substitui os valores fixos de Vencimento curto, Ruptura/Excesso e Ações ativas
+pelos dados reais da Core, com carregamento, indisponibilidade e recuperação.
+O plano aprovado em 29/10/2026 fecha as decisões de loja, sessão e consulta offline;
+esta especificação descreve a implementação da PR #44.
 
 ## Fontes e situação verificada
 
-Inspeção dos arquivos locais em 16/10/2026; os testes citados foram lidos, não executados.
+Fontes revisadas em 29/10/2026. Resultados de execução são registrados na seção de verificação e na PR.
 
 | Evidência | Fonte |
 | --- | --- |
 | Arquitetura, fronteiras e processo | [README](../../../README.md), [contexto](../context.md), [processo SDD](../README.md) |
-| Três cards com valores fixos e Fragment sem ViewModel | `app/src/main/res/layout/fragment_home.xml`, `presentation/home/HomeFragment.kt` |
+| Cards reais no Fragment e ViewModel existente | `app/src/main/res/layout/fragment_home.xml`, `presentation/home/HomeFragment.kt`, `presentation/home/HomeViewModel.kt` |
 | Contrato do dashboard | Repositório irmão `DS_Backend`, `api-contract.md`, seção 6.1 |
 | Rota, tipos e cálculo implementados | `DS_Backend/src/main/java/com/quistock/ds_backend/`: `controller/DashboardController.java`, `model/dto/DashboardSummaryDTO.java`, `service/DashboardService.java` |
 | Exemplos de sucesso, vazio e ERP indisponível | `DS_Backend/src/test/java/com/quistock/ds_backend/`: `controller/DashboardControllerTest.java`, `service/DashboardServiceTest.java` |
-| Endpoint protegido, sem filtro de usuário no serviço | `DS_Backend/.../config/SecurityConfig.java`, `DashboardController.java`, `DashboardService.java` |
+| Endpoint protegido com filtro e autorização por loja | `DS_Backend/.../controller/DashboardController.java`, `service/DashboardService.java`, `service/UserAccessGuard.java` |
 | Configuração atual e cliente autenticado | `app/src/main/res/values/config.xml`, `app/di/RetrofitModule.kt`, `data/remote/auth/CoreSessionInterceptor.kt` |
 | Sessão, gerações e proteção contra resultados atrasados | `domain/usecase/SessionUseCase.kt`, `presentation/activity/MainActivity.kt` |
 | Cancelamento do fluxo anterior de indicadores/cache | [QUIS-128, Removal of the cancelled indicator feature](QUIS-128-login-client-side.md#removal-of-the-cancelled-indicator-feature-2026-10-15) |
@@ -36,17 +35,17 @@ via ambiente está desatualizada para esse cliente. Não reproduzir endereços p
 
 ## Escopo
 
-**Incluído:** leitura do resumo, mapeamento para os três cards, configuração explícita
-do Retrofit Core, integração ao ciclo de vida da Home, estados e erros, isolamento
-de sessão, DI Koin e testes vinculados aos critérios.
+**Incluído:** resumo por loja, mapeamento dos três cards no HomeViewModel existente,
+CoreHttpClient existente, estados de carregamento/erro/retry, cache DataStore protegido,
+modo explícito de consulta offline, vínculo sessão/usuário/loja, validação de elegibilidade,
+DI Koin, documentação e testes. Integração com a navegação central da main preserva
+as abas online e bloqueia qualquer destino protegido no modo offline.
 
-**Excluído:** lista de alertas prioritários, perfil/nome da loja/saudação, novas rotas
-de navegação ou cliques nos cards, alterações de regras no backend, geração ou
-mutação de ações, chamadas ERP diretas, redesign da Home, mudanças no chatbot,
-reescrita da autenticação e consulta dos demais indicadores do resumo.
-Cache persistente por usuário e loja está incluído. O resumo deve ser exclusivo da
-loja do usuário; o contrato necessário no DS_Backend é uma dependência obrigatória,
-e sua implementação não está incluída nesta entrega documental do Mobile.
+**Excluído:** novos cálculos/endpoint de dashboard, ML, SQLite/Room, reescrita dos alertas,
+novos fluxos de ações, chamadas diretas ao ERP, redesign e mudanças nas regras do website.
+As alterações complementares de elegibilidade estão em [Auth #11](https://github.com/QuiStock/DS_Auth/pull/11)
+e [Core #38](https://github.com/QuiStock/DS_Backend/pull/38). Não há nova tabela/coluna SQL;
+as sessões MongoDB passam a armazenar a plataforma.
 
 ## Approved implementation contract (2026-10-29)
 
@@ -154,8 +153,13 @@ combinada unitária/instrumentada; relatório unitário local não comprova esse
 Smoke manual em desenvolvimento: login, resumo, comparação com resposta Core autorizada
 e retry após indisponibilidade, sem registrar credenciais, payload pessoal ou URL privada.
 
-Implementation in progress; do not treat planned checks as executed evidence.
-Completar no PR de implementação: critérios entregues, evidência executada e diferenças aprovadas.
+Executed companion checks: Auth has 37 passing tests (including MongoDB/PostgreSQL integration)
+and Core has 138 passing tests; their format, static analysis, coverage, build and ARM64 CI gates
+passed. Mobile unit tests, Spotless/Lint and Detekt passed on the implementation branch.
+Build, connected tests and combined coverage results are linked in [PR #44 checks](https://github.com/QuiStock/Mobile/pull/44/checks)
+and the PR description records the final counts and limitations. Planned criteria above are
+not themselves execution evidence. Manual TalkBack and production smoke/grants/deployments
+are not claimed. No gate or coverage exclusion was relaxed.
 
 ### Implementation responsibilities
 
@@ -166,3 +170,11 @@ local eligibility for confirmed NO_ACTIVE_STORE responses without treating gener
 store loss. Offline expiry rechecks state and current cookie validity under the session
 mutex, so an old timer cannot revoke a successfully renewed online session. Auth and Core
 share the existing Retry-After parsing behavior through one data-layer helper.
+
+### Deployment order
+
+Apply `DS_Auth/docs/mobile-store-eligibility.sql` as the database owner using the existing
+Auth role, then publish Auth #11 and Core #38 before releasing Mobile #44. The script
+only grants SELECT for the required store columns. No production permission or deployment
+is performed by these source changes. Old MongoDB sessions without platform need a new
+login. Rollback of the client may also require login because its protected record is versioned.
