@@ -42,7 +42,9 @@ internal object TabContent {
                     val y = if (tab == MainTab.CHATBOT) view.getChildAt(0)?.height ?: 0 else 0
                     view.scrollTo(0, y)
                 }
+
                 is NestedScrollView -> view.scrollTo(0, 0)
+
                 is RecyclerView -> {
                     (view.getTag(R.id.navigation_position_restorer) as? ListPositionRestorer)?.cancel()
                     view.setTag(R.id.navigation_position_restorer, null)

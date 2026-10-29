@@ -12,7 +12,8 @@ internal class ListPositionRestorer(
     private val list: RecyclerView,
     private val saved: Parcelable?,
     owner: LifecycleOwner,
-) : RecyclerView.AdapterDataObserver(), DefaultLifecycleObserver {
+) : RecyclerView.AdapterDataObserver(),
+    DefaultLifecycleObserver {
     private val adapter = list.adapter
     private var restored = false
     private var observing = false

@@ -8,13 +8,11 @@ internal class TabHistory {
         if (visits.lastOrNull() != tab) visits.add(tab)
     }
 
-    fun previous(): MainTab? {
-        return if (visits.size > 1) {
-            visits.removeAt(visits.lastIndex)
-            visits.last()
-        } else {
-            null
-        }
+    fun previous(): MainTab? = if (visits.size > 1) {
+        visits.removeAt(visits.lastIndex)
+        visits.last()
+    } else {
+        null
     }
 
     fun clear() = visits.clear()
