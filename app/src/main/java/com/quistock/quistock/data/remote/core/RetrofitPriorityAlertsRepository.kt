@@ -6,11 +6,6 @@ import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -38,7 +33,8 @@ class RetrofitPriorityAlertsRepository(private val api: PriorityAlertsApi, priva
         val parsed = rows.map { row -> parseProduct(row, branch) }
         val duplicates = parsed.filterNotNull().groupingBy { it.id }.eachCount().filterValues { it > 1 }.keys
         val candidates = parsed.filterNotNull().filterNot { it.id in duplicates }
-        val products = readAnalyses(candidates)
+        val current = body(api.current(storeId))
+        val products = candidates.map { CurrentAnalysisMapper.select(it, current, storeId) }
         val invalidCount = rows.size - products.size
         if (invalidCount > 0) {
             logger.info(
@@ -65,26 +61,6 @@ class RetrofitPriorityAlertsRepository(private val api: PriorityAlertsApi, priva
         val name = requireNotNull(branch.text("name"))
         require(branches.count { it.text("name") == name } == 1)
         return name
-    }
-
-    private suspend fun readAnalyses(products: List<AlertProduct>): List<AlertProduct> = coroutineScope {
-        val permits = Semaphore(MAX_CONCURRENT_REQUESTS)
-        products.map { product ->
-            async {
-                permits.withPermit {
-                    val flows = body(api.flows(product.id))
-                    mapAnalysis(product, flows)
-                }
-            }
-        }.awaitAll().filterNotNull()
-    }
-
-    private fun mapAnalysis(product: AlertProduct, flows: JsonArray): AlertProduct? {
-        val mapped = HistoricalAnalysisMapper.select(product, flows)
-        if (mapped == null) {
-            logger.info("Core alert analysis rejected", context + ("reason" to "ambiguous_or_invalid_analysis"))
-        }
-        return mapped
     }
 
     @Suppress("SwallowedException")
@@ -129,7 +105,6 @@ class RetrofitPriorityAlertsRepository(private val api: PriorityAlertsApi, priva
         (get(key) as? JsonPrimitive)?.contentOrNull?.toBigDecimalOrNull()
 
     private companion object {
-        const val MAX_CONCURRENT_REQUESTS = 4
         const val STOCK_DECIMAL_PLACES = 3
     }
 }

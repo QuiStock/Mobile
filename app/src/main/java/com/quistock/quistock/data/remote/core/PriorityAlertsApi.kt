@@ -12,6 +12,9 @@ interface PriorityAlertsApi {
     @GET("products")
     suspend fun products(@Query("branch") branch: String): Response<JsonArray>
 
+    @GET("flows/current")
+    suspend fun current(@Query("store_id") storeId: Long): Response<JsonArray>
+
     @GET("flows")
     suspend fun flows(@Query("product_id") productId: String): Response<JsonArray>
 }

@@ -24,7 +24,7 @@ class RetrofitPriorityAlertsRepositoryTests {
     private fun setup(products: String) {
         coEvery { api.branches() } returns json("""[{"id":"store","store_id":17,"name":"Fixture store"}]""")
         coEvery { api.products("Fixture store") } returns json(products)
-        coEvery { api.flows(any()) } returns json("[]")
+        coEvery { api.current(17) } returns json("[]")
     }
 
     @Test
@@ -40,19 +40,12 @@ class RetrofitPriorityAlertsRepositoryTests {
     }
 
     @Test
-    fun `history selects newest dated analysis rather than return order`() = runTest {
-        setup("[${product("history")},${product("valid")}]")
-        coEvery { api.flows("history") } returns json(
-            "[${flow("history", "new", "2026-10-21T10:00:00Z")},${flow("history", "old")}]",
-        )
-        coEvery { api.flows("valid") } returns json("[${flow("valid")}]")
-
+    fun `current analysis comes from server selection and new classifier`() = runTest {
+        setup("[${product("valid")}]")
+        coEvery { api.current(17) } returns json("[${flow("valid")}]")
         val result = repository.read(17, "store") as AlertProductsResult.Success
-
-        assertEquals(listOf("history", "valid"), result.products.map { it.id })
-        assertEquals("new", result.products.first().analysisId)
-        assertEquals(StockFlow.HIGH, result.products.last().flow)
-        assertEquals(0, result.invalidCount)
+        assertEquals("analysis", result.products.single().analysisId)
+        assertEquals(StockFlow.HIGH, result.products.single().flow)
     }
 
     @Test
@@ -63,13 +56,13 @@ class RetrofitPriorityAlertsRepositoryTests {
 
         assertEquals(BigDecimal("2.375"), result.products.single().stock)
         assertEquals(1, result.invalidCount)
-        coVerify(exactly = 0) { api.flows("invalid") }
+        coVerify(exactly = 1) { api.current(17) }
     }
 
     @Test
     fun `failed analysis query fails section instead of publishing incomplete results`() = runTest {
         setup("[${product("valid")}]")
-        coEvery { api.flows("valid") } throws IOException("fixture")
+        coEvery { api.current(17) } throws IOException("fixture")
 
         assertEquals(AlertProductsResult.Failure, repository.read(17, "store"))
     }
@@ -88,7 +81,7 @@ class RetrofitPriorityAlertsRepositoryTests {
         setup("[${product("duplicate")},${product("duplicate")},$incomplete]")
 
         assertEquals(AlertProductsResult.Failure, repository.read(17, "store"))
-        coVerify(exactly = 0) { api.flows(any()) }
+        coVerify(exactly = 1) { api.current(17) }
     }
 
     @Test
@@ -111,5 +104,5 @@ class RetrofitPriorityAlertsRepositoryTests {
         """{"id":"$id","name":"Fixture product","category":"Category","current_stock":$stock,"branch":"Fixture store"}"""
 
     private fun flow(productId: String, id: String = "analysis", date: String = "2026-10-20T10:00:00Z") =
-        """{"id":"$id","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED","analysis_date":"$date"}"""
+        """{"id":"$id","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED","analysis_date":"$date","store_id":17,"is_current":true,"classifier":"SALES_PERCENTILES_V1","risks":["STOCKOUT"]}"""
 }

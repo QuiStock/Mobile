@@ -22,6 +22,7 @@ class CoreSessionInterceptor(
     private val session: SessionUseCase,
     private val custody: AuthCookieCustody,
     private val logger: Logger? = null,
+    private val replayWrites: Boolean = true,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response = runBlocking {
         val request = chain.request()
@@ -57,6 +58,15 @@ class CoreSessionInterceptor(
         val response = diagnostics.send(chain, authorized(request, current.generation, diagnostics), 1)
         requireCurrentSession(current, response, diagnostics)
         if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return enforceStoreEligibility(response, current)
+        if (!replayWrites && request.method != "GET") {
+            try {
+                renew(current, "unauthorized", diagnostics)
+            } catch (error: SessionException) {
+                response.close()
+                throw error
+            }
+            return response
+        }
         response.close()
         val valid = renew(current, "unauthorized", diagnostics)
         val retried = diagnostics.send(chain, authorized(request, valid.generation, diagnostics), 2)
