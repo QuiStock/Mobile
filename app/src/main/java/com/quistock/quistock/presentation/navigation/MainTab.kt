@@ -17,13 +17,17 @@ internal enum class MainTab(val label: Int, val icon: Int, val activeIcon: Int) 
 
     fun destination(role: UserRole): Int = when (this) {
         HOME -> R.id.homeFragment
+
         INTERFERENCES -> if (role == UserRole.MANAGER) {
             R.id.managerInterferencesFragment
         } else {
             R.id.interferencesFragment
         }
+
         PRODUCTS -> R.id.productControlFragment
+
         EMPLOYEES -> R.id.employeeFragment
+
         CHATBOT -> R.id.chatbotFragment
     }
 

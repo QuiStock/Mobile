@@ -49,12 +49,18 @@ internal class TabContentCallbacks(
 
     private fun destination(fragment: Fragment): Int? = when (fragment) {
         is com.quistock.quistock.presentation.home.HomeFragment -> R.id.homeFragment
+
         is com.quistock.quistock.presentation.interferences.InterferencesFragment -> R.id.interferencesFragment
+
         is com.quistock.quistock.presentation.interferences.ManagerInterferencesFragment ->
             R.id.managerInterferencesFragment
+
         is com.quistock.quistock.presentation.control.ProductControlFragment -> R.id.productControlFragment
+
         is com.quistock.quistock.presentation.employee.EmployeeFragment -> R.id.employeeFragment
+
         is com.quistock.quistock.presentation.chatbot.ChatbotFragment -> R.id.chatbotFragment
+
         else -> null
     }
 
