@@ -40,7 +40,13 @@ class InterferenceWorkflowTests {
     private val profile = mockk<ProfileUseCase>()
     private val expected = SessionSnapshot(1, true)
     private val product = AlertProduct(
-        "product", "Product", "Category", BigDecimal.ONE, null, StockFlow.MEDIUM, "flow",
+        "product",
+        "Product",
+        "Category",
+        BigDecimal.ONE,
+        null,
+        StockFlow.MEDIUM,
+        "flow",
         risks = setOf(CreationRisk.STOCKOUT),
     )
     private val draft = ActionDraft(quantity = "20", orderDate = "2026-11-05")
@@ -50,9 +56,12 @@ class InterferenceWorkflowTests {
     private fun setup(role: UserRole = UserRole.EMPLOYEE) {
         every { session.snapshot() } returns expected
         every { session.state } returns MutableStateFlow<SessionState>(SessionState.Active)
-        every { profile.state } returns MutableStateFlow<ProfileState>(ProfileState.Ready(
-            1, UserProfile("fixture", "Fixture", "fixture@example.test", role, UserStatus.ACTIVE, null, 17, "Store"),
-        ))
+        every { profile.state } returns MutableStateFlow<ProfileState>(
+            ProfileState.Ready(
+                1,
+                UserProfile("fixture", "Fixture", "fixture@example.test", role, UserStatus.ACTIVE, null, 17, "Store"),
+            ),
+        )
         coEvery { products.read(17, null) } returns AlertProductsResult.Success(listOf(product), 0)
         coEvery { actions.list(17, ActionType.ORDER, expected) } returns ActionListResult.Loaded(emptyList())
         coEvery { actions.generate(any(), any(), any(), any(), any()) } returns ActionResult.Empty
@@ -82,7 +91,8 @@ class InterferenceWorkflowTests {
         }
         coVerify(exactly = 2) { actions.generate(product, 17, ActionType.ORDER, draft, expected) }
         coEvery { products.read(17, null) } returns AlertProductsResult.Success(
-            listOf(product.copy(analysisId = "new")), 0,
+            listOf(product.copy(analysisId = "new")),
+            0,
         )
         val result = create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Failed
         assertEquals(ActionFailure.CONFLICT, result.reason)
@@ -92,15 +102,26 @@ class InterferenceWorkflowTests {
     @Test
     fun `manager stale generation and wrong store action cannot write`() = runTest {
         setup(UserRole.MANAGER)
-        assertEquals(ActionFailure.FORBIDDEN,
-            (create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Failed).reason)
+        assertEquals(
+            ActionFailure.FORBIDDEN,
+            (create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Failed).reason,
+        )
         setup()
-        val wrongStore = InterferenceAction("action", "flow", "product", 18, ActionType.ORDER,
-            ActionStatus.GENERATED, draft)
+        val wrongStore = InterferenceAction(
+            "action",
+            "flow",
+            "product",
+            18,
+            ActionType.ORDER,
+            ActionStatus.GENERATED,
+            draft,
+        )
         assertEquals(ActionFailure.FORBIDDEN, (create.forward(wrongStore, expected) as ActionResult.Failed).reason)
         every { session.snapshot() } returns expected.copy(generation = 2)
-        assertEquals(ActionFailure.FORBIDDEN,
-            (create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Failed).reason)
+        assertEquals(
+            ActionFailure.FORBIDDEN,
+            (create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Failed).reason,
+        )
         coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
         coVerify(exactly = 0) { actions.forward(any(), any()) }
     }

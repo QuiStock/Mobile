@@ -26,13 +26,17 @@ internal class CreationFields(
     init {
         inputs.values.forEach { input ->
             input.doAfterTextChanged {
-                if (!rendering) model.edit(
-                    ActionDraft(
-                        views.creationQuantity.text.toString(), views.creationOrderDate.text.toString(),
-                        views.creationDiscount.text.toString(), views.creationStart.text.toString(),
-                        views.creationEnd.text.toString(),
-                    ),
-                )
+                if (!rendering) {
+                    model.edit(
+                        ActionDraft(
+                            views.creationQuantity.text.toString(),
+                            views.creationOrderDate.text.toString(),
+                            views.creationDiscount.text.toString(),
+                            views.creationStart.text.toString(),
+                            views.creationEnd.text.toString(),
+                        ),
+                    )
+                }
             }
         }
     }

@@ -24,15 +24,26 @@ class InterferenceResponseTests {
     private val api = mockk<InterferenceApi>()
     private val repository = RetrofitInterferenceRepository(api)
     private val expected = SessionSnapshot(1, true)
-    private val product = AlertProduct("product", "Product", "Category", java.math.BigDecimal.ONE,
-        null, StockFlow.MEDIUM, "flow")
+    private val product = AlertProduct(
+        "product",
+        "Product",
+        "Category",
+        java.math.BigDecimal.ONE,
+        null,
+        StockFlow.MEDIUM,
+        "flow",
+    )
     private val draft = ActionDraft(quantity = "20", orderDate = "2026-11-05")
 
     @Test
     fun `known HTTP refusals map to recoverable states without exposing technical messages`() = runTest {
         val cases = mapOf(
-            400 to ActionFailure.INVALID, 401 to ActionFailure.UNAUTHORIZED, 403 to ActionFailure.FORBIDDEN,
-            404 to ActionFailure.NOT_FOUND, 409 to ActionFailure.CONFLICT, 500 to ActionFailure.UNCERTAIN,
+            400 to ActionFailure.INVALID,
+            401 to ActionFailure.UNAUTHORIZED,
+            403 to ActionFailure.FORBIDDEN,
+            404 to ActionFailure.NOT_FOUND,
+            409 to ActionFailure.CONFLICT,
+            500 to ActionFailure.UNCERTAIN,
         )
         cases.forEach { (code, reason) ->
             coEvery { api.generate(any(), expected) } returns Response.error(code, "{}".toResponseBody())
@@ -43,11 +54,13 @@ class InterferenceResponseTests {
 
     @Test
     fun `persisted parameters differing from request require review before forwarding`() = runTest {
-        val body = Json.parseToJsonElement("""
+        val body = Json.parseToJsonElement(
+            """
             {"flow_id":"flow","generated_actions":[{"id":"action","action_type":"ORDER",
             "status":"GENERATED","product_id":"product","store_id":17,
             "quantity":99,"desired_order_date":"2026-11-05"}]}
-        """.trimIndent()).jsonObject
+            """.trimIndent(),
+        ).jsonObject
         coEvery { api.generate(any(), expected) } returns Response.success(201, body)
         val result = repository.generate(product, 17, ActionType.ORDER, draft, expected) as ActionResult.Found
         assertTrue(result.existing)

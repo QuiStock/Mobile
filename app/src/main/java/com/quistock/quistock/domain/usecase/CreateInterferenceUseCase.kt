@@ -52,9 +52,11 @@ class CreateInterferenceUseCase(
         val ready = context(expected)
         return when {
             ready == null -> ActionResult.Failed(ActionFailure.FORBIDDEN)
+
             type !in product.actionTypes() || draft.validate(type, today()).isNotEmpty() -> {
                 ActionResult.Failed(ActionFailure.INVALID)
             }
+
             else -> prepare(product, type, draft, expected, requireNotNull(ready.profile.storeId))
         }
     }
@@ -90,11 +92,15 @@ class CreateInterferenceUseCase(
         val selected = (current as? AlertProductsResult.Success)?.products?.singleOrNull { it.id == product.id }
         return when {
             current !is AlertProductsResult.Success -> ActionResult.Failed(ActionFailure.READ)
+
             selected == null || selected.analysisId != product.analysisId || type !in selected.actionTypes() -> {
                 ActionResult.Failed(ActionFailure.CONFLICT)
             }
+
             context(expected)?.profile?.storeId != storeId -> ActionResult.Failed(ActionFailure.FORBIDDEN)
+
             draft.validate(type, today()).isNotEmpty() -> ActionResult.Failed(ActionFailure.INVALID)
+
             else -> repository.generate(selected, storeId, type, draft, expected)
         }
     }

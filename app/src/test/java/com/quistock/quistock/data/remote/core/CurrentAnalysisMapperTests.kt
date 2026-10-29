@@ -26,23 +26,32 @@ class CurrentAnalysisMapperTests {
 
     @Test
     fun `missing or insufficient current analysis is not replaced by history`() {
-        assertTrue(CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[]").jsonArray, 17)
-            .actionTypes().isEmpty())
+        assertTrue(
+            CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[]").jsonArray, 17)
+                .actionTypes().isEmpty(),
+        )
         val insufficient = row.replace("ANALYZED", "INSUFFICIENT_DATA")
-        assertTrue(CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$insufficient]").jsonArray, 17)
-            .actionTypes().isEmpty())
+        assertTrue(
+            CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$insufficient]").jsonArray, 17)
+                .actionTypes().isEmpty(),
+        )
     }
 
     @Test
     fun `legacy foreign store noncurrent unknown risk and duplicate rows are incompatible`() {
         val invalid = listOf(
-            row.replace("SALES_PERCENTILES_V1", "RULE_ENGINE"), row.replace("true", "false"),
-            row.replace(":17", ":18"), row.replace("STOCKOUT", "UNKNOWN"), "$row,$row",
+            row.replace("SALES_PERCENTILES_V1", "RULE_ENGINE"),
+            row.replace("true", "false"),
+            row.replace(":17", ":18"),
+            row.replace("STOCKOUT", "UNKNOWN"),
+            "$row,$row",
         )
         invalid.forEach { body ->
-            assertTrue(runCatching {
-                CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$body]").jsonArray, 17)
-            }.isFailure)
+            assertTrue(
+                runCatching {
+                    CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$body]").jsonArray, 17)
+                }.isFailure,
+            )
         }
     }
 }

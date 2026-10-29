@@ -65,13 +65,15 @@ class InterferencesFragment : Fragment() {
         renderedActions = state.actions
         views.creationActions.removeAllViews()
         state.actions.forEach { action ->
-            views.creationActions.addView(Button(requireContext()).apply {
-                text = CreationPresentation.action(context, action)
-                isAllCaps = false
-                setOnClickListener {
-                    openExisting(action)
-                }
-            })
+            views.creationActions.addView(
+                Button(requireContext()).apply {
+                    text = CreationPresentation.action(context, action)
+                    isAllCaps = false
+                    setOnClickListener {
+                        openExisting(action)
+                    }
+                },
+            )
         }
     }
 
@@ -95,7 +97,10 @@ class InterferencesFragment : Fragment() {
             return
         }
         dialog = AlertDialog.Builder(requireContext()).setMessage(R.string.creation_discard)
-            .setPositiveButton(R.string.creation_discard_yes) { _, _ -> model.discard(); open(type) }
+            .setPositiveButton(R.string.creation_discard_yes) { _, _ ->
+                model.discard()
+                open(type)
+            }
             .setNegativeButton(R.string.creation_cancel, null).show()
     }
 

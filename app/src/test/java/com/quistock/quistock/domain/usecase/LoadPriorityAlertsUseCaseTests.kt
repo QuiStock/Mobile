@@ -31,7 +31,8 @@ class LoadPriorityAlertsUseCaseTests {
         coEvery { repository.read(17, "store") } returns AlertProductsResult.Success(products, 0)
         val result = load(17, "store") as PriorityAlertsResult.Success
         assertEquals(
-            listOf("expiry", "expired-stockout", "stockout", "expiration"), result.alerts.map { it.product.id },
+            listOf("expiry", "expired-stockout", "stockout", "expiration"),
+            result.alerts.map { it.product.id },
         )
         assertTrue(result.alerts.all { it.hasPrimaryAction })
     }

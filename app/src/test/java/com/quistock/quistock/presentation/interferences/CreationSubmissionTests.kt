@@ -34,7 +34,13 @@ class CreationSubmissionTests {
     private val draft = ActionDraft(quantity = "20", orderDate = "2026-11-05")
     private val product = AlertProduct("product", "Product", "Category", BigDecimal.ONE, null, StockFlow.LOW, "flow")
     private val action = InterferenceAction(
-        "action", "flow", "product", 17, ActionType.ORDER, ActionStatus.GENERATED, draft,
+        "action",
+        "flow",
+        "product",
+        17,
+        ActionType.ORDER,
+        ActionStatus.GENERATED,
+        draft,
     )
 
     private fun state() = MutableStateFlow(

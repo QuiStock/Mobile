@@ -44,9 +44,11 @@ internal object InterferenceMapper {
             require(row["quantity"] == null || row["quantity"] == JsonNull)
             require(row["desired_order_date"] == null || row["desired_order_date"] == JsonNull)
         } else {
-            require(listOf("discount_percentage", "promotion_valid_from", "promotion_valid_until").all {
-                row[it] == null || row[it] == JsonNull
-            })
+            require(
+                listOf("discount_percentage", "promotion_valid_from", "promotion_valid_until").all {
+                    row[it] == null || row[it] == JsonNull
+                },
+            )
         }
         return InterferenceAction(
             requireNotNull(row.text("id")), flowId, requireNotNull(row.text("product_id")),

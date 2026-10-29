@@ -49,9 +49,12 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         }
         views.creationRetry.setOnClickListener { model.load() }
         views.creationReturn.setOnClickListener { returnToHub() }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = back()
-        })
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() = back()
+            },
+        )
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collect { render(it) }
@@ -80,12 +83,17 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         views.creationRetry.isEnabled = !state.loading
         views.creationForward.isVisible = state.phase == CreationPhase.EXISTING &&
             state.action?.status?.canForward == true && state.failure !in setOf(
-                ActionFailure.FORBIDDEN, ActionFailure.NOT_FOUND, ActionFailure.CONFLICT,
+                ActionFailure.FORBIDDEN,
+                ActionFailure.NOT_FOUND,
+                ActionFailure.CONFLICT,
             )
         views.creationRetry.isVisible = !state.busy && state.phase != CreationPhase.REVIEW &&
             state.phase != CreationPhase.SENT && !state.mustCheckList
         views.creationReturn.isVisible = !state.busy && state.phase in setOf(
-            CreationPhase.SENT, CreationPhase.ERROR, CreationPhase.EXISTING, CreationPhase.EMPTY,
+            CreationPhase.SENT,
+            CreationPhase.ERROR,
+            CreationPhase.EXISTING,
+            CreationPhase.EMPTY,
         )
         views.creationProduct.text = state.product?.let { CreationPresentation.product(requireContext(), it) }.orEmpty()
         views.creationSummary.text = state.action?.let { CreationPresentation.action(requireContext(), it) }.orEmpty()
@@ -105,11 +113,13 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         renderedProducts = state.products
         views.creationProducts.removeAllViews()
         state.products.forEach { product ->
-            views.creationProducts.addView(Button(requireContext()).apply {
-                text = CreationPresentation.product(context, product)
-                isAllCaps = false
-                setOnClickListener { model.select(product) }
-            })
+            views.creationProducts.addView(
+                Button(requireContext()).apply {
+                    text = CreationPresentation.product(context, product)
+                    isAllCaps = false
+                    setOnClickListener { model.select(product) }
+                },
+            )
         }
     }
 
@@ -137,8 +147,11 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
     private fun back() {
         when {
             model.state.value.busy -> Unit
+
             model.state.value.phase == CreationPhase.SENT || model.state.value.mustCheckList -> returnToHub()
+
             !model.hasDraft -> findNavController().popBackStack()
+
             else -> {
                 dialog = AlertDialog.Builder(requireContext()).setMessage(R.string.creation_discard)
                     .setPositiveButton(R.string.creation_discard_yes) { _, _ ->
@@ -152,7 +165,8 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
     private fun returnToHub() {
         model.discard()
         findNavController().navigate(
-            R.id.interferencesFragment, null,
+            R.id.interferencesFragment,
+            null,
             navOptions {
                 popUpTo(R.id.nav_graph) { inclusive = false }
                 launchSingleTop = true

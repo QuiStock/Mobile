@@ -89,13 +89,20 @@ internal class CreationSubmission(
                 } else {
                     CreationPhase.EXISTING
                 },
-                action = result.action, draft = ActionDraft(), failure = null,
+                action = result.action,
+                draft = ActionDraft(),
+                failure = null,
             )
+
             is ActionResult.Failed -> state.copy(
                 phase = if (state.action != null && result.reason != ActionFailure.UNCERTAIN) {
                     CreationPhase.EXISTING
-                } else if (result.reason in setOf(ActionFailure.INVALID, ActionFailure.UNAUTHORIZED,
-                        ActionFailure.READ, ActionFailure.REJECTED)
+                } else if (result.reason in setOf(
+                        ActionFailure.INVALID,
+                        ActionFailure.UNAUTHORIZED,
+                        ActionFailure.READ,
+                        ActionFailure.REJECTED,
+                    )
                 ) {
                     CreationPhase.FORM
                 } else {
@@ -103,6 +110,7 @@ internal class CreationSubmission(
                 },
                 failure = result.reason,
             )
+
             ActionResult.Empty -> state.copy(phase = CreationPhase.EMPTY, action = null)
         }
     }

@@ -47,8 +47,14 @@ class CreateInterferenceTests {
     fun `risk determines eligibility independently of sales speed and expired prevents promotion`() {
         StockFlow.entries.forEach { speed ->
             val product = AlertProduct(
-                "product", "Product", "Category", BigDecimal.ONE, null, speed,
-                analysisId = "flow", risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION),
+                "product",
+                "Product",
+                "Category",
+                BigDecimal.ONE,
+                null,
+                speed,
+                analysisId = "flow",
+                risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION),
             )
             assertEquals(setOf(ActionType.ORDER, ActionType.PROMOTION), product.actionTypes())
             val expired = product.copy(risks = product.risks + CreationRisk.EXPIRED)
