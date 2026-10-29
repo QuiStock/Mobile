@@ -103,9 +103,7 @@ class ProfileUseCase(
     private suspend fun read(expected: SessionSnapshot) {
         try {
             val result = repository.read()
-            if (result is ProfileResult.Success && result.profile.rejection() == null) {
-                session.rememberProfile(result.profile, expected)
-            }
+            rememberSuccessfulProfile(result, expected)
             var rejection: ProfileState.Rejected? = null
             session.withCurrentSession(expected) {
                 if (generation != expected.generation) return@withCurrentSession
@@ -119,8 +117,8 @@ class ProfileUseCase(
                         rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
                     }
 
-                    is ProfileResult.Failure -> if (state.value !is ProfileState.Ready) {
-                        mutableState.value = ProfileState.Failure(result.retryAfterMillis)
+                    is ProfileResult.Failure -> if (!result.transient || state.value !is ProfileState.Ready) {
+                        mutableState.value = ProfileState.Failure(result.retryAfterMillis, result.transient)
                     }
                 }
                 rejection?.let { mutableState.value = it }
@@ -139,6 +137,12 @@ class ProfileUseCase(
                 ),
             )
             if (current) mutableState.value = ProfileState.Failure()
+        }
+    }
+
+    private suspend fun rememberSuccessfulProfile(result: ProfileResult, expected: SessionSnapshot) {
+        if (result is ProfileResult.Success && result.profile.rejection() == null) {
+            session.local.rememberProfile(result.profile, expected)
         }
     }
 

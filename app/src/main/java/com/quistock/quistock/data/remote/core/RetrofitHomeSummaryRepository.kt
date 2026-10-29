@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.core
 
+import com.quistock.quistock.data.remote.retryAfterAt
 import com.quistock.quistock.domain.model.HomeSummaryResult
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionFailure
@@ -14,9 +15,8 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 interface DashboardApi {
     @GET("dashboard/summary")
@@ -26,53 +26,11 @@ interface DashboardApi {
 class RetrofitHomeSummaryRepository(private val api: DashboardApi) : HomeSummaryRepository {
     @Suppress("TooGenericExceptionCaught")
     override suspend fun read(storeId: Long): HomeSummaryResult = try {
-        val response = api.read(storeId)
-        response.body()?.use { body ->
-            if (response.code() == 200) {
-                HomeSummaryResult.Success(DashboardSummaryMapper.parse(body.string()))
-            } else {
-                HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
-            }
-        } ?: response.errorBody().use { error ->
-            val text = error?.string().orEmpty()
-            when {
-                response.code() == 403 -> {
-                    val code = runCatching {
-                        Json.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.content
-                    }.getOrNull()
-                    HomeSummaryResult.Failure(
-                        if (code ==
-                            "NO_ACTIVE_STORE"
-                        ) {
-                            SummaryFailure.NO_STORE
-                        } else {
-                            SummaryFailure.FORBIDDEN
-                        },
-                    )
-                }
-
-                response.code() == 429 -> HomeSummaryResult.Failure(
-                    SummaryFailure.RATE_LIMIT,
-                    retryAt(response.headers()["Retry-After"]),
-                )
-
-                response.code() >= 500 -> HomeSummaryResult.Failure(SummaryFailure.SERVER)
-
-                else -> HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
-            }
-        }
+        mapResponse(api.read(storeId))
     } catch (error: CancellationException) {
         throw error
     } catch (error: SessionException) {
-        HomeSummaryResult.Failure(
-            when (error.reason) {
-                SessionFailure.NETWORK -> SummaryFailure.NETWORK
-                SessionFailure.TIMEOUT -> SummaryFailure.TIMEOUT
-                SessionFailure.SERVER -> SummaryFailure.SERVER
-                SessionFailure.RATE_LIMIT -> SummaryFailure.RATE_LIMIT
-                else -> SummaryFailure.CONTRACT
-            },
-        )
+        sessionFailure(error)
     } catch (_: SocketTimeoutException) {
         HomeSummaryResult.Failure(SummaryFailure.TIMEOUT)
     } catch (_: IOException) {
@@ -81,14 +39,57 @@ class RetrofitHomeSummaryRepository(private val api: DashboardApi) : HomeSummary
         HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
     }
 
-    private fun retryAt(value: String?): Long {
-        val now = System.currentTimeMillis()
-        val seconds = value?.toLongOrNull()?.takeIf { it >= 0 }
-        return if (seconds != null) {
-            now + seconds.coerceAtMost((Long.MAX_VALUE - now) / 1000) * 1000
-        } else {
-            runCatching { ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli() }
-                .getOrDefault(now).coerceAtLeast(now)
+    private fun mapResponse(response: Response<ResponseBody>): HomeSummaryResult {
+        val body = response.body()
+        return when {
+            response.code() == HttpURLConnection.HTTP_OK && body != null -> body.use {
+                HomeSummaryResult.Success(DashboardSummaryMapper.parse(it.string()))
+            }
+
+            response.isSuccessful -> {
+                body?.close()
+                HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
+            }
+
+            else -> response.errorBody().use {
+                httpFailure(response.code(), it?.string().orEmpty(), response.headers()["Retry-After"])
+            }
         }
     }
+
+    private fun httpFailure(status: Int, body: String, retryAfter: String?): HomeSummaryResult.Failure = when {
+        status == HttpURLConnection.HTTP_FORBIDDEN -> {
+            val code = runCatching {
+                Json.parseToJsonElement(body).jsonObject["error"]?.jsonPrimitive?.content
+            }.getOrNull()
+            HomeSummaryResult.Failure(
+                if (code ==
+                    "NO_ACTIVE_STORE"
+                ) {
+                    SummaryFailure.NO_STORE
+                } else {
+                    SummaryFailure.FORBIDDEN
+                },
+            )
+        }
+
+        status == HTTP_TOO_MANY_REQUESTS ->
+            HomeSummaryResult.Failure(SummaryFailure.RATE_LIMIT, retryAfterAt(retryAfter, System.currentTimeMillis()))
+
+        status >= HttpURLConnection.HTTP_INTERNAL_ERROR -> HomeSummaryResult.Failure(SummaryFailure.SERVER)
+
+        else -> HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
+    }
+
+    private fun sessionFailure(error: SessionException) = HomeSummaryResult.Failure(
+        when (error.reason) {
+            SessionFailure.NETWORK -> SummaryFailure.NETWORK
+            SessionFailure.TIMEOUT -> SummaryFailure.TIMEOUT
+            SessionFailure.SERVER -> SummaryFailure.SERVER
+            SessionFailure.RATE_LIMIT -> SummaryFailure.RATE_LIMIT
+            else -> SummaryFailure.CONTRACT
+        },
+    )
 }
+
+private const val HTTP_TOO_MANY_REQUESTS = 429

@@ -7,6 +7,7 @@ import com.quistock.quistock.domain.model.HomeSummaryResult
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.PriorityAlertsResult
 import com.quistock.quistock.domain.model.ProfileState
+import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.SummaryFailure
@@ -44,6 +45,7 @@ class HomeViewModel(
         MutableStateFlow(HomeSummaryUiState(offline = session.state.value is SessionState.OfflineReadOnly))
     val summary = mutableSummary.asStateFlow()
     private var summaryRequest: Job? = null
+    private var displayedScope: SessionBinding? = null
 
     init {
         viewModelScope.launch {
@@ -55,6 +57,7 @@ class HomeViewModel(
                 } else if (state != SessionState.Active) {
                     summaryRequest?.cancel()
                     summaryRequest = null
+                    displayedScope = null
                     mutableSummary.value = HomeSummaryUiState()
                 } else if (entered) {
                     refreshSummary()
@@ -69,10 +72,8 @@ class HomeViewModel(
                     ready.profile.storeId?.let { AlertContext(ready.generation, it, ready.profile.storeCode) }
                 }
             }.collect { current ->
+                clearChangedSummaryScope()
                 if (context != current) {
-                    if (context != null && context?.storeId != current?.storeId) {
-                        mutableSummary.value = HomeSummaryUiState()
-                    }
                     request?.cancel()
                     request = null
                     context = current
@@ -105,6 +106,14 @@ class HomeViewModel(
         if (mutableState.value == HomeAlertsState.Error) reload()
     }
 
+    private fun clearChangedSummaryScope() {
+        val previous = displayedScope ?: return
+        if (session.local.binding()?.sameScope(previous) != true) {
+            displayedScope = null
+            mutableSummary.value = HomeSummaryUiState(offline = session.state.value is SessionState.OfflineReadOnly)
+        }
+    }
+
     fun retrySummary() {
         if (loadSummary.retryAt <= System.currentTimeMillis()) refreshSummary()
     }
@@ -117,7 +126,11 @@ class HomeViewModel(
             offline = offline,
             retryAt = maxOf(loadSummary.retryAt, now + if (offline) session.retryDelayMillis else 0L),
         )
-        if (offline && session.binding() == null) viewModelScope.launch { session.expire(session.snapshot()) }
+        if (offline &&
+            session.local.binding() == null
+        ) {
+            viewModelScope.launch { session.local.expireOffline(session.snapshot()) }
+        }
     }
 
     fun nextSummaryTickMillis(): Long {
@@ -125,7 +138,11 @@ class HomeViewModel(
         val midnight = now.atZone(java.time.ZoneId.of("America/Sao_Paulo")).toLocalDate().plusDays(1)
             .atStartOfDay(java.time.ZoneId.of("America/Sao_Paulo")).toInstant()
         val retry = (summary.value.retryAt - now.toEpochMilli()).takeIf { it > 0 } ?: Long.MAX_VALUE
-        return minOf(60_000L, java.time.Duration.between(now, midnight).toMillis(), retry).coerceAtLeast(1)
+        return minOf(
+            SUMMARY_CLOCK_INTERVAL_MILLIS,
+            java.time.Duration.between(now, midnight).toMillis(),
+            retry,
+        ).coerceAtLeast(1)
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -138,16 +155,18 @@ class HomeViewModel(
             try {
                 val cached = loadSummary.cached()
                 if (session.snapshot().generation != expected.generation) return@launch
+                displayedScope = session.local.binding().takeIf { cached != null }
                 mutableSummary.value = mutableSummary.value.copy(cached = cached)
                 if (session.state.value is SessionState.OfflineReadOnly) {
                     if (cached == null) {
-                        session.closeOffline(expected)
+                        session.local.closeOffline(expected)
                     } else {
                         mutableSummary.value = HomeSummaryUiState(cached = cached, offline = true)
                     }
                 } else {
                     when (val result = loadSummary()) {
                         is HomeSummaryResult.Success -> session.withCurrentSession(expected) {
+                            displayedScope = session.local.binding()
                             mutableSummary.value = HomeSummaryUiState(
                                 cached = CachedHomeSummary(result.summary, result.receivedAt),
                                 persistenceFailed = !result.persisted,
@@ -203,3 +222,5 @@ class HomeViewModel(
 
     private data class AlertContext(val generation: Long, val storeId: Long, val storeCode: String?)
 }
+
+private const val SUMMARY_CLOCK_INTERVAL_MILLIS = 60_000L

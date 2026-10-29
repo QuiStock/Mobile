@@ -1,6 +1,7 @@
 package com.quistock.quistock.data.remote.auth
 
 import com.quistock.quistock.data.remote.auth.dto.LoginRequest
+import com.quistock.quistock.data.remote.retryAfterAt
 import com.quistock.quistock.domain.model.AuthRefreshError
 import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.AuthResult
@@ -13,9 +14,6 @@ import com.quistock.quistock.domain.port.StoredSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
-import retrofit2.Response
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 
 class RetrofitAuthRepository(
@@ -87,25 +85,10 @@ class RetrofitAuthRepository(
         }
         val api = createApi(jar)
         return withContext(Dispatchers.IO) {
-            val context = AuthRequestContext(baseUrl, custody, logger, ::updateRetryAfter)
+            val context = AuthRequestContext(baseUrl, custody, logger) { response ->
+                retryAt = retryAfterAt(response.headers()["Retry-After"], now())
+            }
             AuthRequest(generation, login, jar, api, context).execute()
         }
-    }
-
-    private fun updateRetryAfter(response: Response<*>) {
-        val value = response.headers()["Retry-After"]
-        val seconds = value?.toLongOrNull()?.takeIf { it >= 0 }
-        val currentTime = now()
-        retryAt = if (seconds != null) {
-            currentTime + seconds.coerceAtMost((Long.MAX_VALUE - currentTime) / MILLIS_PER_SECOND) * MILLIS_PER_SECOND
-        } else {
-            runCatching {
-                ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli()
-            }.getOrDefault(currentTime)
-        }
-    }
-
-    companion object {
-        private const val MILLIS_PER_SECOND = 1000L
     }
 }

@@ -4,6 +4,7 @@ import com.quistock.quistock.domain.model.CachedHomeSummary
 import com.quistock.quistock.domain.model.HomeSummaryResult
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
+import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.SummaryFailure
 import com.quistock.quistock.domain.port.HomeSummaryCache
@@ -21,9 +22,9 @@ class GetHomeSummaryUseCase(
 
     @Suppress("TooGenericExceptionCaught")
     suspend fun cached(): CachedHomeSummary? {
-        val scope = session.binding()?.takeIf { it.persisted } ?: return null
+        val scope = session.local.binding()?.takeIf { it.persisted } ?: return null
         return try {
-            cache.read(scope)?.takeIf { session.binding()?.sameScope(scope) == true }
+            cache.read(scope)?.takeIf { session.local.binding()?.sameScope(scope) == true }
         } catch (error: CancellationException) {
             throw error
         } catch (_: Exception) {
@@ -40,12 +41,16 @@ class GetHomeSummaryUseCase(
             SessionFailure.SERVER,
             SessionFailure.RATE_LIMIT,
         )
-        val profileUnavailable = state == SessionState.Active && profile.state.value is ProfileState.Failure
-        if (!transient && !profileUnavailable) return false
+        val profileUnavailable = state == SessionState.Active &&
+            (profile.state.value as? ProfileState.Failure)?.transient == true
         val expected = session.snapshot()
-        val scope = session.binding()?.takeIf { it.persisted } ?: return false
-        if (cached() == null) return false
-        return session.openOffline(expected, scope, reason)
+        val scope = session.local.binding()?.takeIf { it.persisted }
+        val eligible = transient || profileUnavailable
+        return if (eligible && scope != null && cached() != null) {
+            session.local.openOffline(expected, scope, reason)
+        } else {
+            false
+        }
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -54,8 +59,16 @@ class GetHomeSummaryUseCase(
         profile.load(force = true)
         val expected = session.snapshot()
         val ready = profile.state.value as? ProfileState.Ready
-            ?: return HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
-        val store = ready.profile.storeId ?: return HomeSummaryResult.Failure(SummaryFailure.NO_STORE)
+        return when {
+            ready == null -> HomeSummaryResult.Failure(SummaryFailure.CONTRACT)
+            ready.profile.storeId == null -> HomeSummaryResult.Failure(SummaryFailure.NO_STORE)
+            else -> readStore(expected, ready)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun readStore(expected: SessionSnapshot, ready: ProfileState.Ready): HomeSummaryResult {
+        val store = requireNotNull(ready.profile.storeId)
         session.requireAccess(expected)
         val result = repository.read(store)
         session.withCurrentSession(expected) { check(sameScope(ready)) { "Profile changed" } }
@@ -66,7 +79,7 @@ class GetHomeSummaryUseCase(
         }
         result as HomeSummaryResult.Success
         val received = CachedHomeSummary(result.summary, System.currentTimeMillis())
-        val scope = session.binding()?.takeIf { it.userId == ready.profile.id && it.storeId == store }
+        val scope = session.local.binding()?.takeIf { it.userId == ready.profile.id && it.storeId == store }
         val saved = try {
             scope?.persisted == true && cache.write(scope, received)
         } catch (error: CancellationException) {

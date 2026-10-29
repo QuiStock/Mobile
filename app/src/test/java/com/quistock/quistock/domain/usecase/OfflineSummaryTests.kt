@@ -3,6 +3,7 @@ package com.quistock.quistock.domain.usecase
 import com.quistock.quistock.domain.model.AuthRefreshError
 import com.quistock.quistock.domain.model.CachedHomeSummary
 import com.quistock.quistock.domain.model.HomeSummary
+import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.AuthRepository
@@ -79,6 +80,43 @@ class OfflineSummaryTests {
         assertEquals(SessionState.Expired, session.state.value)
         assertFalse(summary.openOffline())
         coVerify { auth.clear(any()) }
+    }
+
+    @Test fun anOldOfflineTimerCannotExpireASuccessfullyRecoveredSession() = runTest {
+        prepare()
+        session.restore()
+        summary.openOffline()
+        val previous = session.snapshot()
+        coEvery { auth.refresh(any()) } returns com.quistock.quistock.domain.model.AuthResult.Success
+        every { auth.hasAccess(any()) } returns true
+        session.refresh(previous)
+        session.local.expireOffline(previous)
+        assertEquals(SessionState.Active, session.state.value)
+        coVerify(exactly = 0) { auth.clear(any()) }
+    }
+
+    @Test fun localExpiryRevokesOfflineEligibilityAndClearsTheSavedSession() = runTest {
+        prepare()
+        session.restore()
+        summary.openOffline()
+        val previous = session.snapshot()
+        every { auth.currentBinding(any()) } returns binding.copy(expiresAt = 1)
+        session.local.expireOffline(previous)
+        assertEquals(SessionState.Expired, session.state.value)
+        coVerify { auth.clear(previous.generation) }
+    }
+
+    @Test fun onlyTransientProfileFailureCanOpenSavedIndicators() = runTest {
+        prepare()
+        coEvery { auth.refresh(any()) } returns com.quistock.quistock.domain.model.AuthResult.Success
+        every { auth.hasAccess(any()) } returns true
+        session.restore()
+        val state = kotlinx.coroutines.flow.MutableStateFlow<ProfileState>(ProfileState.Failure())
+        every { profile.state } returns state
+        assertFalse(summary.openOffline())
+        coVerify(exactly = 0) { cache.read(any()) }
+        state.value = ProfileState.Failure(transient = true)
+        assertTrue(summary.openOffline())
     }
 
     @Test fun freshnessUsesSaoPauloAndClockRollbackIsStale() {

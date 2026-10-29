@@ -7,6 +7,9 @@ import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.Request
@@ -53,7 +56,7 @@ class CoreSessionInterceptor(
         }
         val response = diagnostics.send(chain, authorized(request, current.generation, diagnostics), 1)
         requireCurrentSession(current, response, diagnostics)
-        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response
+        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return enforceStoreEligibility(response, current)
         response.close()
         val valid = renew(current, "unauthorized", diagnostics)
         val retried = diagnostics.send(chain, authorized(request, valid.generation, diagnostics), 2)
@@ -62,8 +65,12 @@ class CoreSessionInterceptor(
     }
 
     private fun requireHealthySession() {
-        val failure = session.state.value as? SessionState.Failure
-        if (failure != null) throw SessionException(failure.reason)
+        val reason = when (val state = session.state.value) {
+            is SessionState.Failure -> state.reason
+            is SessionState.OfflineReadOnly -> state.reason
+            else -> null
+        }
+        if (reason != null) throw SessionException(reason)
     }
 
     private fun requireCurrentSession(
@@ -88,6 +95,18 @@ class CoreSessionInterceptor(
             session.expire(expected)
             diagnostics.stage = "unauthorized_after_refresh"
             throw SessionException()
+        }
+        return enforceStoreEligibility(response, expected)
+    }
+
+    private suspend fun enforceStoreEligibility(response: Response, expected: SessionSnapshot): Response {
+        if (response.code == HttpURLConnection.HTTP_FORBIDDEN) {
+            val code = response.peekBody(MAX_ERROR_BODY_BYTES).use { body ->
+                runCatching {
+                    Json.parseToJsonElement(body.string()).jsonObject["error"]?.jsonPrimitive?.content
+                }.getOrNull()
+            }
+            if (code == "NO_ACTIVE_STORE") session.expire(expected)
         }
         return response
     }
@@ -124,3 +143,5 @@ class CoreSessionInterceptor(
             .build()
     }
 }
+
+private const val MAX_ERROR_BODY_BYTES = 8192L

@@ -35,12 +35,21 @@ class RetrofitProfileRepositoryTests {
 
     @Test fun emptySuccessfulResponseFailsClosed() = runTest {
         coEvery { api.read() } returns Response.success<ProfileResponse>(null)
-        assertTrue(repository.read() is ProfileResult.Failure)
+        org.junit.Assert.assertFalse((repository.read() as ProfileResult.Failure).transient)
     }
 
     @Test fun networkFailureIsRecoverableWithoutLeakingThrowable() = runTest {
         coEvery { api.read() } throws IOException("fixture")
-        assertTrue(repository.read() is ProfileResult.Failure)
+        assertTrue((repository.read() as ProfileResult.Failure).transient)
+    }
+
+    @Test fun protocolAndUnexpectedHttpErrorsCannotPermitOfflineButServerFailureCan() = runTest {
+        coEvery { api.read() } throws kotlinx.serialization.SerializationException("fixture")
+        org.junit.Assert.assertFalse((repository.read() as ProfileResult.Failure).transient)
+        coEvery { api.read() } returns Response.error(404, "".toResponseBody())
+        org.junit.Assert.assertFalse((repository.read() as ProfileResult.Failure).transient)
+        coEvery { api.read() } returns Response.error(503, "".toResponseBody())
+        assertTrue((repository.read() as ProfileResult.Failure).transient)
     }
 
     @Test fun cancellationIsNotConvertedToRetryableError() = runTest {
