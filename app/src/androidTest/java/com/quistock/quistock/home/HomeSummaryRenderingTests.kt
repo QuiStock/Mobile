@@ -30,12 +30,17 @@ class HomeSummaryRenderingTests {
             onView(withId(R.id.tvNumeroAcoes)).check(matches(withText("5")))
             scenario.onActivity { activity ->
                 assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
-                assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.mainBottomNavigation).visibility)
+                assertEquals(View.VISIBLE, activity.binding.mainBottomNavigation.visibility)
                 authenticated.goOffline()
             }
             onView(withId(R.id.summaryRetry)).check(matches(withText(R.string.summary_reconnect)))
             scenario.onActivity { activity ->
                 assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
+                assertEquals(View.GONE, activity.binding.mainBottomNavigation.visibility)
+                val host = activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                    as androidx.navigation.fragment.NavHostFragment
+                host.navController.navigate(R.id.profileFragment)
+                assertEquals(R.id.homeFragment, host.navController.currentDestination?.id)
                 assertEquals(View.GONE, activity.findViewById<View>(R.id.alertsSection).visibility)
                 assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.summaryLogout).visibility)
                 assertEquals("4", activity.findViewById<TextView>(R.id.tvNumeroVencimento).text.toString())
