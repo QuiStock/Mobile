@@ -153,10 +153,21 @@ class HomeIndicatorsViewModelTests {
     private suspend fun model(): HomeViewModel {
         session.login("fixture@example.test", "fixture")
         profile.load()
-        return HomeViewModel(LoadPriorityAlertsUseCase(alerts), profile, session, summary).also { store.put("home", it) }
+        return HomeViewModel(LoadPriorityAlertsUseCase(alerts), profile, session, summary).also {
+            store.put("home", it)
+        }
     }
 
     private fun user(store: Long) = ProfileResult.Success(
-        UserProfile("user", "Fixture", "fixture@example.test", UserRole.EMPLOYEE, UserStatus.ACTIVE, null, store, "Store"),
+        UserProfile(
+            "user",
+            "Fixture",
+            "fixture@example.test",
+            UserRole.EMPLOYEE,
+            UserStatus.ACTIVE,
+            null,
+            store,
+            "Store",
+        ),
     )
 }
