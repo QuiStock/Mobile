@@ -4,7 +4,7 @@ import com.quistock.quistock.domain.model.AlertProductsResult
 import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.PriorityAlertsResult
-import com.quistock.quistock.domain.model.StockFlow
+import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import java.util.Locale
 
@@ -15,12 +15,11 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
 
             is AlertProductsResult.Success -> PriorityAlertsResult.Success(
                 result.products.mapNotNull { product ->
-                    val days = product.expirationDays
                     val risk = when {
-                        product.flow == null || (days != null && days < 0) -> null
-                        days != null && days in 0..SHORT_EXPIRY_DAYS -> AlertRisk.EXPIRY
-                        product.flow == StockFlow.HIGH -> AlertRisk.STOCKOUT
-                        product.flow == StockFlow.LOW -> AlertRisk.OVERSTOCK
+                        CreationRisk.EXPIRED in product.risks -> null
+                        CreationRisk.NEAR_EXPIRY in product.risks -> AlertRisk.EXPIRY
+                        CreationRisk.STOCKOUT in product.risks -> AlertRisk.STOCKOUT
+                        CreationRisk.EXPIRATION in product.risks -> AlertRisk.OVERSTOCK
                         else -> null
                     }
                     risk?.let { PriorityAlert(product, it) }
@@ -34,7 +33,4 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
             )
         }
 
-    private companion object {
-        const val SHORT_EXPIRY_DAYS = 7
-    }
 }
