@@ -5,10 +5,12 @@ import com.quistock.quistock.domain.model.AuthRefreshResult
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
 import com.quistock.quistock.domain.model.LoginResult
+import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.StoredSession
 import com.quistock.quistock.domain.port.UserPreferences
@@ -239,6 +241,47 @@ class SessionUseCase(private val auth: AuthRepository, preferences: UserPreferen
             AuthRefreshError.ServerError -> mutableState.value = SessionState.Failure(SessionFailure.SERVER)
 
             AuthRefreshError.RateLimited -> mutableState.value = SessionState.Failure(SessionFailure.RATE_LIMIT)
+        }
+    }
+
+    fun binding(): SessionBinding? {
+        val allowed = state.value == SessionState.Active || state.value is SessionState.OfflineReadOnly ||
+            (state.value as? SessionState.Failure)?.reason in setOf(
+                SessionFailure.NETWORK,
+                SessionFailure.TIMEOUT,
+                SessionFailure.SERVER,
+                SessionFailure.RATE_LIMIT,
+            )
+        return if (allowed) {
+            auth.currentBinding(current.generation)?.takeIf {
+                it.validAt(System.currentTimeMillis())
+            }
+        } else {
+            null
+        }
+    }
+
+    suspend fun rememberProfile(profile: UserProfile, expected: SessionSnapshot) {
+        if (current.generation == expected.generation && state.value == SessionState.Active) {
+            profile.storeId?.let { auth.bindProfile(expected.generation, profile.id, it) }
+        }
+    }
+
+    suspend fun openOffline(expected: SessionSnapshot, scope: SessionBinding, reason: SessionFailure): Boolean =
+        mutex.withLock {
+            val currentBinding = binding()
+            if (current.generation != expected.generation || currentBinding?.sameScope(scope) != true ||
+                !currentBinding.persisted || !currentBinding.validAt(System.currentTimeMillis())
+            ) {
+                return@withLock false
+            }
+            mutableState.value = SessionState.OfflineReadOnly(reason)
+            true
+        }
+
+    suspend fun closeOffline(expected: SessionSnapshot) = mutex.withLock {
+        if (current.generation == expected.generation && state.value is SessionState.OfflineReadOnly) {
+            mutableState.value = SessionState.Failure(SessionFailure.SERVER)
         }
     }
 

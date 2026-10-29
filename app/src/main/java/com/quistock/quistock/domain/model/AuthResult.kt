@@ -14,6 +14,7 @@ sealed interface LoginError : LoginResult {
     data object UserDisabled : LoginError
     data object UnexpectedError : LoginError
     data object PlatformNotAllowed : LoginError
+    data object NoActiveStore : LoginError
     data object RateLimited : LoginError
 }
 

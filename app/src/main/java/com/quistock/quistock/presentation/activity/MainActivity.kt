@@ -86,6 +86,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeSession() {
         val nav = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
+        nav.addOnDestinationChangedListener { controller, destination, _ ->
+            if (sessionViewModel.session.state.value is SessionState.OfflineReadOnly &&
+                destination.id != R.id.homeFragment
+            ) {
+                controller.navigate(
+                    R.id.homeFragment,
+                    null,
+                    navOptions {
+                        popUpTo(R.id.nav_graph) { inclusive = true }
+                        launchSingleTop = true
+                    },
+                )
+            }
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
@@ -211,6 +225,8 @@ internal fun sessionDestination(state: SessionState, current: Int?): Int? = when
     SessionState.LoggingOut, is SessionState.LogoutFailed -> null
 
     is SessionState.LoggedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+
+    is SessionState.OfflineReadOnly -> if (current == R.id.homeFragment) null else R.id.homeFragment
 
     SessionState.Restoring -> null
 

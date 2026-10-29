@@ -28,6 +28,10 @@ class RetrofitAuthRepository(
     @Volatile private var retryAt = 0L
     override suspend fun begin(generation: Long) = custody.begin(generation)
     override fun hasAccess(generation: Long) = custody.access(generation) != null
+    override fun currentBinding(generation: Long) = custody.binding(generation)
+
+    override suspend fun bindProfile(generation: Long, userId: String, storeId: Long) =
+        custody.bindProfile(generation, userId, storeId)
     override suspend fun clear(generation: Long) = custody.clear(generation)
     override suspend fun restore(generation: Long) = when (custody.restore(generation)) {
         RestoreCookies.MISSING -> StoredSession.MISSING
@@ -57,6 +61,7 @@ class RetrofitAuthRepository(
             AuthOutcome.SUCCESS -> AuthResult.Success
             AuthOutcome.INVALID -> LoginError.InvalidCredentials
             AuthOutcome.PLATFORM -> LoginError.PlatformNotAllowed
+            AuthOutcome.NO_STORE -> LoginError.NoActiveStore
             AuthOutcome.NETWORK, AuthOutcome.TIMEOUT -> LoginError.NetworkError
             AuthOutcome.LIMIT -> LoginError.RateLimited
             else -> LoginError.UnexpectedError
@@ -64,7 +69,7 @@ class RetrofitAuthRepository(
 
     override suspend fun refresh(generation: Long): AuthRefreshResult = when (request(generation, null)) {
         AuthOutcome.SUCCESS -> AuthResult.Success
-        AuthOutcome.INVALID -> AuthRefreshError.InvalidToken
+        AuthOutcome.INVALID, AuthOutcome.NO_STORE, AuthOutcome.PLATFORM -> AuthRefreshError.InvalidToken
         AuthOutcome.NETWORK -> AuthRefreshError.NetworkError
         AuthOutcome.TIMEOUT -> AuthRefreshError.Timeout
         AuthOutcome.SERVER -> AuthRefreshError.ServerError

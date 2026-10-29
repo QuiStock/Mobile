@@ -15,16 +15,24 @@ import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentHomeBinding
 import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
+import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.common.AlertProductNavigation
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType
+import com.quistock.quistock.presentation.profile.LogoutConfirmationDialog
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding? = null
     private val viewModel: HomeViewModel by viewModel()
+    private val sessionViewModel: SessionViewModel by activityViewModel()
     private var navigating = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
@@ -48,9 +56,37 @@ class HomeFragment : Fragment() {
                 viewModel.state.collect { state -> render(state, alerts) }
             }
         }
+        val renderer = HomeSummaryRenderer(requireContext(), requireNotNull(binding))
+        renderer.render(viewModel.summary.value, false)
+        binding?.summaryRetry?.setOnClickListener {
+            if (sessionViewModel.session.state.value is SessionState.OfflineReadOnly) {
+                sessionViewModel.retrySession()
+            } else {
+                viewModel.retrySummary()
+            }
+        }
+        binding?.summaryLogout?.setOnClickListener {
+            if (childFragmentManager.findFragmentByTag(LogoutConfirmationDialog.TAG) == null) {
+                LogoutConfirmationDialog().showNow(childFragmentManager, LogoutConfirmationDialog.TAG)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    combine(viewModel.summary, sessionViewModel.recovery) { summary, recovery -> summary to recovery }
+                        .collect { (summary, recovery) -> renderer.render(summary, recovery.retrying) }
+                }
+                launch {
+                    while (isActive) {
+                        viewModel.tickSummary()
+                        delay(viewModel.nextSummaryTickMillis())
+                    }
+                }
+            }
+        }
         viewModel.enter()
         binding?.btnPerfil?.setOnClickListener {
-            if (findNavController().currentDestination?.id == R.id.homeFragment) {
+            if (viewModel.canNavigate() && findNavController().currentDestination?.id == R.id.homeFragment) {
                 findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
             }
         }

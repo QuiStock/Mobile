@@ -115,7 +115,9 @@ class HomeViewModelTests {
     private suspend fun createModel(): HomeViewModel {
         session.login("fixture@example.test", "fixture")
         profile.load()
-        return HomeViewModel(LoadPriorityAlertsUseCase(repository), profile, session).also { store.put("home", it) }
+        return HomeViewModel(LoadPriorityAlertsUseCase(repository), profile, session, mockk(relaxed = true)).also {
+            store.put("home", it)
+        }
     }
 
     private fun validProducts() = AlertProductsResult.Success(

@@ -130,7 +130,7 @@
                     android:id="@+id/tvNumeroVencimento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3"
+                    android:text="@string/summary_unavailable"
                     android:textColor="#E8D2F0"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -161,7 +161,7 @@
                     android:id="@+id/tvNumeroRuptura"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2"
+                    android:text="@string/summary_unavailable"
                     android:textColor="#E8D2F0"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -191,7 +191,7 @@
                     android:id="@+id/tvNumeroAcoes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4"
+                    android:text="@string/summary_unavailable"
                     android:textColor="@color/color_branco"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -204,6 +204,58 @@
                     android:textColor="#E8D2F0"
                     android:textSize="12sp" />
             </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/summaryFeedback"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/containerResumo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+            <ProgressBar
+                android:id="@+id/summaryProgress"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:visibility="gone"
+                android:contentDescription="@string/summary_loading" />
+            <TextView
+                android:id="@+id/summaryMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityLiveRegion="polite"
+                android:textColor="@color/color_branco"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/summaryStale"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityLiveRegion="polite"
+                android:textColor="@color/color_branco"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/summaryPersistence"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/summary_persistence_failed"
+                android:textColor="@color/color_branco"
+                android:visibility="gone" />
+            <Button
+                android:id="@+id/summaryRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/summary_retry"
+                android:visibility="gone" />
+            <Button
+                android:id="@+id/summaryLogout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/summary_logout"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- ================================================= -->
@@ -221,7 +273,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/containerResumo" />
+            app:layout_constraintTop_toBottomOf="@id/summaryFeedback" />
 
         <!-- ================================================= -->
         <!-- LISTA DE ALERTAS                                   -->
