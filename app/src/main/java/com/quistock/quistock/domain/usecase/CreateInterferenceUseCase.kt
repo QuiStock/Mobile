@@ -106,10 +106,11 @@ class CreateInterferenceUseCase(
     }
 
     suspend fun forward(action: InterferenceAction, expected: SessionSnapshot): ActionResult {
-        val ready = context(expected) ?: return ActionResult.Failed(ActionFailure.FORBIDDEN)
-        if (ready.profile.storeId != action.storeId || !action.status.canForward) {
-            return ActionResult.Failed(ActionFailure.FORBIDDEN)
+        val ready = context(expected)
+        return if (ready == null || ready.profile.storeId != action.storeId || !action.status.canForward) {
+            ActionResult.Failed(ActionFailure.FORBIDDEN)
+        } else {
+            repository.forward(action, expected)
         }
-        return repository.forward(action, expected)
     }
 }
