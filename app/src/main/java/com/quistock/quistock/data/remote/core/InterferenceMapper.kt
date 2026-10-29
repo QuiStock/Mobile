@@ -31,7 +31,7 @@ internal object InterferenceMapper {
         val values = ActionDraft(
             quantity = row.number("quantity")?.intValueExact()?.toString().orEmpty(),
             orderDate = row.text("desired_order_date").orEmpty(),
-            discount = row.number("discount_percentage")?.toPlainString().orEmpty(),
+            discount = row.number("discount_percentage")?.stripTrailingZeros()?.toPlainString().orEmpty(),
             start = row.text("promotion_valid_from").orEmpty(),
             end = row.text("promotion_valid_until").orEmpty(),
         )

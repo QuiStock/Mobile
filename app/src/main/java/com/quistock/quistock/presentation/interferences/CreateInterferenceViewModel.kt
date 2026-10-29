@@ -51,7 +51,6 @@ class CreateInterferenceViewModel(
     internal val state = mutableState.asStateFlow()
     private var bound: Pair<Long, Long?>? = null
     private var operation: Job? = null
-    private var loaded = false
     private val submission = CreationSubmission(create, session, mutableState, viewModelScope) { current(it) }
 
     init {
@@ -62,7 +61,7 @@ class CreateInterferenceViewModel(
                     it.generation == session.snapshot().generation &&
                         (status == SessionState.Active ||
                             status is SessionState.Failure) &&
-                        it.profile.role == UserRole.EMPLOYEE
+                        it.profile.role == UserRole.EMPLOYEE && it.profile.rejection() == null
                 }
                     ?.let { it.generation to it.profile.storeId }
             }.collect { current ->
@@ -70,7 +69,6 @@ class CreateInterferenceViewModel(
                     operation?.cancel()
                     submission.cancel()
                     bound = current
-                    loaded = false
                     mutableState.value = CreationState()
                 }
                 if (session.state.value is SessionState.Failure && state.value.busy) {
@@ -84,12 +82,9 @@ class CreateInterferenceViewModel(
     }
 
     internal fun enter(type: ActionType, productId: String? = null) {
-        if (state.value.busy) return
-        if (hasDraft && state.value.type != type) return
-        if (state.value.type == type && (state.value.action != null ||
-                (loaded && state.value.product != null))
-        ) return
-        load(type, productId)
+        val state = state.value
+        val retained = hasDraft || state.action != null
+        if (!state.busy && !retained) load(type, productId)
     }
 
     internal fun load(type: ActionType = state.value.type, productId: String? = null) {
@@ -100,15 +95,17 @@ class CreateInterferenceViewModel(
             return
         }
         bound = expected.generation to context.profile.storeId
+        val previous = state.value.product
         mutableState.value = state.value.copy(loading = true, failure = null, type = type)
         operation = viewModelScope.launch {
             val result = create.catalog(expected)
             val actions = create.list(expected)
             if (!current(expected)) return@launch
-            loaded = true
             val catalog = (result as? AlertProductsResult.Success)?.products.orEmpty()
             val eligible = catalog.filter { type in it.actionTypes() }
-            val product = eligible.singleOrNull { it.id == productId }
+            val candidate = eligible.singleOrNull { it.id == (productId ?: previous?.id) }
+            val changed = previous != null && candidate?.analysisId != previous.analysisId
+            val product = candidate.takeUnless { changed }
             mutableState.value = state.value.copy(
                 phase = if (product == null) CreationPhase.SELECT else CreationPhase.FORM,
                 loading = false,
@@ -116,7 +113,11 @@ class CreateInterferenceViewModel(
                 actions = (actions as? ActionListResult.Loaded)?.actions.orEmpty(),
                 listFailed = actions !is ActionListResult.Loaded,
                 product = product,
-                failure = if (result == AlertProductsResult.Failure) ActionFailure.READ else null,
+                failure = when {
+                    result == AlertProductsResult.Failure -> ActionFailure.READ
+                    changed -> ActionFailure.CONFLICT
+                    else -> null
+                },
             )
         }
     }
@@ -139,7 +140,7 @@ class CreateInterferenceViewModel(
     }
 
     internal fun select(product: AlertProduct) {
-        if (state.value.busy || product !in state.value.products) return
+        if (state.value.busy || state.value.loading || product !in state.value.products) return
         mutableState.value = state.value.copy(
             phase = CreationPhase.FORM, product = product, action = null, failure = null,
             draft = ActionDraft(), errors = emptySet(),
@@ -147,7 +148,7 @@ class CreateInterferenceViewModel(
     }
 
     internal fun edit(draft: ActionDraft) {
-        if (state.value.phase != CreationPhase.FORM) return
+        if (state.value.phase != CreationPhase.FORM || state.value.loading) return
         mutableState.value = state.value.copy(draft = draft, errors = emptySet(), failure = null)
     }
 
@@ -159,7 +160,7 @@ class CreateInterferenceViewModel(
             return
         }
         val state = state.value
-        if (state.phase != CreationPhase.FORM || state.product == null) return
+        if (state.phase != CreationPhase.FORM || state.loading || state.product == null) return
         val errors = state.draft.validate(state.type, create.today())
         mutableState.value = state.copy(
             errors = errors,
@@ -175,6 +176,7 @@ class CreateInterferenceViewModel(
         if (state.value.busy || action !in state.value.actions) return
         mutableState.value = state.value.copy(
             phase = CreationPhase.EXISTING, action = action, type = action.type, failure = null,
+            product = null, draft = ActionDraft(),
         )
     }
 
@@ -182,7 +184,6 @@ class CreateInterferenceViewModel(
         if (state.value.busy) return
         operation?.cancel()
         operation = null
-        loaded = false
         mutableState.value = CreationState()
     }
 

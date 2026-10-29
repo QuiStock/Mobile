@@ -39,7 +39,6 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         views.creationBack.setOnClickListener { back() }
         views.creationSubmit.setOnClickListener {
             model.review()
-            fields?.focusError(model.state.value)
         }
         views.creationForward.setOnClickListener {
             val action = model.state.value.action ?: return@setOnClickListener
@@ -48,7 +47,7 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
                 .setPositiveButton(R.string.creation_confirm) { _, _ -> model.forward() }
                 .setNegativeButton(R.string.creation_cancel, null).show()
         }
-        views.creationRetry.setOnClickListener { model.load(type) }
+        views.creationRetry.setOnClickListener { model.load() }
         views.creationReturn.setOnClickListener { returnToHub() }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = back()
@@ -77,6 +76,8 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         views.creationProgress.isVisible = state.loading || state.busy
         views.creationBack.isEnabled = !state.busy
         views.creationSubmit.isVisible = state.phase == CreationPhase.FORM
+        views.creationSubmit.isEnabled = !state.loading
+        views.creationRetry.isEnabled = !state.loading
         views.creationForward.isVisible = state.phase == CreationPhase.EXISTING &&
             state.action?.status?.canForward == true && state.failure !in setOf(
                 ActionFailure.FORBIDDEN, ActionFailure.NOT_FOUND, ActionFailure.CONFLICT,
@@ -88,7 +89,11 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         )
         views.creationProduct.text = state.product?.let { CreationPresentation.product(requireContext(), it) }.orEmpty()
         views.creationSummary.text = state.action?.let { CreationPresentation.action(requireContext(), it) }.orEmpty()
-        views.creationMessage.setText(message(state))
+        val message = getString(message(state))
+        if (views.creationMessage.text.toString() != message) views.creationMessage.text = message
+        views.creationProgress.contentDescription = getString(
+            if (state.busy) R.string.creation_sending else R.string.creation_loading,
+        )
         renderProducts(state)
         if (state.phase == CreationPhase.REVIEW && dialog?.isShowing != true) showReview(state)
     }
@@ -130,20 +135,18 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
     }
 
     private fun back() {
-        if (model.state.value.busy) return
-        if (model.state.value.phase == CreationPhase.SENT || model.state.value.mustCheckList) {
-            returnToHub()
-            return
+        when {
+            model.state.value.busy -> Unit
+            model.state.value.phase == CreationPhase.SENT || model.state.value.mustCheckList -> returnToHub()
+            !model.hasDraft -> findNavController().popBackStack()
+            else -> {
+                dialog = AlertDialog.Builder(requireContext()).setMessage(R.string.creation_discard)
+                    .setPositiveButton(R.string.creation_discard_yes) { _, _ ->
+                        model.discard()
+                        findNavController().popBackStack()
+                    }.setNegativeButton(R.string.creation_cancel, null).show()
+            }
         }
-        if (!model.hasDraft) {
-            findNavController().popBackStack()
-            return
-        }
-        dialog = AlertDialog.Builder(requireContext()).setMessage(R.string.creation_discard)
-            .setPositiveButton(R.string.creation_discard_yes) { _, _ ->
-                model.discard()
-                findNavController().popBackStack()
-            }.setNegativeButton(R.string.creation_cancel, null).show()
     }
 
     private fun returnToHub() {

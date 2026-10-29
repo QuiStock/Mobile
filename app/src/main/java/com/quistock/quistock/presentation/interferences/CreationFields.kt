@@ -14,6 +14,7 @@ internal class CreationFields(
     private val model: CreateInterferenceViewModel,
 ) {
     private var rendering = false
+    private var previousErrors: Set<ActionField> = emptySet()
     private val inputs = linkedMapOf(
         ActionField.QUANTITY to views.creationQuantity,
         ActionField.ORDER_DATE to views.creationOrderDate,
@@ -46,7 +47,7 @@ internal class CreationFields(
         }
         inputs.forEach { (field, input) ->
             input.isVisible = form && ((field == ActionField.QUANTITY || field == ActionField.ORDER_DATE) == order)
-            input.isEnabled = state.phase == CreationPhase.FORM
+            input.isEnabled = state.phase == CreationPhase.FORM && !state.loading
             val value = when (field) {
                 ActionField.QUANTITY -> state.draft.quantity
                 ActionField.ORDER_DATE -> state.draft.orderDate
@@ -58,9 +59,11 @@ internal class CreationFields(
             input.error = if (field in state.errors) input.context.getString(error(field)) else null
         }
         rendering = false
+        if (state.errors != previousErrors) focusError(state)
+        previousErrors = state.errors
     }
 
-    fun focusError(state: CreationState) {
+    private fun focusError(state: CreationState) {
         inputs.entries.firstOrNull { it.key in state.errors }?.value?.let { input: EditText ->
             input.requestFocus()
             input.announceForAccessibility(input.error)

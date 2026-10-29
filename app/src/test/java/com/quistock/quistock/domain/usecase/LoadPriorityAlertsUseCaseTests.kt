@@ -26,10 +26,13 @@ class LoadPriorityAlertsUseCaseTests {
             product("stockout", StockFlow.LOW, setOf(CreationRisk.STOCKOUT)),
             product("expiration", StockFlow.HIGH, setOf(CreationRisk.EXPIRATION)),
             product("expired", StockFlow.HIGH, setOf(CreationRisk.EXPIRED)),
+            product("expired-stockout", StockFlow.MEDIUM, setOf(CreationRisk.EXPIRED, CreationRisk.STOCKOUT)),
         )
         coEvery { repository.read(17, "store") } returns AlertProductsResult.Success(products, 0)
         val result = load(17, "store") as PriorityAlertsResult.Success
-        assertEquals(listOf("expiry", "stockout", "expiration"), result.alerts.map { it.product.id })
+        assertEquals(
+            listOf("expiry", "expired-stockout", "stockout", "expiration"), result.alerts.map { it.product.id },
+        )
         assertTrue(result.alerts.all { it.hasPrimaryAction })
     }
 

@@ -101,8 +101,11 @@ class RetrofitPriorityAlertsRepositoryTests {
     private fun json(value: String) = Response.success(Json.parseToJsonElement(value).jsonArray)
 
     private fun product(id: String, stock: String = "5") =
-        """{"id":"$id","name":"Fixture product","category":"Category","current_stock":$stock,"branch":"Fixture store"}"""
+        """{"id":"$id","name":"Fixture product","category":"Category",
+            "current_stock":$stock,"branch":"Fixture store"}"""
 
     private fun flow(productId: String, id: String = "analysis", date: String = "2026-10-20T10:00:00Z") =
-        """{"id":"$id","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED","analysis_date":"$date","store_id":17,"is_current":true,"classifier":"SALES_PERCENTILES_V1","risks":["STOCKOUT"]}"""
+        """{"id":"$id","product_id":"$productId","flow_type":"HIGH","status":"ANALYZED",
+            "analysis_date":"$date","store_id":17,"is_current":true,
+            "classifier":"SALES_PERCENTILES_V1","risks":["STOCKOUT"]}"""
 }

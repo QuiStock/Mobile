@@ -2,9 +2,9 @@ package com.quistock.quistock.domain.usecase
 
 import com.quistock.quistock.domain.model.AlertProductsResult
 import com.quistock.quistock.domain.model.AlertRisk
+import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.PriorityAlertsResult
-import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import java.util.Locale
 
@@ -16,10 +16,11 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
             is AlertProductsResult.Success -> PriorityAlertsResult.Success(
                 result.products.mapNotNull { product ->
                     val risk = when {
-                        CreationRisk.EXPIRED in product.risks -> null
-                        CreationRisk.NEAR_EXPIRY in product.risks -> AlertRisk.EXPIRY
+                        CreationRisk.NEAR_EXPIRY in product.risks &&
+                            CreationRisk.EXPIRED !in product.risks -> AlertRisk.EXPIRY
                         CreationRisk.STOCKOUT in product.risks -> AlertRisk.STOCKOUT
-                        CreationRisk.EXPIRATION in product.risks -> AlertRisk.OVERSTOCK
+                        CreationRisk.EXPIRATION in product.risks &&
+                            CreationRisk.EXPIRED !in product.risks -> AlertRisk.OVERSTOCK
                         else -> null
                     }
                     risk?.let { PriorityAlert(product, it) }
@@ -32,5 +33,4 @@ class LoadPriorityAlertsUseCase(private val repository: PriorityAlertsRepository
                 partial = result.invalidCount > 0,
             )
         }
-
 }
