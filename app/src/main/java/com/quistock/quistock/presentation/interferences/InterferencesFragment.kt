@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentCreationHubBinding
 import com.quistock.quistock.domain.model.ActionType
+import com.quistock.quistock.domain.model.InterferenceAction
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
@@ -68,10 +69,23 @@ class InterferencesFragment : Fragment() {
                 text = CreationPresentation.action(context, action)
                 isAllCaps = false
                 setOnClickListener {
-                    model.showExisting(action)
-                    open(action.type)
+                    openExisting(action)
                 }
             })
+        }
+    }
+
+    private fun openExisting(action: InterferenceAction) {
+        val proceed = {
+            model.showExisting(action)
+            open(action.type)
+        }
+        if (model.hasDraft) {
+            dialog = AlertDialog.Builder(requireContext()).setMessage(R.string.creation_discard)
+                .setPositiveButton(R.string.creation_discard_yes) { _, _ -> proceed() }
+                .setNegativeButton(R.string.creation_cancel, null).show()
+        } else {
+            proceed()
         }
     }
 

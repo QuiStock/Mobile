@@ -69,7 +69,8 @@ class InterferenceContractTests {
         assertEquals(ActionStatus.SENT_TO_MANAGER, sent.action.status)
         assertEquals(draft, sent.action.values)
         coEvery { api.forward("action", any(), expected) } coAnswers { delay(30_001); error("Unreachable") }
-        assertEquals(ActionFailure.UNCERTAIN, (repository.forward(generated.action, expected) as ActionResult.Failed).reason)
+        val timeout = repository.forward(generated.action, expected) as ActionResult.Failed
+        assertEquals(ActionFailure.UNCERTAIN, timeout.reason)
         coVerify(exactly = 1) { api.generate(any(), expected) }
     }
 

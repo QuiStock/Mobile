@@ -30,6 +30,7 @@ class AppModulesTest {
                 okhttp3.HttpUrl::class,
                 kotlin.Function0::class,
                 kotlin.Function1::class,
+                java.time.Clock::class, // Default business clock, supplied by the creation factory.
             ),
         )
     }

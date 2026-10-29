@@ -54,7 +54,8 @@ class RetrofitInterferenceRepository(private val api: InterferenceApi) : Interfe
         if (actions.isEmpty()) return@write ActionResult.Empty
         val action = InterferenceMapper.action(actions.single().jsonObject, flowId)
         require(action.productId == product.id && action.storeId == storeId && action.type == type)
-        ActionResult.Found(action)
+        // The Core may reuse an action created concurrently. Changed persisted parameters need review.
+        ActionResult.Found(action, existing = !draft.matches(type, action.values))
     }
 
     override suspend fun forward(action: InterferenceAction, expected: SessionSnapshot): ActionResult = write {

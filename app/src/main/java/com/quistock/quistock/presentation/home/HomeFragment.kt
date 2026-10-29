@@ -134,7 +134,9 @@ class HomeFragment : Fragment() {
         val types = alert.product.actionTypes().toList()
         if (types.size > 1) {
             AlertDialog.Builder(requireContext())
-                .setItems(types.map { getString(CreationPresentation.type(it)) }.toTypedArray()) { _, index -> navigateAction(alert, types[index]) }.show()
+                .setItems(types.map { getString(CreationPresentation.type(it)) }.toTypedArray()) { _, index ->
+                    navigateAction(alert, types[index])
+                }.show()
         } else {
             types.singleOrNull()?.let { navigateAction(alert, it) }
         }

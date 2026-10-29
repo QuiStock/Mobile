@@ -19,6 +19,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.mockwebserver.Dispatcher
@@ -112,6 +113,27 @@ class CoreSessionInterceptorTests {
         }.exceptionOrNull()
 
         assertTrue(failure is SessionException)
+        verify(exactly = 1) { chain.proceed(any()) }
+        coVerify(exactly = 1) { session.refresh(snapshot) }
+    }
+
+    @Test
+    fun actionWriteRenewsUnauthorizedSessionWithoutReplayingTheRequest() {
+        val snapshot = SessionSnapshot(1, true)
+        val session = activeSession(snapshot)
+        coEvery { session.refresh(snapshot) } returns snapshot.copy(revision = 1)
+        val custody = mockk<AuthCookieCustody>()
+        every { custody.access(any()) } returns "fixture"
+        val origin = "https://core.example.test/".toHttpUrl()
+        val request = Request.Builder().url(origin).post("{}".toRequestBody()).build()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns request
+        every { chain.proceed(any()) } returns Response.Builder()
+            .request(request).protocol(Protocol.HTTP_1_1).code(401).message("fixture")
+            .body("".toResponseBody()).build()
+        CoreSessionInterceptor(origin, session, custody, replayWrites = false).intercept(chain).use {
+            assertEquals(401, it.code)
+        }
         verify(exactly = 1) { chain.proceed(any()) }
         coVerify(exactly = 1) { session.refresh(snapshot) }
     }

@@ -30,28 +30,35 @@ internal class CreationSubmission(
 
     internal fun confirm() {
         val state = state.value
-        val product = state.product ?: return
-        if (state.phase != CreationPhase.REVIEW || operation?.isActive == true) return
-        val errors = state.draft.validate(state.type, create.today())
-        if (errors.isNotEmpty()) {
-            mutableState.value = state.copy(phase = CreationPhase.FORM, errors = errors)
-            return
+        val available = state.phase == CreationPhase.REVIEW && !state.loading && operation?.isActive != true
+        if (available && state.product != null) {
+            val errors = state.draft.validate(state.type, create.today())
+            if (errors.isNotEmpty()) {
+                mutableState.value = state.copy(phase = CreationPhase.FORM, errors = errors)
+            } else {
+                generate(state)
+            }
         }
+    }
+
+    private fun generate(state: CreationState) {
+        val product = requireNotNull(state.product)
         val expected = session.snapshot()
         mutableState.value = state.copy(phase = CreationPhase.CHECKING, failure = null)
         operation = scope.launch {
             guarded(expected) {
                 val result = create.generate(product, state.type, state.draft, expected)
-                if (!current(expected)) return@guarded
-                if (result is ActionResult.Found && !result.existing && result.action.status.canForward) {
-                    mutableState.value = mutableState.value.copy(
-                        phase = CreationPhase.FORWARDING, action = result.action,
-                    )
-                    accept(create.forward(result.action, expected), expected)
-                } else {
-                    accept(result, expected)
-                }
+                if (current(expected)) generated(result, expected)
             }
+        }
+    }
+
+    private suspend fun generated(result: ActionResult, expected: SessionSnapshot) {
+        if (result is ActionResult.Found && !result.existing && result.action.status.canForward) {
+            mutableState.value = mutableState.value.copy(phase = CreationPhase.FORWARDING, action = result.action)
+            accept(create.forward(result.action, expected), expected)
+        } else {
+            accept(result, expected)
         }
     }
 
