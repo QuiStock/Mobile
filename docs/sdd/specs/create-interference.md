@@ -1,7 +1,7 @@
 # Criar nova interferência — pedido de compra ou promoção
 
-**Status:** Ready for implementation — mobile alinhado ao Core 3.0.0; validação real na versão final pendente  
-**Issue:** none  
+**Status:** In progress — implementação escrita; testes, compilação, lint, cobertura e AC-17 pendentes
+**Issue:** none
 **Product decision owner:** solicitante
 
 ## Problem and goal
@@ -21,13 +21,13 @@ pela validade que a resposta pública não permite reconstruir com segurança.
 **In scope:** entradas pela Home e pelos atalhos de Interferências; seleção de
 produto/análise elegível; formulários; confirmação; geração e encaminhamento;
 consulta mínima para mostrar ação existente/conferir resultado; estados de erro,
-rascunho e navegação. A futura implementação deve atualizar as regras conflitantes
+rascunho e navegação. A implementação atualiza as regras conflitantes
 de entrada da Home no mesmo trabalho, sem mudar a classificação Core.
 
 **Out of scope:** criação por gerente, aprovação/rejeição, alteração do backend,
 execução no ERP, notificações, edição/cancelamento de ações, criação offline,
 persistência de rascunho em disco e reformulação completa da listagem.
-Nesta entrega somente a documentação é alterada; implementação não autorizada.
+Implementação autorizada nesta sessão; aprovação gerencial e ERP continuam fora do escopo.
 
 ## Expected behavior
 
@@ -195,7 +195,7 @@ Evidência abaixo planejada, não executada. Aplicar Red–Green–Refactor.
 
 ## Technical impact
 
-Futura implementação afeta presentation/order, promotion, interferences e entradas
+Implementação afeta presentation/order, promotion, interferences e entradas
 Home, navegação e layouts; regras em domain e DTOs/repositório Core em data.
 Preservar Views/XML/ViewBinding, ViewModels, Koin, pacote e dependências do README.
 Sem módulos antecipados, migração ou armazenamento persistente do rascunho.
@@ -223,9 +223,71 @@ neste escopo nem declarar que aprovação executa operações no ERP.
 
 ## Implementation outcome
 
-Somente documentação criada/refinada. Nenhuma implementação, teste, build ou
-chamada de API executada nesta tarefa. Investigação fornecida foi somente leitura;
-testes citados nela não foram executados. Ready for implementation indica escopo
-e regras definidos, não entrega, aprovação de backend ou validação em produção.
-A funcionalidade não pode ser marcada como concluída sem o teste real na versão
-final exigido em AC-17, além das verificações pertinentes da implementação.
+Implementação escrita em 29/10/2026; funcionalidade ainda em andamento.
+
+- Home e atalhos usam riscos de `GET /flows/current?store_id=...`, conferindo
+  identidade/loja, `is_current`, `SALES_PERCENTILES_V1` e status. HIGH/MEDIUM/LOW
+  continuam velocidade. Não é gerada análise ao navegar. Processamento no login
+  (`analyze-login`) não foi integrado neste fluxo: sem análise atual elegível,
+  a seleção fica vazia, sem recorrer a histórico legado.
+- Views/XML/ViewBinding e ViewModel da Activity via Koin mantêm o rascunho em
+  memória. Home transfere seleção pelo ViewModel, sem argumentos/SavedState
+  para o contexto de criação. Rotação/abas/background preservam valores;
+  logout/troca de geração ou loja invalidam memória e respostas anteriores.
+- Domínio valida quantidade inteira, desconto localizado e datas civis em São
+  Paulo, inclusive antes da escrita. Pré-checagem abrange loja/tipo sem flow_id,
+  compara produto e respeita pendências/finais. Reconsulta a análise antes de
+  gerar, sem substituir silenciosamente o flow escolhido.
+- Ação existente exige revisão dos valores persistidos. Retorno de geração com
+  parâmetros diferentes também exige revisão antes do PATCH. Falha conhecida
+  no encaminhamento retém ação e permite repetir só PATCH. Incerteza exige
+  conferência na lista, sem repetição automática nem inferência por ausência.
+- Transporte dedicado preserva Bearer privado e recuperação da sessão, bloqueia
+  replay de escrita após 401 e follow-ups HTTP. Geração/PATCH têm limites
+  independentes de 30 segundos; outros clientes preservam seus limites.
+- Somente SENT_TO_MANAGER confirma envio, no formulário com resumo persistido.
+  Retorno ao hub limpa o rascunho e consulta ações reais. Destinos legados de
+  conclusão reutilizam estado real, sem sucesso/resumo fictício. Demo permanece
+  separada. Não há aprovação gerencial nem novas operações ERP.
+- Rótulos, erros de campo/foco e região acessível de progresso/resultado foram
+  escritos. Abas e Voltar bloqueiam durante envio; descarte pede confirmação.
+  Comportamento visual/assistivo ainda exige dispositivo.
+
+### Evidência escrita (não executada)
+
+| Critérios | Testes escritos/adaptados e validações pendentes |
+| --- | --- |
+| AC-01–04 | `CreateInterferenceTests`, `InterferenceWorkflowTests`, `LoadPriorityAlertsUseCaseTests`, `AlertProductBindingTests`, `OrderAndPromotionFragmentTests`: riscos/velocidade, contexto/cargo/loja, limites, São Paulo, campos e JSON. |
+| AC-05–07 | `CreationSubmissionTests`, `InterferenceWorkflowTests`, `InterferenceResponseTests`: concorrência, duplicidade, valores persistidos, falha entre transações e retry somente de PATCH. Instrumentado de cancelamento. |
+| AC-08–10, AC-13 | `InterferenceContractTests`, `InterferenceResponseTests`, `CoreSessionInterceptorTests`, `CreationSubmissionTests`: vazio, corpo incompatível, desconexão, limites independentes e recusas 400/401/403/404/409/500 sem replay. Conferência integrada de consulta tardia e bloqueio de abas/Voltar ainda pendente. |
+| AC-11–12 | `CreationMemoryTests`, `CreationSubmissionTests`, `OrderAndPromotionFragmentTests`: reentrada/consulta sem perder rascunho, nova instância vazia, logout, resposta tardia e recriação. Conferir também abas, background, troca de loja e morte do processo em dispositivo. |
+| AC-14, AC-16 | `CreationSubmissionTests`, `RetrofitPriorityAlertsRepositoryTests`, `LoadPriorityAlertsUseCaseTests`: resultados, falhas e seleção. Conferir retorno ao hub e falha de atualização sem reenvio em dispositivo. |
+| AC-15 | Manual com TalkBack, fonte ampliada e teclado, justificado pela navegação de foco, anúncios e dimensões dependerem do Android real. Labels escritos não comprovam acessibilidade. |
+| AC-17 | Teste obrigatório na versão final: registrar versão, pedido, promoção e recusas por cargo/loja sem dados pessoais. Pendente. |
+
+Nenhum teste foi executado; etapas Red/Green não foram observadas. Nenhuma task
+Gradle, compilação, build, formatação Gradle, Spotless, Detekt, Android Lint ou
+cobertura foi executada por instrução expressa do solicitante devido à limitação
+do wrapper no sandbox. Nenhuma escrita real ao Core foi feita. Revisão estática
+de contrato/código/testes, imports, referências, recursos XML e `git diff --check`
+não comprovam compilação nem aprovação dos gates.
+
+O hook pre-push local aciona Gradle. Apenas as operações Git desta sessão usam
+hooks desativados, sem alterar sua configuração. O último commit usa `[skip ci]`
+para não disparar Gradle indiretamente via CI ao publicar o draft; checks continuam
+pendentes, sem alterar quality gates/exclusões ou registrar aprovação.
+
+### Comandos pendentes para o solicitante (fora do sandbox)
+
+```powershell
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat spotlessCheck detekt lintDebug
+.\gradlew.bat assembleDebug assembleRelease
+.\gradlew.bat connectedDebugAndroidTest
+.\gradlew.bat jacocoTestCoverageVerification
+```
+
+Instrumentação/cobertura combinada exigem dispositivo/emulador. Gate combinado
+continua 80% de linhas e 70% de branches; relatório unitário não o substitui.
+Executar também a rodada manual e AC-17. Implementação/PR draft não concluem
+esta funcionalidade antes das verificações pertinentes e do teste real final.
