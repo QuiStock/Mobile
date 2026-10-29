@@ -2,8 +2,8 @@ package com.quistock.quistock.domain.usecase
 
 import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionType
-import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.StockFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -18,10 +18,12 @@ class CreateInterferenceTests {
     @Test
     fun `order accepts positive int boundary and rejects fraction zero negative overflow`() {
         listOf("1", "2147483647").forEach {
-            assertTrue(ActionDraft(quantity = it, orderDate = today.toString()).validate(ActionType.ORDER, today).isEmpty())
+            val errors = ActionDraft(quantity = it, orderDate = today.toString()).validate(ActionType.ORDER, today)
+            assertTrue(errors.isEmpty())
         }
         listOf("", "0", "-1", "1.1", "2147483648").forEach {
-            assertFalse(ActionDraft(quantity = it, orderDate = today.toString()).validate(ActionType.ORDER, today).isEmpty())
+            val errors = ActionDraft(quantity = it, orderDate = today.toString()).validate(ActionType.ORDER, today)
+            assertFalse(errors.isEmpty())
         }
     }
 
@@ -34,7 +36,8 @@ class CreateInterferenceTests {
             assertFalse(draft.copy(discount = it).validate(ActionType.PROMOTION, today).isEmpty())
         }
         listOf("0", "100", "0,00").forEach {
-            assertTrue(draft.copy(discount = it, end = today.toString()).validate(ActionType.PROMOTION, today).isEmpty())
+            val errors = draft.copy(discount = it, end = today.toString()).validate(ActionType.PROMOTION, today)
+            assertTrue(errors.isEmpty())
         }
         assertFalse(draft.validate(ActionType.PROMOTION, today.plusDays(1)).isEmpty())
         assertFalse(draft.copy(end = today.minusDays(1).toString()).validate(ActionType.PROMOTION, today).isEmpty())
@@ -43,10 +46,13 @@ class CreateInterferenceTests {
     @Test
     fun `risk determines eligibility independently of sales speed and expired prevents promotion`() {
         StockFlow.entries.forEach { speed ->
-            val product = AlertProduct("product", "Product", "Category", BigDecimal.ONE, null, speed,
-                analysisId = "flow", risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION))
+            val product = AlertProduct(
+                "product", "Product", "Category", BigDecimal.ONE, null, speed,
+                analysisId = "flow", risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION),
+            )
             assertEquals(setOf(ActionType.ORDER, ActionType.PROMOTION), product.actionTypes())
-            assertEquals(setOf(ActionType.ORDER), product.copy(risks = product.risks + CreationRisk.EXPIRED).actionTypes())
+            val expired = product.copy(risks = product.risks + CreationRisk.EXPIRED)
+            assertEquals(setOf(ActionType.ORDER), expired.actionTypes())
             assertTrue(product.copy(risks = emptySet()).actionTypes().isEmpty())
         }
     }
