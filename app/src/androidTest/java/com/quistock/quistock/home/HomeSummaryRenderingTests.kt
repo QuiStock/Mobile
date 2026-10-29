@@ -28,7 +28,11 @@ class HomeSummaryRenderingTests {
             onView(withId(R.id.tvNumeroVencimento)).check(matches(withText("4")))
             onView(withId(R.id.tvNumeroRuptura)).check(matches(withText("5")))
             onView(withId(R.id.tvNumeroAcoes)).check(matches(withText("5")))
-            scenario.onActivity { authenticated.goOffline() }
+            scenario.onActivity { activity ->
+                assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
+                assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.mainBottomNavigation).visibility)
+                authenticated.goOffline()
+            }
             onView(withId(R.id.summaryRetry)).check(matches(withText(R.string.summary_reconnect)))
             scenario.onActivity { activity ->
                 assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)

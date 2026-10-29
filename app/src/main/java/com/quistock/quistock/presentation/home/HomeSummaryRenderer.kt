@@ -43,7 +43,7 @@ internal class HomeSummaryRenderer(private val context: Context, private val vie
         views.summaryPersistence.isVisible = state.persistenceFailed
         views.alertsSection.isVisible = !state.offline
         views.tvTituloAlertas.isVisible = !state.offline
-        views.bottomNavigation.isVisible = !state.offline
+        if (state.offline) views.bottomNavigation.isVisible = false
         views.btnPerfil.isVisible = !state.offline
         views.btnNotificacoes.isVisible = !state.offline
     }
