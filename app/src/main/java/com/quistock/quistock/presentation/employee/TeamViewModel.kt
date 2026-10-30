@@ -35,9 +35,8 @@ class TeamViewModel(
     fun create(name: String, email: String) {
         if (mutableState.value.busy) return
         val expected = session.snapshot()
-        val current = profile.state.value as? ProfileState.Ready ?: return
-        val storeId = current.profile.storeId ?: return
-        if (!allowed(expected.generation)) return
+        val storeId = (profile.state.value as? ProfileState.Ready)?.profile?.storeId
+        if (storeId == null || !allowed(expected.generation)) return
         mutableState.value = TeamState(busy = true)
         viewModelScope.launch {
             val result = repository.create(name.trim(), email.trim(), storeId, expected)

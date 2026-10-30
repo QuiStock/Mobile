@@ -40,11 +40,16 @@ class EmployeeFragment : Fragment() {
                 model.state.collect { state ->
                     when {
                         state.busy -> showMessage(binding.employeeList, "Carregando funcionários…")
+
                         state.result is TeamResult.Success -> {
                             members = state.result.members
                             renderMembers(binding)
                         }
-                        state.result != null -> showMessage(binding.employeeList, "Não foi possível carregar. Toque para tentar novamente.")
+
+                        state.result != null -> showMessage(
+                            binding.employeeList,
+                            "Não foi possível carregar. Toque para tentar novamente.",
+                        )
                     }
                 }
             }
@@ -74,17 +79,24 @@ class EmployeeFragment : Fragment() {
                 "INACTIVE" -> "Inativo"
                 else -> "Status indisponível"
             }
-            (card.layoutParams as? LinearLayout.LayoutParams)?.bottomMargin = (16 * resources.displayMetrics.density).toInt()
+            (card.layoutParams as? LinearLayout.LayoutParams)?.bottomMargin =
+                (CARD_SPACING_DP * resources.displayMetrics.density).toInt()
             list.addView(card)
         }
     }
 
     private fun showMessage(list: LinearLayout, message: String, retry: Boolean = true) {
         list.removeAllViews()
-        list.addView(TextView(requireContext()).apply {
-            text = message
-            setTextColor(android.graphics.Color.WHITE)
-            if (retry && !model.state.value.busy) setOnClickListener { model.load() }
-        })
+        list.addView(
+            TextView(requireContext()).apply {
+                text = message
+                setTextColor(android.graphics.Color.WHITE)
+                if (retry && !model.state.value.busy) setOnClickListener { model.load() }
+            },
+        )
+    }
+
+    private companion object {
+        const val CARD_SPACING_DP = 16
     }
 }
