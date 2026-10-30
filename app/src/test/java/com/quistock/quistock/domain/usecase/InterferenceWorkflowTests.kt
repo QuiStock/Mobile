@@ -127,6 +127,26 @@ class InterferenceWorkflowTests {
     }
 
     @Test
+    fun `pending existing order without human date or analysis still blocks generation`() = runTest {
+        setup()
+        val existing = InterferenceAction(
+            "legacy-order",
+            null,
+            "product",
+            17,
+            ActionType.ORDER,
+            ActionStatus.GENERATED,
+            ActionDraft(quantity = "2"),
+        )
+        coEvery { actions.list(17, ActionType.ORDER, expected) } returns ActionListResult.Loaded(listOf(existing))
+        val result = create.generate(product, ActionType.ORDER, draft, expected) as ActionResult.Found
+        assertTrue(result.existing)
+        assertEquals(existing, result.action)
+        assertEquals("", result.action.values.orderDate)
+        coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
     fun `risk on insufficient analysis cannot generate either action type`() = runTest {
         setup()
         val insufficient = product.copy(flow = null, risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION))

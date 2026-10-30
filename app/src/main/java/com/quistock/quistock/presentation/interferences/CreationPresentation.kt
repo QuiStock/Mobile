@@ -14,9 +14,23 @@ internal object CreationPresentation {
         if (type == ActionType.ORDER) R.string.creation_order else R.string.creation_promotion
 
     fun values(context: Context, type: ActionType, draft: ActionDraft): String = if (type == ActionType.ORDER) {
-        context.getString(R.string.creation_order_summary, draft.quantity, draft.orderDate)
+        context.getString(
+            R.string.creation_order_summary,
+            display(context, draft.quantity),
+            display(context, draft.orderDate),
+        )
     } else {
-        context.getString(R.string.creation_promotion_summary, draft.discount, draft.start, draft.end)
+        val discount = if (draft.discount.isBlank()) {
+            context.getString(R.string.creation_not_informed)
+        } else {
+            context.getString(R.string.creation_percentage_value, draft.discount)
+        }
+        context.getString(
+            R.string.creation_promotion_summary,
+            discount,
+            display(context, draft.start),
+            display(context, draft.end),
+        )
     }
 
     fun product(context: Context, product: AlertProduct): String = context.getString(
@@ -38,8 +52,8 @@ internal object CreationPresentation {
         return if (action.type == ActionType.PROMOTION) {
             summary + "\n" + context.getString(
                 R.string.creation_prices,
-                action.referencePrice?.toPlainString(),
-                action.promotionalPrice?.toPlainString(),
+                display(context, action.referencePrice?.toPlainString()),
+                display(context, action.promotionalPrice?.toPlainString()),
             )
         } else {
             summary
@@ -56,6 +70,9 @@ internal object CreationPresentation {
         ActionFailure.REJECTED -> R.string.creation_rejected
         ActionFailure.UNCERTAIN -> R.string.creation_uncertain
     }
+
+    private fun display(context: Context, value: String?): String =
+        value?.takeIf { it.isNotBlank() } ?: context.getString(R.string.creation_not_informed)
 
     private fun status(status: ActionStatus): Int = when (status) {
         ActionStatus.GENERATED -> R.string.creation_status_generated

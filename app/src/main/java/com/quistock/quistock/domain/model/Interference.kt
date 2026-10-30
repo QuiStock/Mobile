@@ -76,7 +76,7 @@ enum class ActionField { QUANTITY, ORDER_DATE, DISCOUNT, START, END }
 // Memory-only, deliberately without a generated diagnostic representation.
 data class InterferenceAction(
     val id: String,
-    val flowId: String,
+    val flowId: String?,
     val productId: String,
     val storeId: Long,
     val type: ActionType,

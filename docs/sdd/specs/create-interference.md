@@ -131,6 +131,27 @@ análise/aprovação e não estabelece o contrato de criação.
    Falha de atualização é erro de consulta e não desfaz/reenvia a criação.
    Conclusão limpa o rascunho; formulário concluído não fica pronto para reenvio.
 
+### Leitura de ações existentes — correção de 30/10/2026
+
+- O hub deste fluxo lista pedidos de compra e promoções. `MONITOR` é um tipo
+  reservado presente no histórico Core, sem operação de criação/encaminhamento
+  nesta entrega: sua presença na consulta sem filtro não deve invalidar os
+  pedidos/promoções. Identificar explicitamente o recorte nos textos do hub.
+- Leitura não aplica obrigatoriedade de formulário novo a registros existentes.
+  Campos de quantidade, desconto, datas ou preços nulos/ausentes permanecem
+  desconhecidos e aparecem como "Não informado", sem inventar valores. Valores
+  presentes devem ter tipo/faixa/formato válidos; datas persistidas passadas são
+  aceitas e, quando ambas existirem, o fim não pode anteceder o início.
+- Identidade, loja, estado e tipos suportados continuam conferidos. Só MONITOR
+  é excluído por estar fora deste fluxo; tipo desconhecido, loja divergente,
+  identidade duplicada ou valor presente inválido não são ignorados silenciosamente.
+  Vínculo de análise nulo continua desconhecido; não reconstruir por outro produto.
+- Ações pendentes de pedido/promoção continuam bloqueando duplicidade mesmo com
+  campos históricos ausentes. Revisão exibe dados realmente persistidos antes de
+  eventual PATCH permitido pelo Core; não regenerar para preencher ou editar.
+  Obrigatoriedade de quantidade/data ou desconto/datas para novas gerações e
+  validação de suas respostas continuam preservadas.
+
 ### 5. Erros e recuperação
 
 - 400 INVALID_REQUEST: apresentar validação e preservar valores. Não expor
@@ -366,3 +387,35 @@ preservada, ausência de botão/submissão e respostas incompatíveis. Nenhum te
 executado e nenhuma etapa Red/Green observada, conforme proibição de Gradle.
 Revisão estática de diff/imports/estilo e `git diff --check` realizadas; compilação,
 gates, execução dos testes e conferência no APK recompilado continuam pendentes.
+
+### HTTP 200 com lista histórica rejeitada — 30/10/2026
+
+Retorno fornecido pelo solicitante continha oito ações: três MONITOR, três pedidos
+com `desired_order_date=null` e duas promoções com período persistido passado.
+Dois pontos do mapper causavam falha local mesmo com HTTP 200: `ActionType.valueOf`
+para MONITOR e validação obrigatória de novo formulário aplicada aos pedidos.
+A exceção era capturada como falha da lista inteira, produzindo a mensagem genérica.
+
+Implementada leitura específica de registros existentes, sem exigir preenchimento
+retroativo. Campos ausentes e vínculo de análise nulo continuam desconhecidos;
+valores presentes inválidos, identidade duplicada, filtro/loja incompatível e tipo
+não reconhecido continuam recusados. MONITOR reservado é excluído deste fluxo de
+pedidos/promoções após conferir loja/identidade; não é transformado em promoção e
+nenhum comando de MONITOR é habilitado. Cabeçalho/vazio do hub explicam o recorte.
+Resumos exibem "Não informado" para campos ausentes, preservando os valores reais.
+
+Pedidos/promoções pendentes continuam na pré-checagem mesmo incompletos. Uma
+retomada explícita encaminha o id existente conforme o Core, sem preencher campos
+ou repetir geração. A validação de novas gerações e de suas respostas permanece
+obrigatória, separada da leitura permissiva apenas para nulidade histórica.
+
+Regressões escritas antes da implementação em `InterferenceListTests`, com dados
+sintéticos: lista mista, somente MONITOR, pedido sem data, promoção com datas
+passadas/campos nulos, tipo desconhecido, loja divergente (inclusive MONITOR),
+identidade duplicada, número/data inválidos, filtros, manutenção de campos ausentes
+no PATCH e preservação da validação de geração. `InterferenceWorkflowTests`
+cobre pendência sem data/análise bloqueando nova geração. Testes não executados;
+nenhuma etapa Red/Green observada. Revisão estática, parsing XML/fixtures JSON,
+inspeção de imports/limites de estilo e `git diff --check` realizadas, sem Gradle.
+Após recompilar, conferir a lista de pedidos/promoções, o aviso de campo ausente e
+nova rodada de testes/checks fora do sandbox. Validação real e AC-17 seguem pendentes.

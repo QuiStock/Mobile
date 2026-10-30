@@ -4,6 +4,17 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Consulta de interferências corrigida em 30/10/2026 após retorno HTTP 200 fornecido
+  pelo solicitante com MONITOR e pedidos históricos sem data desejada. Mapper de
+  leitura agora preserva nulidade histórica e separa obrigatoriedade de formulário
+  novo; MONITOR reservado fica fora deste fluxo, identificado como pedidos/promoções
+  no hub. Campos ausentes aparecem como "Não informado", sem preenchimento fictício.
+  Loja/identidade/filtro e valores presentes inválidos continuam protegidos;
+  pendências incompletas ainda bloqueiam duplicidade. Novas gerações continuam
+  estritas. Testes escritos, revisão estática apenas; sem Gradle nem escrita real.
+  Ver `specs/create-interference.md`; validação da nova revisão permanece pendente.
+
+
 - Regressão da Home confirmada em 30/10/2026 por resposta fornecida pelo solicitante:
   Core retornava risco EXPIRATION em análise INSUFFICIENT_DATA com fluxo nulo,
   mas o mapper descartava os riscos e a Home mostrava vazio. Mapper corrigido
