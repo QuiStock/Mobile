@@ -5,6 +5,7 @@ import com.quistock.quistock.domain.model.AlertProduct
 import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.StockFlow
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -19,20 +20,25 @@ internal object CurrentAnalysisMapper {
         require(row["store_id"]?.jsonPrimitive?.longOrNull == storeId)
         require(row["is_current"]?.jsonPrimitive?.booleanOrNull == true)
         require(row.text("classifier") == "SALES_PERCENTILES_V1")
-        return if (row.text("status") == "INSUFFICIENT_DATA") {
-            product
-        } else {
-            analyzed(product, row)
-        }
+        return analysis(product, row)
     }
 
-    private fun analyzed(product: AlertProduct, row: JsonObject): AlertProduct {
-        require(row.text("status") == "ANALYZED")
+    private fun analysis(product: AlertProduct, row: JsonObject): AlertProduct {
+        val flow = when (row.text("status")) {
+            "ANALYZED" -> StockFlow.valueOf(requireNotNull(row.text("flow_type")))
+
+            "INSUFFICIENT_DATA" -> {
+                require(row["flow_type"] == JsonNull)
+                null
+            }
+
+            else -> error("Invalid analysis status")
+        }
         val risks = requireNotNull(row["risks"] as? JsonArray).map {
             CreationRisk.valueOf(it.jsonPrimitive.content)
         }.toSet()
         return product.copy(
-            flow = StockFlow.valueOf(requireNotNull(row.text("flow_type"))),
+            flow = flow,
             analysisId = requireNotNull(row.text("id")),
             analysisDate = Instant.parse(requireNotNull(row.text("analysis_date"))),
             risks = risks,

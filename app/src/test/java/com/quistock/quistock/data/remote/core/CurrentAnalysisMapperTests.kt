@@ -2,12 +2,15 @@ package com.quistock.quistock.data.remote.core
 
 import com.quistock.quistock.domain.model.ActionType
 import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.CreationRisk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
+import java.time.Instant
 
 class CurrentAnalysisMapperTests {
     private val product = AlertProduct("product", "Product", "Category", BigDecimal("2.375"), null, null)
@@ -25,16 +28,22 @@ class CurrentAnalysisMapperTests {
     }
 
     @Test
-    fun `missing or insufficient current analysis is not replaced by history`() {
-        assertTrue(
-            CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[]").jsonArray, 17)
-                .actionTypes().isEmpty(),
-        )
-        val insufficient = row.replace("ANALYZED", "INSUFFICIENT_DATA")
-        assertTrue(
-            CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$insufficient]").jsonArray, 17)
-                .actionTypes().isEmpty(),
-        )
+    fun `missing current analysis does not invent risks or creation eligibility`() {
+        val mapped = CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[]").jsonArray, 17)
+        assertTrue(mapped.risks.isEmpty())
+        assertTrue(mapped.actionTypes().isEmpty())
+    }
+
+    @Test
+    fun `insufficient analysis preserves current risks identity and date without enabling creation`() {
+        val insufficient = row.replace("ANALYZED", "INSUFFICIENT_DATA").replace("\"MEDIUM\"", "null")
+        val mapped = CurrentAnalysisMapper.select(product, Json.parseToJsonElement("[$insufficient]").jsonArray, 17)
+        assertEquals(setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION), mapped.risks)
+        assertEquals("flow", mapped.analysisId)
+        assertEquals(Instant.parse("2026-10-29T12:00:00Z"), mapped.analysisDate)
+        assertEquals(product.stock, mapped.stock)
+        assertNull(mapped.flow)
+        assertTrue(mapped.actionTypes().isEmpty())
     }
 
     @Test
@@ -45,6 +54,8 @@ class CurrentAnalysisMapperTests {
             row.replace(":17", ":18"),
             row.replace("STOCKOUT", "UNKNOWN"),
             "$row,$row",
+            row.replace("ANALYZED", "INSUFFICIENT_DATA"),
+            row.replace("ANALYZED", "UNKNOWN"),
         )
         invalid.forEach { body ->
             assertTrue(

@@ -2,6 +2,7 @@ package com.quistock.quistock.domain.usecase
 
 import com.quistock.quistock.domain.model.AlertProduct
 import com.quistock.quistock.domain.model.AlertProductsResult
+import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.PriorityAlertsResult
 import com.quistock.quistock.domain.model.StockFlow
@@ -10,6 +11,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
@@ -35,6 +37,22 @@ class LoadPriorityAlertsUseCaseTests {
             result.alerts.map { it.product.id },
         )
         assertTrue(result.alerts.all { it.hasPrimaryAction })
+    }
+
+    @Test
+    fun `inventory risks stay visible without sales classification while creation stays blocked`() = runTest {
+        val products = listOf(
+            product("expiry", StockFlow.MEDIUM, setOf(CreationRisk.NEAR_EXPIRY)),
+            product("stockout", StockFlow.MEDIUM, setOf(CreationRisk.STOCKOUT)),
+            product("expiration", StockFlow.MEDIUM, setOf(CreationRisk.EXPIRATION)),
+            product("none", StockFlow.MEDIUM, emptySet()),
+        ).map { it.copy(flow = null) }
+        coEvery { repository.read(17, "store") } returns AlertProductsResult.Success(products, 0)
+        val result = load(17, "store") as PriorityAlertsResult.Success
+        assertEquals(listOf("expiry", "stockout", "expiration"), result.alerts.map { it.product.id })
+        assertEquals(listOf(AlertRisk.EXPIRY, AlertRisk.STOCKOUT, AlertRisk.OVERSTOCK), result.alerts.map { it.risk })
+        assertTrue(result.alerts.all { it.product.flow == null })
+        assertFalse(result.alerts.any { it.hasPrimaryAction })
     }
 
     @Test

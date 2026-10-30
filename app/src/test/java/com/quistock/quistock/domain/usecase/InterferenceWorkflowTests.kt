@@ -127,6 +127,18 @@ class InterferenceWorkflowTests {
     }
 
     @Test
+    fun `risk on insufficient analysis cannot generate either action type`() = runTest {
+        setup()
+        val insufficient = product.copy(flow = null, risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION))
+        ActionType.entries.forEach { type ->
+            val result = create.generate(insufficient, type, draft, expected) as ActionResult.Failed
+            assertEquals(ActionFailure.INVALID, result.reason)
+        }
+        coVerify(exactly = 0) { actions.list(any(), any(), any()) }
+        coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
     fun `today uses Sao Paulo even when injected clock has UTC zone`() {
         assertEquals("2026-10-29", create.today().toString())
     }

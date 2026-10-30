@@ -2,6 +2,7 @@ package com.quistock.quistock.home
 
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.quistock.quistock.AuthenticatedSessionRule
@@ -45,6 +46,29 @@ class AlertProductBindingTests {
 
                 holder.bind(PriorityAlert(product.copy(flow = StockFlow.MEDIUM), AlertRisk.EXPIRY))
                 assertEquals(View.VISIBLE, primary.visibility)
+            }
+        }
+    }
+
+    @Test
+    fun insufficientExpirationRiskKeepsCardAndFefoWithoutCreation() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                var actionCalled = false
+                val adapter = PriorityAlertsAdapter({ actionCalled = true }, {}).apply { creationAllowed = true }
+                val holder = adapter.onCreateViewHolder(FrameLayout(activity), 0)
+                val product = product().copy(flow = null, expirationDays = 44, risks = setOf(CreationRisk.EXPIRATION))
+                holder.bind(PriorityAlert(product, AlertRisk.OVERSTOCK))
+                assertEquals(View.VISIBLE, holder.itemView.visibility)
+                assertEquals(
+                    activity.getString(R.string.home_alerts_overstock_risk),
+                    holder.itemView.findViewById<TextView>(R.id.tvRisco).text.toString(),
+                )
+                val primary = holder.itemView.findViewById<View>(R.id.btnPromocao)
+                assertEquals(View.GONE, primary.visibility)
+                primary.performClick()
+                assertFalse(actionCalled)
+                assertEquals(View.VISIBLE, holder.itemView.findViewById<View>(R.id.btnFefo).visibility)
             }
         }
     }

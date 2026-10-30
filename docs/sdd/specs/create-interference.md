@@ -56,6 +56,9 @@ análise/aprovação e não estabelece o contrato de criação.
   PROMOTION. HIGH/MEDIUM/LOW são velocidade de vendas e não habilitam nem
   desabilitam o tipo por si só. Se ambos os tipos forem elegíveis, permitir
   escolher qual criar e informar explicitamente `action_type`.
+- Exibição do alerta e elegibilidade de criação são distintas: análises atuais
+  INSUFFICIENT_DATA podem ter riscos e devem aparecer na Home, mas não oferecem
+  geração de pedido/promoção. Preservar riscos, identidade e data sem inventar fluxo.
 - Selecionar produto da loja e análise atual, ANALYZED, do classificador atual.
   Não substituir silenciosamente uma análise rejeitada por outra. Não criar
   com produto fixo ou dados de demonstração. Navegar não faz escrita remota.
@@ -339,3 +342,27 @@ inspeção de caracteres corrompidos e `git diff --check`. Nenhum Gradle/teste/b
 executado pelo agente. Aprovação automatizada informada antecede esta correção;
 conferência visual no APK recompilado e os cenários práticos de AC-17 continuam
 pendentes de registro. Não se declara conclusão funcional nesta correção.
+
+### Regressão confirmada da Home — 30/10/2026
+
+O solicitante forneceu resposta de `/flows/current` com `is_current=true`,
+`status=INSUFFICIENT_DATA`, `flow_type=null` e risco `EXPIRATION`; a Home exibia
+"Nenhum alerta prioritário". Causa confirmada no código: `CurrentAnalysisMapper`
+retornava o produto sem copiar os riscos quando a classificação era insuficiente.
+A hipótese anterior de ausência de processamento no login não explica essa resposta.
+
+Mapper corrigido para preservar riscos, identidade e timestamp em ambos os status
+reconhecidos. `INSUFFICIENT_DATA` continua exigindo `flow_type=null`; status
+incompatível, identidade/loja/classificador divergentes e riscos desconhecidos
+continuam rejeitados. A Home pode apresentar o risco sem liberar criação, porque
+`actionTypes()` permanece vazio sem classificação. Não há análise artificial,
+fallback histórico, alteração do backend ou chamada real de escrita.
+
+Regressões escritas antes do ajuste: `CurrentAnalysisMapperTests`,
+`CurrentAnalysisHomeRegressionTests` (API simulada -> repositório -> seleção Home),
+`LoadPriorityAlertsUseCaseTests`, `HomeViewModelTests`, `InterferenceWorkflowTests`
+e `AlertProductBindingTests`. Cobrem risco visível com fluxo nulo, metadata
+preservada, ausência de botão/submissão e respostas incompatíveis. Nenhum teste
+executado e nenhuma etapa Red/Green observada, conforme proibição de Gradle.
+Revisão estática de diff/imports/estilo e `git diff --check` realizadas; compilação,
+gates, execução dos testes e conferência no APK recompilado continuam pendentes.

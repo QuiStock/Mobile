@@ -26,6 +26,27 @@ compilação, lint, cobertura, acessibilidade e integração real continuam pend
 por instrução expressa do solicitante. Ver comandos e evidência na spec de criação.
 A funcionalidade não está concluída.
 
+## Regressão de riscos com dados insuficientes — 30/10/2026
+
+Uma análise atual `INSUFFICIENT_DATA`, com `flow_type=null`, pode conter riscos
+válidos calculados pelo Core. Falta de classificação de velocidade não significa
+falta de risco de estoque/validade. A Home deve preservar e exibir esses riscos
+com a mesma seleção/prioridade já usada para `ANALYZED`, mantendo identidade,
+loja, classificador, timestamp e demais validações do contrato.
+
+A criação continua exigindo `ANALYZED`: sem classificação de velocidade, o card
+não oferece Pedido de compra/Promoção e não inicia escrita. Não recorrer a análise
+histórica, preencher um fluxo artificial ou recalcular riscos no cliente.
+Ausência de riscos continua produzindo vazio válido; status desconhecido e
+`INSUFFICIENT_DATA` com fluxo não nulo são respostas incompatíveis.
+
+Critério de regressão: resposta atual com `INSUFFICIENT_DATA`, `flow_type=null` e
+`risks=["EXPIRATION"]` deve atravessar repositório/domínio, renderizar o card de
+risco de excesso ou vencimento e manter as ações de criação indisponíveis.
+Evidência planejada: testes de mapper, integração local repositório/use case,
+seleção da Home, bloqueio de geração e binding instrumentado. Testes escritos,
+sem execução pelo agente; conferir o cenário no APK após recompilar.
+
 ## Revisão de prontidão — estado normativo de 25/10/2026
 
 Esta seção e os critérios RC abaixo consolidam as decisões mais recentes e prevalecem sobre textos conflitantes nas rodadas e tabelas históricas deste arquivo. A revisão definiu o escopo Ready para correção, posteriormente implementado conforme o resultado abaixo. A existência de código e testes escritos não comprova aprovação dos checks; nenhuma validação foi executada pelo agente nesta entrega.
