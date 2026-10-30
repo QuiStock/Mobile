@@ -1,10 +1,33 @@
 # Employee detail and registration screen
 
+## Cadastro real — decisão de 30/10/2026
+
+O gerente cadastra um funcionário da própria loja informando nome e e-mail. O cargo é
+sempre EMPLOYEE. O app envia a senha inicial definida para esta etapa por configuração de
+build; a senha não é documentada nem versionada. Entrega por e-mail e troca de senha não
+fazem parte deste fluxo.
+
+Para configurar o build, usar a variável de ambiente `QUISTOCK_EMPLOYEE_INITIAL_PASSWORD`
+ou a propriedade `employee.initial.password` no `local.properties` ignorado pelo Git.
+Sem essa configuração o app informa que o cadastro está indisponível. A senha inserida no
+build fica recuperável no APK e é compartilhada entre os funcionários cadastrados.
+
+- Nome e e-mail inválidos impedem o envio; durante o envio não há novo clique de cadastro.
+- Sucesso retorna à lista, que consulta a API novamente; conflito de e-mail e falhas são
+  informados. Uma falha de conexão pode deixar o resultado do cadastro incerto.
+- A lista consulta somente a equipe retornada pela API e mostra nome, cargo e status.
+  Data de cadastro ou vínculo não será apresentada como data de admissão.
+- Verificação: testes unitários para contrato e resultados da API, build e verificação
+  manual do fluxo autenticado quando houver ambiente disponível.
+
 **Status:** In progress  
 **Issue:** none  
 **Product decision owner:** open
 
 ## Problem and goal
+
+The sections below describe the original visual-only scope; the decision above supersedes
+that scope for the real registration and employee-list flow.
 
 Managers need to register new store employees with their full name, corporate e-mail, and assigned role, accessed from the employees control screen.
 
