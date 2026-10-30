@@ -4,6 +4,16 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Regressão da Home confirmada em 30/10/2026 por resposta fornecida pelo solicitante:
+  Core retornava risco EXPIRATION em análise INSUFFICIENT_DATA com fluxo nulo,
+  mas o mapper descartava os riscos e a Home mostrava vazio. Mapper corrigido
+  para preservar risco/identidade/data também sem classificação; ações de criação
+  continuam bloqueadas sem ANALYZED/fluxo válido. Testes de mapper, caminho até a
+  Home, estado, binding e bloqueio de escrita escritos, sem execução de Gradle.
+  Não atribuir este caso à falta de analyze-login: a resposta atual já existe.
+  Ver `specs/create-interference.md` e revisão de `specs/home-priority-alerts.md`.
+
+
 - Criação de pedido de compra/promoção escrita em 29/10/2026 conforme
   `specs/create-interference.md`, ainda em andamento: funcionário ativo,
   riscos/análises de `/flows/current`, parâmetros humanos explícitos, pré-checagem
