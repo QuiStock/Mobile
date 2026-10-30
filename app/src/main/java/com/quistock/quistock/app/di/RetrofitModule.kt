@@ -1,9 +1,9 @@
 package com.quistock.quistock.app.di
 
 import android.content.Context
+import com.quistock.quistock.BuildConfig
 import com.quistock.quistock.R
 import com.quistock.quistock.data.preferences.DataStoreHomeSummaryCache
-import com.quistock.quistock.BuildConfig
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
@@ -20,8 +20,8 @@ import com.quistock.quistock.data.remote.core.RetrofitHomeSummaryRepository
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileEditRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
-import com.quistock.quistock.data.remote.core.TeamApi
 import com.quistock.quistock.data.remote.core.RetrofitTeamRepository
+import com.quistock.quistock.data.remote.core.TeamApi
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore

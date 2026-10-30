@@ -12,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Tag
+import java.net.HttpURLConnection
 
 interface TeamApi {
     @GET("team-members")
@@ -42,7 +43,9 @@ class RetrofitTeamRepository(private val api: TeamApi, private val password: Str
             response.isSuccessful && response.body() != null -> TeamResult.Success(
                 requireNotNull(response.body()).map { TeamMember(it.id, it.name, it.status) },
             )
-            response.code() == 403 -> TeamResult.Forbidden
+
+            response.code() == HttpURLConnection.HTTP_FORBIDDEN -> TeamResult.Forbidden
+
             else -> TeamResult.Failure
         }
     } catch (error: CancellationException) {
@@ -58,10 +61,10 @@ class RetrofitTeamRepository(private val api: TeamApi, private val password: Str
             val response = api.create(TeamRequest(name, email, password, "EMPLOYEE", storeId), expected)
             response.errorBody()?.close()
             when (response.code()) {
-                201 -> TeamResult.Success(emptyList())
-                403 -> TeamResult.Forbidden
-                409 -> TeamResult.Conflict
-                in 400..499 -> TeamResult.Failure
+                HttpURLConnection.HTTP_CREATED -> TeamResult.Success(emptyList())
+                HttpURLConnection.HTTP_FORBIDDEN -> TeamResult.Forbidden
+                HttpURLConnection.HTTP_CONFLICT -> TeamResult.Conflict
+                in HttpURLConnection.HTTP_BAD_REQUEST until HttpURLConnection.HTTP_INTERNAL_ERROR -> TeamResult.Failure
                 else -> TeamResult.Uncertain
             }
         } catch (error: CancellationException) {

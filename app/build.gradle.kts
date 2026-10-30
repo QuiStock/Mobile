@@ -18,7 +18,8 @@ val localSettings = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.isFile) file.inputStream().use { load(it) }
 }
-val employeePassword = providers.environmentVariable("QUISTOCK_EMPLOYEE_INITIAL_PASSWORD")
+val employeePassword = providers
+    .environmentVariable("QUISTOCK_EMPLOYEE_INITIAL_PASSWORD")
     .orElse(localSettings.getProperty("employee.initial.password", ""))
 
 kotlin {

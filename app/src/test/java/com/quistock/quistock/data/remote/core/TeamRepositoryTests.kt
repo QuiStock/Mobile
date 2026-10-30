@@ -20,12 +20,22 @@ class TeamRepositoryTests {
         val repository = RetrofitTeamRepository(api, "initial-password")
         coEvery { api.create(any(), snapshot) } returns Response.success(201, TeamResponse("1", "Ana", "ACTIVE"))
         assertTrue(repository.create("Ana", "ana@example.test", 12, snapshot) is TeamResult.Success)
-        coVerify { api.create(match { it.role == "EMPLOYEE" && it.storeId == 12L && it.password == "initial-password" }, snapshot) }
+        coVerify {
+            api.create(
+                match {
+                    it.role == "EMPLOYEE" && it.storeId == 12L && it.password == "initial-password"
+                },
+                snapshot,
+            )
+        }
     }
 
     @Test fun duplicateEmailIsReported() = runBlocking {
         coEvery { api.create(any(), snapshot) } returns Response.error(409, "".toResponseBody())
-        assertEquals(TeamResult.Conflict, RetrofitTeamRepository(api, "initial-password").create("Ana", "a@b.test", 12, snapshot))
+        assertEquals(
+            TeamResult.Conflict,
+            RetrofitTeamRepository(api, "initial-password").create("Ana", "a@b.test", 12, snapshot),
+        )
     }
 
     @Test fun missingPasswordDoesNotSendARequest() = runBlocking {
