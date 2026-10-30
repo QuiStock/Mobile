@@ -1,6 +1,7 @@
 import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -12,6 +13,13 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     jacoco
 }
+
+val localSettings = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.isFile) file.inputStream().use { load(it) }
+}
+val employeePassword = providers.environmentVariable("QUISTOCK_EMPLOYEE_INITIAL_PASSWORD")
+    .orElse(localSettings.getProperty("employee.initial.password", ""))
 
 kotlin {
     compilerOptions {
@@ -200,6 +208,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        val quotedPassword = employeePassword.get().replace("\\", "\\\\").replace("\"", "\\\"")
+        buildConfigField("String", "EMPLOYEE_INITIAL_PASSWORD", "\"$quotedPassword\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -229,6 +239,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         resValues = true
         viewBinding = true
     }

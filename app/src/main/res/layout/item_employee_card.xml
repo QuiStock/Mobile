@@ -4,8 +4,8 @@
     android:layout_height="wrap_content"
     android:minHeight="112dp"
     android:background="@drawable/bg_card_summary"
-    android:clickable="true"
-    android:focusable="true"
+    android:clickable="false"
+    android:focusable="false"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="20dp"
@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Data de início"
+            android:text="Status"
             android:textColor="#C7B7CC"
             android:textSize="11sp" />
 
