@@ -1,5 +1,6 @@
 package com.quistock.quistock.data.remote.core
 
+import com.quistock.quistock.data.remote.core.InterferenceMapper.number
 import com.quistock.quistock.data.remote.core.InterferenceMapper.text
 import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionFailure
@@ -27,10 +28,16 @@ class RetrofitInterferenceRepository(private val api: InterferenceApi) : Interfe
         val response = api.list(storeId, type?.name, expected)
         response.errorBody()?.close()
         require(response.code() == HttpURLConnection.HTTP_OK)
-        val actions = requireNotNull(response.body()).map { InterferenceMapper.action(it.jsonObject) }
-        require(actions.all { it.storeId == storeId && (type == null || it.type == type) })
-        require(actions.map { it.id }.distinct().size == actions.size)
-        ActionListResult.Loaded(actions)
+        val rows = requireNotNull(response.body()).map { it.jsonObject }
+        require(
+            rows.all {
+                it.number("store_id")?.longValueExact() == storeId &&
+                    (type == null || it.text("action_type") == type.name)
+            },
+        )
+        val ids = rows.map { requireNotNull(it.text("id")) }
+        require(ids.distinct().size == ids.size)
+        ActionListResult.Loaded(rows.mapNotNull(InterferenceListMapper::action))
     } catch (error: CancellationException) {
         throw error
     } catch (_: Exception) {

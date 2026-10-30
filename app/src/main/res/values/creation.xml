@@ -27,9 +27,9 @@
     <string name="creation_existing">Ação já existente. Confira os valores persistidos abaixo. Gerar novamente não altera esses valores.</string>
     <string name="creation_no_generation">Nenhuma ação foi gerada. Atualize a consulta de elegibilidade.</string>
     <string name="creation_empty">Nenhum produto elegível para este tipo.</string>
-    <string name="creation_no_actions">Nenhuma ação observada na consulta. Ausência na lista não comprova falha de uma escrita anterior.</string>
+    <string name="creation_no_actions">Nenhum pedido de compra ou promoção observado na consulta. Ausência na lista não comprova falha de uma escrita anterior.</string>
     <string name="creation_list_error">Não foi possível consultar as interferências. Atualize manualmente.</string>
-    <string name="creation_history">Interferências da loja — estado observado</string>
+    <string name="creation_history">Pedidos de compra e promoções — estado observado</string>
     <string name="creation_uncertain">Resultado incerto. Confira a lista de Interferências; ausência na lista não prova falha. Não repita a geração automaticamente.</string>
     <string name="creation_invalid">Revise os campos. O Core recusou os dados informados.</string>
     <string name="creation_unauthorized">A sessão precisa de recuperação. Após recuperá-la, revise antes de tentar manualmente. Nenhuma escrita será repetida automaticamente.</string>
@@ -44,7 +44,7 @@
     <string name="creation_end_error">Informe uma data final igual ou posterior à inicial (AAAA-MM-DD).</string>
     <string name="creation_product_summary">%1$s\n%2$s · Estoque: %3$s\nAnálise: %4$s</string>
     <string name="creation_order_summary">Quantidade: %1$s\nData desejada: %2$s</string>
-    <string name="creation_promotion_summary">Desconto: %1$s%%\nInício: %2$s\nFim: %3$s</string>
+    <string name="creation_promotion_summary">Desconto: %1$s\nInício: %2$s\nFim: %3$s</string>
     <string name="creation_prices">Preço de referência: %1$s\nPreço promocional: %2$s</string>
     <string name="creation_action_summary">%1$s\nProduto: %2$s\nEstado: %3$s\n%4$s</string>
     <string name="creation_status_generated">Gerada</string>
@@ -52,4 +52,6 @@
     <string name="creation_status_sent">Encaminhada ao gerente</string>
     <string name="creation_status_approved">Aprovada</string>
     <string name="creation_status_rejected">Rejeitada</string>
+    <string name="creation_not_informed">Não informado</string>
+    <string name="creation_percentage_value">%1$s%%</string>
 </resources>
