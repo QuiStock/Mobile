@@ -21,6 +21,27 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class RetrofitAuthRepositoryTests {
+    @Test fun loginAndRefreshIgnoreTheAccessTokenJsonBody() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.auth.enqueue(
+                cookieResponse("login-token")
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("""{"token":"login-token"}"""),
+            )
+            assertEquals(AuthResult.Success, f.session.login("synthetic", "synthetic"))
+            assertEquals("login-token", f.custody.access(f.session.snapshot().generation))
+
+            f.auth.enqueue(csrfResponse())
+            f.auth.enqueue(
+                cookieResponse("refreshed-token")
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("""{"token":"refreshed-token"}"""),
+            )
+            assertEquals(AuthResult.Success, f.session.refresh(f.session.snapshot()))
+            assertEquals("refreshed-token", f.custody.access(f.session.snapshot().generation))
+        }
+    }
+
     @Test fun missingStoreIsTerminalWhileUnrelatedCsrfForbiddenRemainsRecoverable() = runBlocking {
         AuthHttpFixture().use { f ->
             f.auth.enqueue(MockResponse().setResponseCode(403).setBody("""{"code":"no_active_store"}"""))
