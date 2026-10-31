@@ -140,7 +140,6 @@
         android:layout_height="42dp"
         android:src="@drawable/img_fefo_btn"
         android:importantForAccessibility="no"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/layoutBotoes"
         app:layout_constraintEnd_toEndOf="@id/layoutBotoes"
         android:translationX="10dp"

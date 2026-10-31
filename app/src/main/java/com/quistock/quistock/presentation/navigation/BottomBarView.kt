@@ -33,14 +33,18 @@ internal class BottomBarView(private val container: LinearLayout, private val on
     }.apply {
         id = buttonId(tab)
         setText(tab.label)
-        gravity = Gravity.CENTER
+        gravity = Gravity.CENTER_HORIZONTAL
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.navigation_label_size))
-        val padding = resources.getDimensionPixelSize(R.dimen.navigation_item_padding)
-        setPadding(padding, padding, padding, padding)
-        minHeight = resources.getDimensionPixelSize(R.dimen.navigation_bar_min_height)
-        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        val padH = resources.getDimensionPixelSize(R.dimen.navigation_item_padding_horizontal)
+        val padTop = resources.getDimensionPixelSize(R.dimen.navigation_item_padding_top)
+        val padBottom = resources.getDimensionPixelSize(R.dimen.navigation_item_padding_bottom)
+        setPadding(padH, padTop, padH, padBottom)
+        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
         isFocusable = true
         isClickable = true
+        maxLines = 1
+        ellipsize = android.text.TextUtils.TruncateAt.END
+        compoundDrawablePadding = resources.getDimensionPixelSize(R.dimen.navigation_drawable_padding)
         ViewCompat.setAccessibilityHeading(this, false)
         setOnClickListener { if (parent === container) onSelect(tab) }
     }

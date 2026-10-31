@@ -49,6 +49,7 @@ class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, priva
             binding.layoutBotoes.weightSum = if (actionable) TWO_ACTIONS else ONE_ACTION
             binding.btnPromocao.setOnClickListener { if (actionable) onAction(alert) }
             binding.btnFefo.setOnClickListener { onHelp() }
+            binding.imgPassarinho.setOnClickListener { onHelp() }
         }
     }
 
@@ -60,7 +61,7 @@ class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, priva
     }
 
     private companion object {
-        const val TWO_ACTIONS = 2f
         const val ONE_ACTION = 1f
+        const val TWO_ACTIONS = 2f
     }
 }

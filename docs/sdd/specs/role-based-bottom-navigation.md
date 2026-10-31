@@ -38,8 +38,8 @@ A barra deve permitir navegar pelas áreas principais e indicar a área atual, r
 
 Composição confirmada nas respostas parciais recebidas em 28/10/2026, da esquerda para a direita:
 
-- Repositor: **Início → Interferências → Controle de produtos → Chatbot**.
-- Gerente: **Início → Interferências → Controle de produtos → Funcionários → Chatbot**.
+- Repositor: **Início → Interferências → Produtos → Chatbot**.
+- Gerente: **Início → Interferências → Produtos → Funcionários → Chatbot**.
 - Usar **ícones com texto**. Funcionários é o único botão adicional, exclusivo do gerente. Notificações fica fora das duas barras; o sino do cabeçalho é acesso suficiente.
 
 Destinos confirmados nas respostas interativas de 28/10/2026, com reforço de que Funcionários aparece somente para gerentes:
@@ -48,7 +48,7 @@ Destinos confirmados nas respostas interativas de 28/10/2026, com reforço de qu
 | --- | --- | --- |
 | Início | `homeFragment` para ambos | Confirmado |
 | Interferências | `interferencesFragment` para repositor; `managerInterferencesFragment` para gerente | Confirmado |
-| Controle de produtos | `productControlFragment` para ambos | Confirmado |
+| Produtos | `productControlFragment` para ambos | Confirmado; rótulo ajustado de "Controle de produtos" para caber na barra |
 | Funcionários | `employeeFragment` apenas para gerente | Confirmado; exclusivo de gerente |
 | Chatbot | `chatbotFragment` para ambos | Confirmado |
 

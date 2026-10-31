@@ -130,4 +130,5 @@
     <string name="logout_remote_warning_title">Saída do aparelho concluída</string>
     <string name="logout_remote_warning_message">Você saiu deste aparelho, mas não foi possível confirmar o encerramento no servidor.</string>
     <string name="logout_understood">Entendi</string>
+    <string name="loading_text">carregando...</string>
 </resources>
