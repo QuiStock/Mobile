@@ -46,6 +46,8 @@
     <!-- ================================================================= -->
     <dimen name="nav_bar_height">56dp</dimen>
     <dimen name="nav_bar_icon_size">28dp</dimen>
+    <dimen name="chatbot_history_row_min_height">42dp</dimen>
+    <dimen name="chatbot_history_row_padding">12dp</dimen>
 
     <!-- ================================================================= -->
     <!-- Splash Screen (Item 10)                                           -->

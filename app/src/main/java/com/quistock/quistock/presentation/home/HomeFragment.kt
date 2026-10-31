@@ -18,6 +18,7 @@ import com.quistock.quistock.domain.model.ActionType
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.presentation.activity.SessionViewModel
+import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType
@@ -35,6 +36,7 @@ class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding? = null
     private val viewModel: HomeViewModel by viewModel()
     private val sessionViewModel: SessionViewModel by activityViewModel()
+    private val chatbotViewModel: ChatbotViewModel by activityViewModel()
     private var navigating = false
     private val creationModel: CreateInterferenceViewModel by activityViewModel()
 
@@ -46,9 +48,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val alerts = PriorityAlertsAdapter(::openAction) {
-            PopupFeedback.showStatus(view, getString(R.string.home_alerts_fefo_unavailable), false)
-        }
+        val alerts = PriorityAlertsAdapter(::openAction, ::openFefo)
         binding?.rvAlertas?.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = alerts
@@ -140,6 +140,14 @@ class HomeFragment : Fragment() {
         } else {
             types.singleOrNull()?.let { navigateAction(alert, it) }
         }
+    }
+
+    private fun openFefo(alert: PriorityAlert) {
+        val controller = findNavController()
+        if (navigating || controller.currentDestination?.id != R.id.homeFragment) return
+        chatbotViewModel.offerFefo(alert)
+        navigating = true
+        controller.navigate(R.id.action_homeFragment_to_chatbotFragment)
     }
 
     private fun navigateAction(alert: PriorityAlert, type: ActionType) {
