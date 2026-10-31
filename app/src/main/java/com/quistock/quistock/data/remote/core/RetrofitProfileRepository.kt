@@ -12,6 +12,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import retrofit2.Response
 import retrofit2.http.GET
 import java.io.IOException
@@ -72,21 +75,25 @@ class RetrofitProfileRepository(private val api: ProfileApi, private val logger:
             throw error
         } catch (error: Exception) {
             logger?.info("Core profile load failed", logContext + ("failure" to profileFailureCategory(error)))
-            ProfileResult.Failure()
+            ProfileResult.Failure(transient = error is IOException && error !is SessionException)
         }
     }
 
     private fun mapResponse(response: Response<ProfileResponse>): ProfileResult = when {
         response.code() == HttpURLConnection.HTTP_FORBIDDEN -> {
-            response.errorBody()?.close()
+            val code = response.errorBody()?.use { body ->
+                runCatching {
+                    Json.parseToJsonElement(body.string()).jsonObject["error"]?.jsonPrimitive?.content
+                }.getOrNull()
+            }
             logger?.info(
                 "Core profile load failed",
                 logContext + mapOf("http_status" to response.code(), "failure" to "forbidden"),
             )
-            ProfileResult.Forbidden
+            if (code == "NO_ACTIVE_STORE") ProfileResult.NoActiveStore else ProfileResult.Forbidden
         }
 
-        response.isSuccessful -> mapBody(response.body())
+        response.code() == HttpURLConnection.HTTP_OK -> mapBody(response.body())
 
         else -> {
             response.errorBody()?.close()
@@ -100,6 +107,8 @@ class RetrofitProfileRepository(private val api: ProfileApi, private val logger:
                 } else {
                     0
                 },
+                transient = response.code() == HTTP_TOO_MANY_REQUESTS ||
+                    response.code() in HttpURLConnection.HTTP_INTERNAL_ERROR..HttpURLConnection.HTTP_VERSION,
             )
         }
     }

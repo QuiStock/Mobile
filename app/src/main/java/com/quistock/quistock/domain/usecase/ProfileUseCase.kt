@@ -49,7 +49,7 @@ class ProfileUseCase(
         logger?.debug("Core profile cache cleared", logContext)
     }
 
-    suspend fun load() {
+    suspend fun load(force: Boolean = false) {
         val expected = session.snapshot()
         var owner = false
         val task = try {
@@ -57,7 +57,7 @@ class ProfileUseCase(
                 if (session.state.value != SessionState.Active) return@withLock null
                 session.withCurrentSession(expected) {
                     val cached = state.value as? ProfileState.Ready
-                    if (cached?.generation == expected.generation) {
+                    if (!force && cached?.generation == expected.generation) {
                         logger?.debug("Core profile cache reused", logContext)
                         null
                     } else {
@@ -65,7 +65,7 @@ class ProfileUseCase(
                             ?: CompletableDeferred<Unit>().also {
                                 pending = expected.generation to it
                                 generation = expected.generation
-                                mutableState.value = ProfileState.Loading
+                                if (cached?.generation != expected.generation) mutableState.value = ProfileState.Loading
                                 owner = true
                             }
                     }
@@ -103,18 +103,21 @@ class ProfileUseCase(
     private suspend fun read(expected: SessionSnapshot) {
         try {
             val result = repository.read()
+            rememberSuccessfulProfile(result, expected)
             var rejection: ProfileState.Rejected? = null
             session.withCurrentSession(expected) {
                 if (generation != expected.generation) return@withCurrentSession
                 when (result) {
                     is ProfileResult.Success -> rejection = acceptProfile(result.profile, expected)
 
+                    ProfileResult.NoActiveStore -> rejection = ProfileState.Rejected(ProfileRejection.NO_STORE)
+
                     ProfileResult.Forbidden -> {
                         logger?.info("Core profile rejected", logContext + ("reason" to "forbidden"))
                         rejection = ProfileState.Rejected(ProfileRejection.FORBIDDEN)
                     }
 
-                    is ProfileResult.Failure -> mutableState.value = ProfileState.Failure(result.retryAfterMillis)
+                    is ProfileResult.Failure -> applyFailure(result)
                 }
                 rejection?.let { mutableState.value = it }
             }
@@ -132,6 +135,18 @@ class ProfileUseCase(
                 ),
             )
             if (current) mutableState.value = ProfileState.Failure()
+        }
+    }
+
+    private fun applyFailure(result: ProfileResult.Failure) {
+        if (!result.transient || state.value !is ProfileState.Ready) {
+            mutableState.value = ProfileState.Failure(result.retryAfterMillis, result.transient)
+        }
+    }
+
+    private suspend fun rememberSuccessfulProfile(result: ProfileResult, expected: SessionSnapshot) {
+        if (result is ProfileResult.Success && result.profile.rejection() == null) {
+            session.local.rememberProfile(result.profile, expected)
         }
     }
 

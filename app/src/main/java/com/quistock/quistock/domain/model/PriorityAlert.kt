@@ -16,10 +16,21 @@ data class AlertProduct(
     val flow: StockFlow?,
     val analysisId: String? = null,
     val analysisDate: Instant? = null,
-)
+    val risks: Set<CreationRisk> = emptySet(),
+) {
+    fun actionTypes(): Set<ActionType> = buildSet {
+        if (analysisId == null || flow == null) return@buildSet
+        if (CreationRisk.STOCKOUT in risks) add(ActionType.ORDER)
+        if (CreationRisk.EXPIRED !in risks &&
+            (CreationRisk.NEAR_EXPIRY in risks || CreationRisk.EXPIRATION in risks)
+        ) {
+            add(ActionType.PROMOTION)
+        }
+    }
+}
 
 data class PriorityAlert(val product: AlertProduct, val risk: AlertRisk) {
-    val hasPrimaryAction: Boolean get() = product.flow != StockFlow.MEDIUM
+    val hasPrimaryAction: Boolean get() = product.actionTypes().isNotEmpty()
 }
 
 sealed interface AlertProductsResult {

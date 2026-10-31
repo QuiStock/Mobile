@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModelStore
 import com.quistock.quistock.domain.model.AlertProduct
 import com.quistock.quistock.domain.model.AlertProductsResult
 import com.quistock.quistock.domain.model.AuthResult
+import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.ProfileResult
-import com.quistock.quistock.domain.model.StockFlow
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.model.UserStatus
@@ -69,7 +69,10 @@ class HomeViewModelTests {
         val model = createModel()
         model.enter()
         runCurrent()
-        assertTrue(model.state.value is HomeAlertsState.Ready)
+        val ready = model.state.value as HomeAlertsState.Ready
+        assertEquals(1, ready.alerts.size)
+        assertEquals("product", ready.alerts.single().product.id)
+        assertFalse(ready.alerts.single().hasPrimaryAction)
         model.enter()
         runCurrent()
         coVerify(exactly = 1) { repository.read(17, "store") }
@@ -115,11 +118,24 @@ class HomeViewModelTests {
     private suspend fun createModel(): HomeViewModel {
         session.login("fixture@example.test", "fixture")
         profile.load()
-        return HomeViewModel(LoadPriorityAlertsUseCase(repository), profile, session).also { store.put("home", it) }
+        return HomeViewModel(LoadPriorityAlertsUseCase(repository), profile, session, mockk(relaxed = true)).also {
+            store.put("home", it)
+        }
     }
 
     private fun validProducts() = AlertProductsResult.Success(
-        listOf(AlertProduct("product", "Fixture product", "Category", BigDecimal("5"), 1, StockFlow.LOW)),
+        listOf(
+            AlertProduct(
+                "product",
+                "Fixture product",
+                "Category",
+                BigDecimal("5"),
+                44,
+                null,
+                analysisId = "analysis",
+                risks = setOf(CreationRisk.EXPIRATION),
+            ),
+        ),
         invalidCount = 0,
     )
 }

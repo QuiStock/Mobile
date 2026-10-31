@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ItemAlertaBinding
+import com.quistock.quistock.domain.model.ActionType
 import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.presentation.common.AlertProductPresentation
@@ -19,6 +20,8 @@ class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, priva
     )
 
     override fun onBindViewHolder(holder: Holder, position: Int) = holder.bind(getItem(position))
+
+    var creationAllowed: Boolean = false
 
     inner class Holder(private val binding: ItemAlertaBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(alert: PriorityAlert) {
@@ -35,11 +38,16 @@ class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, priva
                 },
             )
             binding.btnPromocao.setText(
-                if (alert.risk == AlertRisk.STOCKOUT) R.string.home_alerts_order else R.string.home_alerts_promotion,
+                when {
+                    product.actionTypes().size > 1 -> R.string.creation_title
+                    ActionType.ORDER in product.actionTypes() -> R.string.creation_order
+                    else -> R.string.creation_promotion
+                },
             )
-            binding.btnPromocao.isVisible = alert.hasPrimaryAction
-            binding.layoutBotoes.weightSum = if (alert.hasPrimaryAction) TWO_ACTIONS else ONE_ACTION
-            binding.btnPromocao.setOnClickListener { if (alert.hasPrimaryAction) onAction(alert) }
+            val actionable = alert.hasPrimaryAction && creationAllowed
+            binding.btnPromocao.isVisible = actionable
+            binding.layoutBotoes.weightSum = if (actionable) TWO_ACTIONS else ONE_ACTION
+            binding.btnPromocao.setOnClickListener { if (actionable) onAction(alert) }
             binding.btnFefo.setOnClickListener { onHelp() }
             binding.imgPassarinho.setOnClickListener { onHelp() }
         }

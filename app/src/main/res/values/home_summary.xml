@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="summary_unavailable">—</string>
+    <string name="summary_loading">Atualizando indicadores</string>
+    <string name="summary_retry">Tentar novamente</string>
+    <string name="summary_reconnect">Reconectar</string>
+    <string name="summary_logout">Sair</string>
+    <string name="summary_offline">Consulta dos indicadores salvos. Reconecte para usar as outras funções.</string>
+    <string name="summary_stale">Dados possivelmente desatualizados. Última atualização: %1$s.</string>
+    <string name="summary_persistence_failed">Indicadores atualizados, mas não foi possível salvá-los para acesso offline.</string>
+    <string name="summary_no_store">Nenhuma loja ativa vinculada ao seu usuário. Entre em contato com o responsável.</string>
+    <string name="summary_forbidden">Você não tem permissão para consultar estes indicadores.</string>
+    <string name="summary_rate_limit">Muitas tentativas. Tente novamente mais tarde.</string>
+    <string name="summary_error">Não foi possível carregar os indicadores. Tente novamente.</string>
+    <string name="summary_expiry_label">Vencimento curto</string>
+    <string name="summary_stock_label">Ruptura e excesso</string>
+    <string name="summary_actions_label">Ações ativas</string>
+    <string name="summary_metric">%1$s: %2$s</string>
+</resources>

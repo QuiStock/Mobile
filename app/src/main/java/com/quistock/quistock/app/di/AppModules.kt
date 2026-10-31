@@ -17,6 +17,7 @@ val appInternalModule = module {
         preferencesModule,
         retrofitModule,
         profileEditModule,
+        interferenceModule,
     )
 }
 

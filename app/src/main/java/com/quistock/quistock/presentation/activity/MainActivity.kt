@@ -23,6 +23,7 @@ import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
+import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
 import com.quistock.quistock.presentation.navigation.BottomNavigation
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     val binding: ActivityMainBinding get() = _binding!!
 
     private val sessionViewModel: SessionViewModel by viewModel()
+    private val creationModel: CreateInterferenceViewModel by viewModel()
     private lateinit var bottomNavigation: BottomNavigation
     private val logoutBackBlocker = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = Unit
@@ -68,6 +70,11 @@ class MainActivity : AppCompatActivity() {
         binding.sessionRecoveryProgress.visibility = View.VISIBLE
         binding.sessionRecoveryRetry.visibility = View.GONE
         observeSession()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                creationModel.state.collect { bottomNavigation.creationChanged(it.busy) }
+            }
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -86,6 +93,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeSession() {
         val nav = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
+        nav.addOnDestinationChangedListener { controller, destination, _ ->
+            if (sessionViewModel.session.state.value is SessionState.OfflineReadOnly &&
+                destination.id != R.id.homeFragment
+            ) {
+                controller.navigate(
+                    R.id.homeFragment,
+                    null,
+                    navOptions {
+                        popUpTo(R.id.nav_graph) { inclusive = true }
+                        launchSingleTop = true
+                    },
+                )
+            }
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
@@ -211,6 +232,8 @@ internal fun sessionDestination(state: SessionState, current: Int?): Int? = when
     SessionState.LoggingOut, is SessionState.LogoutFailed -> null
 
     is SessionState.LoggedOut -> if (current == R.id.loginFragment) null else R.id.loginFragment
+
+    is SessionState.OfflineReadOnly -> if (current == R.id.homeFragment) null else R.id.homeFragment
 
     SessionState.Restoring -> null
 

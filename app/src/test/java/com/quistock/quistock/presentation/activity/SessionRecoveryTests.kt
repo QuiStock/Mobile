@@ -47,6 +47,7 @@ class SessionRecoveryTests {
             session,
             profile,
             LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session),
+            mockk(relaxed = true),
         )
         runCurrent()
         coVerify(exactly = 0) { session.refresh(any()) }
@@ -74,6 +75,7 @@ class SessionRecoveryTests {
             session,
             profile,
             LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session),
+            mockk(relaxed = true),
         )
         runCurrent()
         assertTrue(viewModel.recovery.value.retryBlocked)

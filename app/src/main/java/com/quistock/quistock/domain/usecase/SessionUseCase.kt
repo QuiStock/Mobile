@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 class SessionUseCase(private val auth: AuthRepository, preferences: UserPreferences? = null) {
     private val mutex = Mutex()
     private val lifecycle = SessionLifecycle(auth, preferences)
+    val local = SessionLocalAccess(auth, lifecycle, mutex)
     private val mutableState get() = lifecycle.state
     val state = mutableState.asStateFlow()
 

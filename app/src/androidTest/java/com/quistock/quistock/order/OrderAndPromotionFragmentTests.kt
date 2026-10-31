@@ -9,83 +9,112 @@ import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.hasErrorText
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
-import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.awaitDestination
+import com.quistock.quistock.domain.model.ActionListResult
+import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.AlertProductsResult
+import com.quistock.quistock.domain.model.CreationRisk
+import com.quistock.quistock.domain.model.StockFlow
+import com.quistock.quistock.domain.port.InterferenceRepository
+import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.presentation.activity.MainActivity
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import org.hamcrest.Matchers.containsString
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.GlobalContext
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.ZoneId
 
 @RunWith(AndroidJUnit4::class)
 class OrderAndPromotionFragmentTests {
     @get:Rule val authenticatedSession = AuthenticatedSessionRule()
+    private lateinit var previousProducts: PriorityAlertsRepository
+    private lateinit var previousActions: InterferenceRepository
+    private val actions = mockk<InterferenceRepository>()
+    private val product = AlertProduct(
+        "product",
+        "Fixture product",
+        "Category",
+        BigDecimal("2.375"),
+        null,
+        StockFlow.MEDIUM,
+        "flow",
+        risks = setOf(CreationRisk.STOCKOUT, CreationRisk.EXPIRATION),
+    )
 
-    @Test
-    fun orderForm_shouldShowValidationForEachMissingField() = runInstrumented(NavGraph.Destinations.ORDER) { _ ->
-        onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-        onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
+    @Before
+    fun setup() {
+        val koin = GlobalContext.get()
+        previousProducts = koin.get()
+        previousActions = koin.get()
+        val products = mockk<PriorityAlertsRepository>()
+        coEvery { products.read(any(), any()) } returns AlertProductsResult.Success(listOf(product), 0)
+        coEvery { actions.list(any(), any(), any()) } returns ActionListResult.Loaded(emptyList())
+        koin.declare(products, allowOverride = true)
+        koin.declare(actions, allowOverride = true)
+    }
 
-        onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
-        onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-        onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_order_invalid)))
+    @After
+    fun cleanup() {
+        GlobalContext.get().declare(previousProducts, allowOverride = true)
+        GlobalContext.get().declare(previousActions, allowOverride = true)
     }
 
     @Test
-    fun orderForm_withRequiredFields_shouldConfirmSubmission() =
-        runInstrumented(NavGraph.Destinations.ORDER) { scenario ->
-            onView(withId(R.id.etOrderQuantity)).perform(scrollTo(), replaceText("20"), closeSoftKeyboard())
-            onView(withId(R.id.etOrderDate)).perform(scrollTo(), replaceText("15 ago"), closeSoftKeyboard())
-            onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
-                .check(matches(withText(R.string.popup_order_confirm)))
-            onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
-            awaitDestination(scenario, NavGraph.Destinations.ORDER)
-
-            onView(withId(R.id.btnSubmitOrder)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
-            awaitDestination(scenario, NavGraph.Destinations.ORDER_SENT)
-        }
-
-    @Test
-    fun promotionForm_shouldShowValidationForEachMissingField() =
-        runInstrumented(NavGraph.Destinations.PROMOTION) { _ ->
-            onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
-
-            onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
-            onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.popup_promotion_invalid)))
-        }
+    fun orderValidationAndCancellationPreserveDraftWithoutWriting() = runForm(R.id.orderFragment) { scenario ->
+        onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
+        val quantityError = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.creation_quantity_error)
+        onView(withId(R.id.creationQuantity)).check(matches(hasErrorText(quantityError)))
+        fill(R.id.creationQuantity, "20")
+        fill(R.id.creationOrderDate, today())
+        onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
+        onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
+        scenario.recreate()
+        awaitDestination(scenario, R.id.orderFragment)
+        onView(withId(R.id.creationQuantity)).check(matches(withText("20")))
+        coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
+    }
 
     @Test
-    fun promotionForm_withRequiredFields_shouldConfirmSubmission() =
-        runInstrumented(NavGraph.Destinations.PROMOTION) { scenario ->
-            onView(withId(R.id.etPromotionDiscount)).perform(scrollTo(), replaceText("15"), closeSoftKeyboard())
-            onView(withId(R.id.etPromotionDuration)).perform(scrollTo(), replaceText("3"), closeSoftKeyboard())
-            onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationMessage)).inRoot(isDialog())
-                .check(matches(withText(R.string.popup_promotion_confirm)))
-            onView(withId(R.id.confirmationNo)).inRoot(isDialog()).perform(click())
-            awaitDestination(scenario, NavGraph.Destinations.PROMOTION)
+    fun promotionHasExplicitDatesAndCancelDoesNotWrite() = runForm(R.id.promotionFragment) { _ ->
+        fill(R.id.creationDiscount, "15,25")
+        fill(R.id.creationStart, today())
+        fill(R.id.creationEnd, today())
+        onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
+        onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.creationDiscount)).check(matches(withText("15,25")))
+        coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
+    }
 
-            onView(withId(R.id.btnSubmitPromotion)).perform(scrollTo(), click())
-            onView(withId(R.id.confirmationYes)).inRoot(isDialog()).perform(click())
-            awaitDestination(scenario, NavGraph.Destinations.PROMO_SENT)
-        }
-
-    private fun runInstrumented(destinationId: Int, test: (ActivityScenario<MainActivity>) -> Unit) {
+    private fun runForm(destination: Int, test: (ActivityScenario<MainActivity>) -> Unit) {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            awaitDestination(scenario, NavGraph.Destinations.HOME)
-            scenario.onActivity { activity ->
-                activity.binding.navHostFragment.findNavController().navigate(destinationId)
+            awaitDestination(scenario, R.id.homeFragment)
+            scenario.onActivity {
+                it.binding.navHostFragment.findNavController().navigate(destination)
             }
-            awaitDestination(scenario, destinationId)
+            awaitDestination(scenario, destination)
+            onView(withText(containsString("Fixture product"))).perform(scrollTo(), click())
             test(scenario)
         }
     }
+
+    private fun fill(id: Int, value: String) {
+        onView(withId(id)).perform(scrollTo(), replaceText(value), closeSoftKeyboard())
+    }
+
+    private fun today(): String = LocalDate.now(ZoneId.of("America/Sao_Paulo")).toString()
 }

@@ -1,31 +1,40 @@
 package com.quistock.quistock.app.di
 
 import android.content.Context
+import com.quistock.quistock.BuildConfig
 import com.quistock.quistock.R
+import com.quistock.quistock.data.preferences.DataStoreHomeSummaryCache
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
 import com.quistock.quistock.data.remote.auth.AuthHttpAttempt
 import com.quistock.quistock.data.remote.auth.CoreSessionInterceptor
 import com.quistock.quistock.data.remote.auth.RetrofitAuthRepository
+import com.quistock.quistock.data.remote.core.DashboardApi
 import com.quistock.quistock.data.remote.core.HttpProfilePhotoRepository
 import com.quistock.quistock.data.remote.core.PriorityAlertsApi
 import com.quistock.quistock.data.remote.core.ProfileApi
 import com.quistock.quistock.data.remote.core.ProfileEditApi
 import com.quistock.quistock.data.remote.core.ProfileWriteAttempt
+import com.quistock.quistock.data.remote.core.RetrofitHomeSummaryRepository
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileEditRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
+import com.quistock.quistock.data.remote.core.RetrofitTeamRepository
+import com.quistock.quistock.data.remote.core.TeamApi
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.ChatbotRepository
+import com.quistock.quistock.domain.port.HomeSummaryCache
+import com.quistock.quistock.domain.port.HomeSummaryRepository
 import com.quistock.quistock.domain.port.Logger
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.port.ProfileEditRepository
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
+import com.quistock.quistock.domain.port.TeamRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar
@@ -61,6 +70,21 @@ val retrofitSdkModule = module {
 }
 
 val retrofitModule = module {
+    single<DashboardApi> {
+        Retrofit.Builder().baseUrl(get<Context>().getString(R.string.core_base_url).trim())
+            .client(get<OkHttpClient>(named("CoreHttpClient"))).build().create(DashboardApi::class.java)
+    }
+    single<HomeSummaryRepository> { RetrofitHomeSummaryRepository(get()) }
+    single<HomeSummaryCache> { DataStoreHomeSummaryCache(get()) }
+
+    single<TeamApi> {
+        Retrofit.Builder()
+            .baseUrl(get<Context>().getString(R.string.core_base_url))
+            .client(get<OkHttpClient>(named("CoreHttpClient")))
+            .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
+            .build().create(TeamApi::class.java)
+    }
+    single<TeamRepository> { RetrofitTeamRepository(get(), BuildConfig.EMPLOYEE_INITIAL_PASSWORD) }
     single<ProfileEditApi> {
         Retrofit.Builder()
             .baseUrl(get<Context>().getString(R.string.core_base_url))
@@ -128,6 +152,7 @@ internal fun createCoreHttpClient(
     session: SessionUseCase,
     custody: AuthCookieCustody,
     logger: Logger? = null,
+    replayWrites: Boolean = true,
 ): OkHttpClient = OkHttpClient.Builder()
     .cookieJar(CookieJar.NO_COOKIES)
     .addInterceptor { chain ->
@@ -139,7 +164,7 @@ internal fun createCoreHttpClient(
         }
         chain.proceed(tagged)
     }
-    .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger))
+    .addInterceptor(CoreSessionInterceptor(baseUrl.toHttpUrl(), session, custody, logger, replayWrites))
     .addNetworkInterceptor { chain ->
         chain.request().tag(ProfileWriteAttempt::class.java)?.send(chain) ?: chain.proceed(chain.request())
     }

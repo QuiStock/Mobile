@@ -20,7 +20,18 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resumeWithException
 
-internal enum class AuthOutcome { SUCCESS, INVALID, PLATFORM, NETWORK, TIMEOUT, SERVER, LIMIT, PROTOCOL, UNEXPECTED }
+internal enum class AuthOutcome {
+    SUCCESS,
+    INVALID,
+    PLATFORM,
+    NO_STORE,
+    NETWORK,
+    TIMEOUT,
+    SERVER,
+    LIMIT,
+    PROTOCOL,
+    UNEXPECTED,
+}
 
 internal class AuthRequestContext(
     val origin: HttpUrl,
@@ -172,21 +183,23 @@ internal class AuthRequest(
     }
 
     private fun classify(response: Response<Unit>): AuthOutcome {
+        val status = response.code()
         val code = runCatching {
             Json.parseToJsonElement(response.errorBody()?.string().orEmpty()).jsonObject["code"]?.jsonPrimitive?.content
         }.getOrNull()
         return when {
-            response.code() == HttpURLConnection.HTTP_OK -> AuthOutcome.SUCCESS
+            status == HttpURLConnection.HTTP_OK -> AuthOutcome.SUCCESS
 
-            response.code() == HTTP_TOO_MANY_REQUESTS -> AuthOutcome.LIMIT
+            status == HTTP_TOO_MANY_REQUESTS -> AuthOutcome.LIMIT
 
-            response.code() >= HttpURLConnection.HTTP_INTERNAL_ERROR -> AuthOutcome.SERVER
+            status >= HttpURLConnection.HTTP_INTERNAL_ERROR -> AuthOutcome.SERVER
 
-            response.code() == HttpURLConnection.HTTP_UNAUTHORIZED &&
+            status == HttpURLConnection.HTTP_UNAUTHORIZED &&
                 code == (if (login != null) "invalid_credentials" else "invalid_refresh_token") -> AuthOutcome.INVALID
 
-            login != null && response.code() == HttpURLConnection.HTTP_FORBIDDEN &&
-                code == "platform_not_allowed" -> AuthOutcome.PLATFORM
+            status == HttpURLConnection.HTTP_FORBIDDEN && code == "no_active_store" -> AuthOutcome.NO_STORE
+
+            status == HttpURLConnection.HTTP_FORBIDDEN && code == "platform_not_allowed" -> AuthOutcome.PLATFORM
 
             login == null -> AuthOutcome.PROTOCOL
 

@@ -6,6 +6,8 @@ import okhttp3.Cookie
 interface AuthCookieStore {
     suspend fun read(): List<RefreshCookieRecord>
     suspend fun write(records: List<RefreshCookieRecord>)
+    suspend fun readSession(): RefreshCookieBatch = RefreshCookieBatch(read(), version = 1)
+    suspend fun writeSession(session: RefreshCookieBatch) = write(session.records)
 
     /** Destroy the dedicated encryption key before removing a discarded credential. */
     suspend fun revoke()
@@ -47,4 +49,10 @@ class RefreshCookieRecord(
 }
 
 @Serializable
-class RefreshCookieBatch(val records: List<RefreshCookieRecord>, val version: Int = 1)
+class RefreshCookieBatch(
+    val records: List<RefreshCookieRecord>,
+    val version: Int = 2,
+    val sessionId: String? = null,
+    val userId: String? = null,
+    val storeId: Long? = null,
+)

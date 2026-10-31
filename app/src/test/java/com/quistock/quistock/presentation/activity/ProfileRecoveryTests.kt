@@ -52,7 +52,13 @@ class ProfileRecoveryTests {
             ),
         )
         val profile = ProfileUseCase(repository, session)
-        val model = SessionViewModel(session, profile, LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session))
+        val model =
+            SessionViewModel(
+                session,
+                profile,
+                LoadProfilePhotoUseCase(mockk(relaxed = true), profile, session),
+                mockk(relaxed = true),
+            )
         runCurrent()
         assertTrue(model.recovery.value.retryBlocked)
         model.retrySession()

@@ -80,6 +80,13 @@ class NavigationAccessTests {
         assertTrue(access.shouldClear())
     }
 
+    @Test fun offlineReadOnlyBlocksAllTabsAndClearsProtectedVisitHistory() {
+        val access = access()
+        session.value = SessionState.OfflineReadOnly(com.quistock.quistock.domain.model.SessionFailure.NETWORK)
+        assertNull(access.ready())
+        assertTrue(access.shouldClear())
+    }
+
     @Test fun temporaryFailureBlocksWithoutDiscardingCurrentSessionState() {
         val access = access()
         session.value = SessionState.Failure(com.quistock.quistock.domain.model.SessionFailure.NETWORK)

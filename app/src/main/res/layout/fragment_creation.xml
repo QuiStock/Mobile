@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/color_petroleo" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="24dp">
+        <TextView android:id="@+id/creationStore" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:tag="current_profile_store" />
+        <TextView android:id="@+id/creationUser" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:tag="current_profile_header_name" />
+        <Button android:id="@+id/creationBack" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_back" />
+        <TextView android:id="@+id/creationTitle" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="22sp" android:text="@string/creation_title" />
+        <TextView android:id="@+id/creationAdvisory" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" android:text="@string/creation_advisory" />
+        <TextView android:id="@+id/creationMessage" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" />
+        <ProgressBar android:id="@+id/creationProgress" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:contentDescription="@string/creation_loading" />
+        <LinearLayout android:id="@+id/creationProducts" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" />
+        <TextView android:id="@+id/creationProduct" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" />
+        <TextView android:id="@+id/creationQuantityLabel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:labelFor="@id/creationQuantity" android:text="@string/creation_quantity"
+            android:textColor="@color/color_branco" />
+        <EditText android:id="@+id/creationQuantity" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="number"
+            android:saveEnabled="false" android:textColor="@color/color_branco"
+            android:textColorHint="@color/color_branco" />
+        <TextView android:id="@+id/creationOrderDateLabel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:labelFor="@id/creationOrderDate" android:text="@string/creation_order_date"
+            android:textColor="@color/color_branco" />
+        <EditText android:id="@+id/creationOrderDate" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="date"
+            android:saveEnabled="false" android:textColor="@color/color_branco"
+            android:textColorHint="@color/color_branco" android:hint="@string/creation_date_hint" />
+        <TextView android:id="@+id/creationDiscountLabel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:labelFor="@id/creationDiscount" android:text="@string/creation_discount"
+            android:textColor="@color/color_branco" />
+        <EditText android:id="@+id/creationDiscount" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="numberDecimal"
+            android:saveEnabled="false" android:textColor="@color/color_branco"
+            android:textColorHint="@color/color_branco" />
+        <TextView android:id="@+id/creationStartLabel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:labelFor="@id/creationStart" android:text="@string/creation_start"
+            android:textColor="@color/color_branco" />
+        <EditText android:id="@+id/creationStart" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="date"
+            android:saveEnabled="false" android:textColor="@color/color_branco"
+            android:textColorHint="@color/color_branco" android:hint="@string/creation_date_hint" />
+        <TextView android:id="@+id/creationEndLabel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:labelFor="@id/creationEnd" android:text="@string/creation_end"
+            android:textColor="@color/color_branco" />
+        <EditText android:id="@+id/creationEnd" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="date"
+            android:saveEnabled="false" android:textColor="@color/color_branco"
+            android:textColorHint="@color/color_branco" android:hint="@string/creation_date_hint" />
+        <TextView android:id="@+id/creationSummary" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:textColor="@color/color_branco" android:textSize="16sp" />
+        <Button android:id="@+id/creationSubmit" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_review" />
+        <Button android:id="@+id/creationForward" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_forward" />
+        <Button android:id="@+id/creationRetry" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_retry" />
+        <Button android:id="@+id/creationReturn" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/creation_return" />
+</LinearLayout>
+</ScrollView>

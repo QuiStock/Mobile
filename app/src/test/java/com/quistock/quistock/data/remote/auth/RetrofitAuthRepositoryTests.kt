@@ -21,6 +21,22 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class RetrofitAuthRepositoryTests {
+    @Test fun missingStoreIsTerminalWhileUnrelatedCsrfForbiddenRemainsRecoverable() = runBlocking {
+        AuthHttpFixture().use { f ->
+            f.auth.enqueue(MockResponse().setResponseCode(403).setBody("""{"code":"no_active_store"}"""))
+            assertEquals(LoginError.NoActiveStore, f.session.login("synthetic", "synthetic"))
+            assertNull(f.store.record)
+        }
+        AuthHttpFixture().use { f ->
+            f.login()
+            f.auth.enqueue(csrfResponse())
+            f.auth.enqueue(MockResponse().setResponseCode(403).setBody("""{"code":"no_active_store"}"""))
+            f.session.refresh(f.session.snapshot())
+            assertEquals(SessionState.Expired, f.session.state.value)
+            assertNull(f.store.record)
+        }
+    }
+
     @Test fun reopeningRestoresRefreshCookieAndRenewsSessionAtCurrentRoute() = runBlocking {
         AuthHttpFixture().use { f ->
             f.login()

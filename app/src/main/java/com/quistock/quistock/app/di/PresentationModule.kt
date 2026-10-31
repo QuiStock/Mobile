@@ -2,6 +2,7 @@ package com.quistock.quistock.app.di
 
 import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
+import com.quistock.quistock.presentation.employee.TeamViewModel
 import com.quistock.quistock.presentation.home.HomeViewModel
 import com.quistock.quistock.presentation.login.LoginViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -13,4 +14,5 @@ val presentationModule = module {
     viewModel { ChatbotViewModel(get(), get(), get()) }
     viewModelOf(::LoginViewModel)
     viewModelOf(::SessionViewModel)
+    viewModelOf(::TeamViewModel)
 }

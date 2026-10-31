@@ -49,14 +49,15 @@ enum class ProfileRejection { INVALID, FORBIDDEN, ROLE, NO_STORE }
 
 sealed interface ProfileResult {
     class Success(val profile: UserProfile) : ProfileResult
-    class Failure(val retryAfterMillis: Long = 0) : ProfileResult
+    class Failure(val retryAfterMillis: Long = 0, val transient: Boolean = false) : ProfileResult
     data object Forbidden : ProfileResult
+    data object NoActiveStore : ProfileResult
 }
 
 sealed interface ProfileState {
     data object Empty : ProfileState
     data object Loading : ProfileState
     class Ready(val generation: Long, val profile: UserProfile) : ProfileState
-    class Failure(val retryAfterMillis: Long = 0) : ProfileState
+    class Failure(val retryAfterMillis: Long = 0, val transient: Boolean = false) : ProfileState
     class Rejected(val reason: ProfileRejection, val role: UserRole? = null) : ProfileState
 }

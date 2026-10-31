@@ -4,6 +4,41 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Consulta de interferências corrigida em 30/10/2026 após retorno HTTP 200 fornecido
+  pelo solicitante com MONITOR e pedidos históricos sem data desejada. Mapper de
+  leitura agora preserva nulidade histórica e separa obrigatoriedade de formulário
+  novo; MONITOR reservado fica fora deste fluxo, identificado como pedidos/promoções
+  no hub. Campos ausentes aparecem como "Não informado", sem preenchimento fictício.
+  Loja/identidade/filtro e valores presentes inválidos continuam protegidos;
+  pendências incompletas ainda bloqueiam duplicidade. Novas gerações continuam
+  estritas. Testes escritos, revisão estática apenas; sem Gradle nem escrita real.
+  Ver `specs/create-interference.md`; validação da nova revisão permanece pendente.
+
+
+- Regressão da Home confirmada em 30/10/2026 por resposta fornecida pelo solicitante:
+  Core retornava risco EXPIRATION em análise INSUFFICIENT_DATA com fluxo nulo,
+  mas o mapper descartava os riscos e a Home mostrava vazio. Mapper corrigido
+  para preservar risco/identidade/data também sem classificação; ações de criação
+  continuam bloqueadas sem ANALYZED/fluxo válido. Testes de mapper, caminho até a
+  Home, estado, binding e bloqueio de escrita escritos, sem execução de Gradle.
+  Não atribuir este caso à falta de analyze-login: a resposta atual já existe.
+  Ver `specs/create-interference.md` e revisão de `specs/home-priority-alerts.md`.
+
+
+- Criação de pedido de compra/promoção escrita em 29/10/2026 conforme
+  `specs/create-interference.md`, ainda em andamento: funcionário ativo,
+  riscos/análises de `/flows/current`, parâmetros humanos explícitos, pré-checagem
+  de pendências, geração e encaminhamento separados. Rascunho em memória na
+  Activity; transporte dedicado sem replay de escrita, com 30 segundos por chamada.
+  Hub consulta ações reais; somente SENT_TO_MANAGER confirma envio. Home passa a
+  usar riscos Core em vez de HIGH/LOW ou histórico para criação. Processamento de
+  análise no login não foi integrado; sem análise atual elegível, seleção vazia.
+  Nenhum Gradle/teste/build/lint/cobertura ou escrita real ao Core executado por
+  instrução expressa do solicitante (wrapper limitado no sandbox). Testes escritos,
+  revisão estática e PR draft não concluem a funcionalidade. AC-17 exige teste real
+  na versão final. Ver comandos/rastreabilidade na spec. Gates preservados.
+
+
 - `QuiStock` is an Android project with one Gradle module, `:app`, Kotlin, Java 17, Views/XML, ViewBinding, and the `com.quistock.quistock` package.
 - The README describes Clean Architecture with MVVM and the dependency direction `presentation -> domain <- data`. The current structure uses `domain/port` and Koin dependency injection; follow the existing code where the guide is illustrative.
 - The code includes login, personal registration, home, and chatbot areas. Login uses the DS_Auth contract through `RetrofitAuthRepository` and `SessionUseCase`, with isolated response-cookie capture, generation-checked commits and encrypted refresh persistence. For the CSRF correction, root routes on the same HTTPS Auth origin and compatible cookie attributes were confirmed by the requester; real deployment smoke verification remains pending. The chatbot uses a use case and a Retrofit repository for an internal API. These files do not establish that the product flows are complete.
@@ -26,6 +61,17 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 - O ambiente consultado pelo solicitante retornou role=EMPLOYEE em /profile, divergindo dos códigos portugueses do DS_Backend local. Após a confirmação do enum atual, o domínio usa os cargos em inglês e o rótulo Funcionário; o mapper não aceita aliases legados. Ver `ProfileRoleMappingTests`, escritos mas não executados conforme orientação do solicitante.
 
 ## Sources of truth
+
+- Rodada de criação recebida em 29/10/2026: solicitante informa aprovação das
+  validações exceto Detekt. Relatórios locais lidos (sem execução pelo agente):
+  290 unitários e 68 instrumentados sem falhas; JaCoCo combinado com 87,5% de
+  linhas e 71,7% de branches; Lint sem erros/fatais, com 612 avisos. Detekt registra
+  três ReturnCount e duas funções render com complexidade excessiva. Refatorações
+  escritas preservam os comportamentos e a formatação local do solicitante,
+  sem alterar gates/supressões. Sem nova execução de Gradle/testes/build/lint;
+  aprovação do novo commit depende de outra rodada. AC-17 continua sem evidência
+  detalhada registrada. Ver `specs/create-interference.md`.
+
 
 - Relatório instrumentado de 29/10/2026 registra 69 aprovações e uma falha em
   70 testes. A falha restante de logout é uma espera pela raiz da Activity sem
@@ -97,3 +143,20 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 - Confirm backend contracts, copy, navigation, permissions, and business rules against the request or an explicit source. Do not infer them from class names or layouts.
 - CI runs debug/release builds, Spotless, Lint, Detekt, unit tests, and instrumented tests; the combined JaCoCo gate requires 80% line coverage and 70% branch coverage.
 - Changes involving Firebase, the backend, or persistence must state the environment, affected data, and expected failures in the relevant spec.
+
+## Home summary and local read-only access (2026-10-29)
+
+PR #44 supersedes earlier global-summary and no-offline-cache assumptions. Core's
+`dashboard/summary?store_id=` supplies the four card metrics; HomeViewModel preserves
+priority alerts while loading summary separately. The encrypted refresh record now owns
+an opaque local session ID and a validated Core user/store binding. A separate summary
+key uses the same DataStore transaction boundary for atomic invalidation on revocation
+or identity replacement; no Room/SQLite dependency is added. No tokens enter summary cache.
+
+A distinct OfflineReadOnly session state permits only saved Home indicators, manual
+recovery and logout until refresh expiry; it never authorizes Core calls. Missing/expired
+binding, protocol errors and definitive eligibility failures cannot unlock local Home.
+Server revocation while disconnected is detected at recovery or local expiry. Auth now
+requires an active store for mobile EMPLOYEE/MANAGER at login/refresh; no-store users
+are blocked, superseding the old PR #44 blank-cards/retained-session decision. Documentation
+of planned checks is not test evidence; final executed results belong in the PR.

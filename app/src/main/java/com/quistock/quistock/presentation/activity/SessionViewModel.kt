@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.usecase.GetHomeSummaryUseCase
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -18,6 +19,7 @@ class SessionViewModel(
     val session: SessionUseCase,
     val profile: ProfileUseCase,
     private val loadPhoto: LoadProfilePhotoUseCase,
+    private val summary: GetHomeSummaryUseCase,
 ) : ViewModel() {
     suspend fun photoBytes(): ByteArray? = loadPhoto()
 
@@ -26,11 +28,12 @@ class SessionViewModel(
     val recovery = mutableRecovery.asStateFlow()
     private var retryTimer: Job? = null
     private var logoutJob: Job? = null
+    private var offlineExpiry: Job? = null
 
     fun retrySession() {
         if (session.state.value == SessionState.Active && profile.state.value is ProfileState.Failure) {
             retryProfile()
-        } else if (session.state.value is SessionState.Failure) {
+        } else if (session.state.value is SessionState.Failure || session.state.value is SessionState.OfflineReadOnly) {
             retryAuthentication()
         }
     }
@@ -56,8 +59,9 @@ class SessionViewModel(
 
     private fun updateRetryBlock() {
         retryTimer?.cancel()
+        val state = session.state.value
         val remaining = when {
-            session.state.value is SessionState.Failure -> session.retryDelayMillis
+            state is SessionState.Failure || state is SessionState.OfflineReadOnly -> session.retryDelayMillis
             else -> (profile.state.value as? ProfileState.Failure)?.retryAfterMillis ?: 0L
         }
         mutableRecovery.value = mutableRecovery.value.copy(retryBlocked = remaining > 0)
@@ -97,6 +101,17 @@ class SessionViewModel(
         viewModelScope.launch {
             session.state.collectLatest { state ->
                 updateRetryBlock()
+                offlineExpiry?.cancel()
+                if (state is SessionState.Failure) summary.openOffline()
+                if (state is SessionState.OfflineReadOnly) {
+                    val expected = session.snapshot()
+                    session.local.binding()?.let { scope ->
+                        offlineExpiry = viewModelScope.launch {
+                            delay((scope.expiresAt - System.currentTimeMillis()).coerceAtLeast(1))
+                            session.local.expireOffline(expected)
+                        }
+                    }
+                }
                 if (state == SessionState.Active) {
                     profile.load()
                 } else if (state !is SessionState.Failure) {
@@ -104,7 +119,12 @@ class SessionViewModel(
                 }
             }
         }
-        viewModelScope.launch { profile.state.collectLatest { updateRetryBlock() } }
+        viewModelScope.launch {
+            profile.state.collectLatest {
+                updateRetryBlock()
+                if (it is ProfileState.Failure) summary.openOffline()
+            }
+        }
     }
 }
 
