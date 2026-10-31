@@ -11,7 +11,7 @@ The application requires a dedicated full-screen loading state (`LoadingFragment
 ## Scope
 
 **In scope:**
-- Loading screen layout (`fragment_loading.xml`) with a deep purple atmospheric gradient background (`#2A084E` to `#11061F`), a rotating dotted circular spinner, and the "loading.." text in light lavender (`#D8C9E0`).
+- Loading screen layout (`fragment_loading.xml`) with a deep purple atmospheric gradient background (`#2A084E` to `#11061F`), a rotating dotted circular spinner, and the "carregando..." text in light lavender (`#D8C9E0`).
 - Dotted spinner vector drawable and animated rotation resource (`bg_loading_gradient.xml`, `ic_loading_dots.xml`, `anim_loading_spinner.xml`).
 - Fragment shell (`LoadingFragment.kt`).
 - Destination and actions registration in `nav_graph.xml` and `NavGraph.kt`.
@@ -21,13 +21,13 @@ The application requires a dedicated full-screen loading state (`LoadingFragment
 
 ## Expected behavior
 
-When `loadingFragment` is displayed, the background presents the app's dark purple gradient, the center displays the circular dotted spinner smoothly rotating indefinitely, and the "loading.." text appears centered underneath.
+When `loadingFragment` is displayed, the background presents the app's dark purple gradient, the center displays the circular dotted spinner smoothly rotating indefinitely, and the "carregando..." text appears centered underneath.
 
 ## Acceptance criteria and evidence
 
 | ID | Observable given / when / then | Planned test or check |
 | --- | --- | --- |
-| AC-01 | Given the user accesses the loading screen, when rendered, then the purple gradient background, circular loading indicator, and "loading.." text appear centered on screen. | Manual visual check against design. |
+| AC-01 | Given the user accesses the loading screen, when rendered, then the purple gradient background, circular loading indicator, and "carregando..." text appear centered on screen. | Manual visual check against design. |
 | AC-02 | Given the loading indicator is displayed, when observing the UI, then the spinner animates continuously. | Visual inspection of indeterminate animation. |
 | AC-03 | Given the navigation graph, when looking up `loadingFragment`, then destination and actions are registered in `nav_graph.xml` and `NavGraph.kt`. | Build verification & unit test suite. |
 

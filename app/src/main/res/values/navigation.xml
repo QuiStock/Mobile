@@ -2,7 +2,7 @@
 <resources>
     <string name="navigation_home">Início</string>
     <string name="navigation_interferences">Interferências</string>
-    <string name="navigation_products">Controle de produtos</string>
+    <string name="navigation_products">Produtos</string>
     <string name="navigation_employees">Funcionários</string>
     <string name="navigation_chatbot">Chatbot</string>
     <string name="navigation_exit_title">Sair do aplicativo?</string>
@@ -10,8 +10,11 @@
     <string name="navigation_exit_confirm">Sair</string>
     <string name="navigation_exit_cancel">Cancelar</string>
     <dimen name="navigation_bar_min_height">80dp</dimen>
-    <dimen name="navigation_label_size">12sp</dimen>
-    <dimen name="navigation_item_padding">4dp</dimen>
+    <dimen name="navigation_label_size">11sp</dimen>
+    <dimen name="navigation_item_padding_horizontal">2dp</dimen>
+    <dimen name="navigation_item_padding_top">10dp</dimen>
+    <dimen name="navigation_item_padding_bottom">6dp</dimen>
+    <dimen name="navigation_drawable_padding">2dp</dimen>
     <item name="navigation_home" type="id" />
     <item name="navigation_interferences" type="id" />
     <item name="navigation_products" type="id" />
