@@ -13,8 +13,10 @@ import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.presentation.common.AlertProductPresentation
 
-class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, private val onHelp: () -> Unit) :
-    ListAdapter<PriorityAlert, PriorityAlertsAdapter.Holder>(AlertDiff) {
+class PriorityAlertsAdapter(
+    private val onAction: (PriorityAlert) -> Unit,
+    private val onHelp: (PriorityAlert) -> Unit,
+) : ListAdapter<PriorityAlert, PriorityAlertsAdapter.Holder>(AlertDiff) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = Holder(
         ItemAlertaBinding.inflate(LayoutInflater.from(parent.context), parent, false),
     )
@@ -48,8 +50,8 @@ class PriorityAlertsAdapter(private val onAction: (PriorityAlert) -> Unit, priva
             binding.btnPromocao.isVisible = actionable
             binding.layoutBotoes.weightSum = if (actionable) TWO_ACTIONS else ONE_ACTION
             binding.btnPromocao.setOnClickListener { if (actionable) onAction(alert) }
-            binding.btnFefo.setOnClickListener { onHelp() }
-            binding.imgPassarinho.setOnClickListener { onHelp() }
+            binding.btnFefo.setOnClickListener { onHelp(alert) }
+            binding.imgPassarinho.setOnClickListener { onHelp(alert) }
         }
     }
 

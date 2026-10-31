@@ -84,6 +84,13 @@
     <string name="chatbot_empty_message">Digite uma mensagem antes de enviar.</string>
     <string name="chatbot_login_required">Entre na sua conta para conversar com o assistente.</string>
     <string name="chatbot_request_failed">Não foi possível processar sua mensagem. Tente novamente mais tarde.</string>
+    <string name="chatbot_no_history">Nenhuma conversa encerrada.</string>
+    <string name="chatbot_retry_may_duplicate">A resposta pode não ter chegado. Reenviar pode duplicar a mensagem.</string>
+    <string name="chatbot_retry">Reenviar</string>
+    <string name="chatbot_history_failed">Não foi possível carregar esta conversa.</string>
+    <string name="chatbot_history_refresh_failed">A conversa foi encerrada, mas não foi possível atualizar o histórico.</string>
+    <string name="chatbot_end_uncertain">Não foi possível confirmar o encerramento. A conversa atual foi mantida.</string>
+    <string name="chatbot_request_rejected">A mensagem não foi aceita pelo assistente.</string>
     <string name="popup_order_sent">Pedido enviado para aprovação com sucesso.</string>
     <string name="popup_promotion_sent">Promoção enviada para aprovação com sucesso.</string>
     <string name="popup_login_invalid">Preencha seu e-mail e sua senha para entrar.</string>

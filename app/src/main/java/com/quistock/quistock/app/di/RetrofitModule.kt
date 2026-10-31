@@ -3,6 +3,7 @@ package com.quistock.quistock.app.di
 import android.content.Context
 import com.quistock.quistock.BuildConfig
 import com.quistock.quistock.R
+import com.quistock.quistock.data.preferences.AndroidChatbotConversationStore
 import com.quistock.quistock.data.preferences.DataStoreHomeSummaryCache
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
@@ -26,6 +27,7 @@ import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
 import com.quistock.quistock.data.secrets.EncryptedAuthCookieStore
 import com.quistock.quistock.domain.port.AuthRepository
+import com.quistock.quistock.domain.port.ChatbotConversationStore
 import com.quistock.quistock.domain.port.ChatbotRepository
 import com.quistock.quistock.domain.port.HomeSummaryCache
 import com.quistock.quistock.domain.port.HomeSummaryRepository
@@ -42,31 +44,13 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import org.koin.core.module.dsl.bind
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.qualifier.Qualifier
-import org.koin.core.qualifier.QualifierValue
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
-private object LegacyChatbotApi : Qualifier {
-    override val value: QualifierValue get() = "api-legacy-chatbot"
-}
-
 val retrofitSdkModule = module {
     single { createJson() }
-
-    // Keep the legacy chatbot transport independent from the authenticated Core client.
-    single(qualifier = LegacyChatbotApi) {
-        createRetrofit(
-            baseUrl = get<Context>().getString(R.string.auth_base_url),
-            json = get(),
-        )
-    }
-
-    single<ChatbotApi> { createChatbotApi(get(qualifier = LegacyChatbotApi)) }
 }
 
 val retrofitModule = module {
@@ -110,6 +94,14 @@ val retrofitModule = module {
             .build().create(ProfileApi::class.java)
     }
     single<ProfileRepository> { RetrofitProfileRepository(get(), get()) }
+    single<ChatbotApi> {
+        Retrofit.Builder().baseUrl(get<Context>().getString(R.string.core_base_url).trim())
+            .client(get<OkHttpClient>(named("ChatbotCoreHttpClient")))
+            .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
+            .build().create(ChatbotApi::class.java)
+    }
+    single<ChatbotRepository> { RetrofitChatbotRepository(get(), get()) }
+    single<ChatbotConversationStore> { AndroidChatbotConversationStore(get()) }
     single<AuthCookieStore> { EncryptedAuthCookieStore(get()) }
     single { AuthCookieCustody(get(), get<Context>().getString(R.string.auth_base_url).trim().toHttpUrl()) }
     single<AuthRepository> {
@@ -128,8 +120,14 @@ val retrofitModule = module {
     single(named("CoreHttpClient")) {
         createCoreHttpClient(get<Context>().getString(R.string.core_base_url), get(), get(), get())
     }
-    singleOf(::RetrofitChatbotRepository) {
-        bind<ChatbotRepository>()
+    single(named("ChatbotCoreHttpClient")) {
+        createCoreHttpClient(
+            get<Context>().getString(R.string.core_base_url),
+            get(),
+            get(),
+            get(),
+            replayWrites = false,
+        )
     }
 }
 
@@ -137,15 +135,6 @@ internal fun createJson(): Json = Json {
     ignoreUnknownKeys = true
     explicitNulls = false
 }
-
-internal fun createRetrofit(baseUrl: String, json: Json): Retrofit = Retrofit.Builder()
-    .baseUrl(baseUrl)
-    .addConverterFactory(
-        json.asConverterFactory("application/json".toMediaType()),
-    )
-    .build()
-
-internal fun createChatbotApi(retrofit: Retrofit): ChatbotApi = retrofit.create(ChatbotApi::class.java)
 
 internal fun createCoreHttpClient(
     baseUrl: String,
