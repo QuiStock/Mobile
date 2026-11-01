@@ -6,7 +6,7 @@ import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
-import androidx.test.espresso.action.ViewAction
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -150,7 +150,7 @@ class OrderAndPromotionFragmentTests {
     private fun setDate(date: LocalDate): ViewAction = object : ViewAction {
         override fun getConstraints(): Matcher<View> = isAssignableFrom(DatePicker::class.java)
 
-        override fun getDescription(): String = "select ${date} in the date picker"
+        override fun getDescription(): String = "select $date in the date picker"
 
         override fun perform(uiController: UiController, view: View) {
             (view as DatePicker).updateDate(date.year, date.monthValue - 1, date.dayOfMonth)
