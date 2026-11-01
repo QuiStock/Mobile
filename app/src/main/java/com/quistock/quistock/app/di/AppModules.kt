@@ -12,6 +12,7 @@ val externalSdksModule = module {
 val appInternalModule = module {
     includes(
         domainModule,
+        geocodingModule,
         presentationModule,
         observabilityModule,
         preferencesModule,

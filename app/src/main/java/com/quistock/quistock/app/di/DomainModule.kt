@@ -4,6 +4,7 @@ import com.quistock.quistock.domain.usecase.EditProfileUseCase
 import com.quistock.quistock.domain.usecase.GetHomeSummaryUseCase
 import com.quistock.quistock.domain.usecase.LoadPriorityAlertsUseCase
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
+import com.quistock.quistock.domain.usecase.LoadStoreLocationUseCase
 import com.quistock.quistock.domain.usecase.LoginUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
@@ -16,6 +17,7 @@ val domainModule = module {
     singleOf(::GetHomeSummaryUseCase)
     factoryOf(::EditProfileUseCase)
     factoryOf(::LoadPriorityAlertsUseCase)
+    factoryOf(::LoadStoreLocationUseCase)
     single { SessionUseCase(get(), get()) }
     single { ProfileUseCase(get(), get(), get()) }
     singleOf(::LoadProfilePhotoUseCase)
