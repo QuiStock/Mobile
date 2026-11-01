@@ -46,6 +46,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
             it.isSaveEnabled = false
             bind(it, initial)
         }
+        setupNavigation(f, slots)
         f.viewLifecycleOwner.lifecycleScope.launch {
             f.viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(model.profile.state, model.session.state) { profile, session -> profile to session }
@@ -157,6 +158,36 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
         }
         val options = BitmapFactory.Options().apply { inSampleSize = sample }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun setupNavigation(fragment: Fragment, slots: List<View>) {
+        val fragmentName = fragment::class.simpleName
+        if (fragmentName == "ProfileFragment" || fragmentName == "EditProfileFragment") return
+
+        val profileClickables = slots.filter { view ->
+            val tag = view.tag as? String
+            tag == "current_profile_photo" ||
+                tag == "current_profile_header_name" ||
+                tag == "current_profile_store"
+        }
+
+        profileClickables.forEach { view ->
+            view.isClickable = true
+            view.isFocusable = true
+            view.setOnClickListener {
+                if (model.session.state.value != SessionState.Active) return@setOnClickListener
+                try {
+                    val nav = NavHostFragment.findNavController(fragment)
+                    val currentId = nav.currentDestination?.id
+                    if (currentId != R.id.profileFragment && currentId != R.id.editProfileFragment) {
+                        nav.navigate(R.id.profileFragment)
+                    }
+                } catch (_: Exception) {
+                    // Navigation unavailable from this context.
+                }
+            }
+        }
     }
 
     private companion object {
