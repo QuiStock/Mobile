@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="location_title">Localização</string>
+    <string name="location_description">Endereço da sua loja e rota no mapa</string>
+    <string name="location_open">Abrir no mapa</string>
+    <string name="location_open_description">Abrir a localização da loja %1$s no aplicativo de mapas</string>
+    <string name="location_preview_description">Pré-visualização do mapa com a localização da loja</string>
+    <string name="location_loading_description">Carregando localização da loja</string>
+    <string name="location_no_address">Endereço não cadastrado para esta loja.</string>
+    <string name="location_failure">Não foi possível carregar a localização.</string>
+    <string name="location_retry">Tentar novamente</string>
+    <string name="location_no_maps_app">Nenhum aplicativo de mapas disponível para abrir a localização.</string>
+</resources>
