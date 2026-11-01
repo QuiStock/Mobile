@@ -7,7 +7,9 @@ import com.quistock.quistock.data.remote.core.InterferenceWriteAttempt
 import com.quistock.quistock.data.remote.core.RetrofitInterferenceRepository
 import com.quistock.quistock.domain.port.InterferenceRepository
 import com.quistock.quistock.domain.usecase.CreateInterferenceUseCase
+import com.quistock.quistock.domain.usecase.ManagerDecisionUseCase
 import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
+import com.quistock.quistock.presentation.interferences.ManagerInterferencesViewModel
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -36,6 +38,8 @@ val interferenceModule = module {
     single<InterferenceRepository> { RetrofitInterferenceRepository(get()) }
     factory { CreateInterferenceUseCase(get(), get(), get(), get()) }
     viewModel { CreateInterferenceViewModel(get(), get(), get()) }
+    factory { ManagerDecisionUseCase(get(), get(), get(), get()) }
+    viewModel { ManagerInterferencesViewModel(get(), get(), get()) }
 }
 
 private const val WRITE_TIMEOUT_SECONDS = 30L
