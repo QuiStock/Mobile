@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="manager_type_order">Pedido de estoque</string>
+    <string name="manager_type_promotion">Promoção</string>
+    <string name="manager_status_pending">Aguardando</string>
+    <string name="manager_status_approved">Aprovada</string>
+    <string name="manager_status_rejected">Reprovada</string>
+    <string name="manager_analyze">Analisar</string>
+    <string name="manager_analyze_description">Analisar %1$s: %2$s</string>
+    <string name="manager_pending_title">A decidir</string>
+    <string name="manager_decided_title">Decisões registradas</string>
+    <string name="manager_loading">Carregando solicitações…</string>
+    <string name="manager_pending_empty">Nenhuma solicitação aguardando sua decisão.</string>
+    <string name="manager_pending_empty_filtered">Nenhuma solicitação deste tipo aguardando decisão.</string>
+    <string name="manager_decided_empty">Nenhuma decisão registrada ainda.</string>
+    <string name="manager_list_failed">Não foi possível carregar as solicitações. Toque para tentar novamente.</string>
+    <string name="manager_filter_on">Filtro ativo: %1$s. Toque novamente para remover.</string>
+    <string name="manager_unknown_product">Produto não identificado</string>
+    <string name="manager_not_informed">Não informado</string>
+    <string name="manager_reason_label">Motivo</string>
+    <string name="manager_decision_justification_label">Justificativa da decisão</string>
+    <string name="manager_period">%1$s a %2$s</string>
+    <string name="manager_quantity">%1$s un</string>
+    <string name="manager_discount">%1$s%%</string>
+    <string name="manager_category_stock">%1$s · %2$s un em estoque</string>
+    <plurals name="manager_expiry_days">
+        <item quantity="one">Vence em %1$d dia</item>
+        <item quantity="other">Vence em %1$d dias</item>
+    </plurals>
+    <string name="manager_expiry_today">Vence hoje</string>
+    <plurals name="manager_expired">
+        <item quantity="one">Vencido há %1$d dia</item>
+        <item quantity="other">Vencido há %1$d dias</item>
+    </plurals>
+    <string name="manager_flow_high">Fluxo Alto</string>
+    <string name="manager_flow_medium">Fluxo Médio</string>
+    <string name="manager_flow_low">Fluxo Baixo</string>
+    <plurals name="manager_duration">
+        <item quantity="one">%1$d dia · %2$s</item>
+        <item quantity="other">%1$d dias · %2$s</item>
+    </plurals>
+    <string name="manager_approve">Aprovar</string>
+    <string name="manager_reject">Reprovar</string>
+    <string name="manager_approving">Aprovando…</string>
+    <string name="manager_rejecting">Reprovando…</string>
+    <string name="manager_locked_notice">Decisão final registrada. Esta solicitação não pode ser alterada.</string>
+    <string name="manager_unavailable">Solicitação indisponível. Volte e atualize a lista.</string>
+    <string name="manager_reject_title">Reprovar solicitação</string>
+    <string name="manager_reject_subtitle">Explique ao funcionário por que esta solicitação não será executada.</string>
+    <string name="manager_reject_hint">Justificativa (obrigatória)</string>
+    <string name="manager_reject_error">Informe a justificativa para reprovar.</string>
+    <string name="manager_cancel">Cancelar</string>
+    <string name="manager_feedback_rejected">Solicitação reprovada. Justificativa registrada.</string>
+    <string name="manager_feedback_conflict">Esta solicitação já foi decidida. Lista atualizada.</string>
+    <string name="manager_feedback_uncertain">Não foi possível confirmar a decisão. Confira a lista antes de tentar de novo.</string>
+    <string name="manager_feedback_forbidden">Você não tem permissão para decidir esta solicitação.</string>
+    <string name="manager_feedback_not_found">Solicitação não encontrada nesta loja.</string>
+    <string name="manager_feedback_unauthorized">Sessão expirada. Entre novamente para decidir.</string>
+    <string name="manager_feedback_invalid">Decisão recusada pelo servidor. Revise a justificativa.</string>
+    <string name="manager_feedback_failed">Não foi possível registrar a decisão. Tente novamente.</string>
+    <string name="manager_approved_subtitle">Aprovação registrada. Nenhum pedido ou promoção é executado automaticamente no ERP.</string>
+    <string name="manager_approved_status">Aprovada</string>
+</resources>

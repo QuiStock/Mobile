@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shortcut card doubling as a type filter: selected state lifts with the brand violet. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#337F3AEF">
+    <item>
+        <selector>
+            <item android:drawable="@drawable/bg_card_active" android:state_selected="true" />
+            <item android:drawable="@drawable/bg_card_interference_category" />
+        </selector>
+    </item>
+</ripple>
