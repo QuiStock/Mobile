@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
@@ -44,6 +45,13 @@ class ChatbotViewModelTests {
     @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `serialization failures are returned as chatbot operation failures`() = runTest {
+        val error = SerializationException("invalid response")
+
+        chatbotResult { throw error }.exceptionOrNull() shouldBe error
+    }
 
     @Test
     fun `conversation UUID is persisted before the first write and confirmed response is shown`() = runTest {
@@ -67,6 +75,40 @@ class ChatbotViewModelTests {
             store.setActive("user-a", "stable-uuid")
         }
         coVerify(exactly = 1) { send(ChatbotRequest("stable-uuid", "question"), SessionSnapshot(1, true)) }
+    }
+
+    @Test
+    fun `load without an active session does not call chatbot services`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        val state = MutableStateFlow<SessionState>(SessionState.LoggingOut)
+        val viewModel = ChatbotViewModel(send, store, activeSession(state))
+
+        viewModel.load()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.NOT_LOGGED_IN
+        coVerify(exactly = 0) { send(any(), any()) }
+        coVerify(exactly = 0) { send.listEnded(any()) }
+        verify(exactly = 0) { store.current(any()) }
+    }
+
+    @Test
+    fun `repeated load is ignored while the first request is active`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        val state = MutableStateFlow<SessionState>(SessionState.Active)
+        every { store.current("user-a") } returns null
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers { awaitCancellation() }
+        val viewModel = ChatbotViewModel(send, store, activeSession(state))
+
+        viewModel.load()
+        viewModel.load()
+        runCurrent()
+
+        verify(exactly = 1) { store.current("user-a") }
+        coVerify(exactly = 1) { send.listEnded(SessionSnapshot(1, true)) }
+        state.value = SessionState.LoggingOut
+        runCurrent()
     }
 
     @Test
@@ -299,6 +341,7 @@ class ChatbotViewModelTests {
 
         model.sendMessage("in flight")
         runCurrent()
+        model.sendMessage("duplicate")
         model.openHistory("past-id")
         model.newConversation()
         runCurrent()
@@ -339,6 +382,138 @@ class ChatbotViewModelTests {
         model.sendMessage("second account")
         model.uiState.value shouldBe ChatbotUiState.Loading
         verify { store.current("user-b") }
+    }
+
+    @Test
+    fun `load keeps history error while still publishing the ended list`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "active-id"
+        val ended = ChatbotConversation("ended-id", "Past", "2026-10-31T10:00:00Z")
+        coEvery { send.history("active-id", SessionSnapshot(1, true)) } throws IOException("offline")
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns listOf(ended)
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.HISTORY_FAILED
+        viewModel.endedConversations.value shouldBe listOf(ended)
+    }
+
+    @Test
+    fun `opening history reports failure and preserves the current active conversation`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "active-id"
+        coEvery { send.history("past-id", SessionSnapshot(1, true)) } throws IOException("offline")
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+
+        viewModel.openHistory("past-id")
+        advanceUntilIdle()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.HISTORY_FAILED
+        verify(exactly = 0) { store.clear("user-a") }
+    }
+
+    @Test
+    fun `sending from a loaded past conversation ends and replaces the prior active conversation`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "active-id"
+        every { store.clear("user-a") } returns Unit
+        every { store.setActive("user-a", "past-id") } returns Unit
+        coEvery { send.history("active-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("active-id", "Active", "active", emptyList())
+        coEvery { send.history("past-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("past-id", "Past", "ended", emptyList())
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
+        coEvery { send.end("active-id", SessionSnapshot(1, true)) } returns Unit
+        coEvery {
+            send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
+        } returns ChatbotReply("past-id", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.openHistory("past-id")
+        advanceUntilIdle()
+        viewModel.sendMessage("continue")
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            send.end("active-id", SessionSnapshot(1, true))
+            store.clear("user-a")
+            store.setActive("user-a", "past-id")
+            send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
+        }
+        viewModel.uiState.value shouldBe ChatbotUiState.Answered
+    }
+
+    @Test
+    fun `sending from history without a saved active id activates the resumed conversation`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns null
+        every { store.setActive("user-a", "past-id") } returns Unit
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
+        coEvery { send.history("past-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("past-id", "Past", "ended", emptyList())
+        coEvery {
+            send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
+        } returns ChatbotReply("past-id", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.openHistory("past-id")
+        advanceUntilIdle()
+        viewModel.sendMessage("continue")
+        advanceUntilIdle()
+
+        verifyOrder {
+            store.setActive("user-a", "past-id")
+        }
+        coVerify(exactly = 1) {
+            send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
+        }
+    }
+
+    @Test
+    fun `starting a conversation without an active id clears a pending FEFO card`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns null
+        every { store.getOrCreate("user-a") } returns "new-id"
+        every { store.setActive("user-a", "new-id") } returns Unit
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
+        coEvery { send(ChatbotRequest("new-id", "new conversation"), SessionSnapshot(1, true)) } returns
+            ChatbotReply("new-id", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+        viewModel.offerFefo(
+            PriorityAlert(
+                AlertProduct(
+                    id = "product-id",
+                    name = "Leite",
+                    category = "Laticínios",
+                    stock = BigDecimal.ONE,
+                    expirationDays = 2,
+                    flow = StockFlow.MEDIUM,
+                    risks = setOf(CreationRisk.NEAR_EXPIRY),
+                ),
+                AlertRisk.EXPIRY,
+            ),
+        )
+
+        viewModel.newConversation()
+        viewModel.sendMessage("new conversation")
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            send(ChatbotRequest("new-id", "new conversation"), SessionSnapshot(1, true))
+        }
     }
 
     private fun activeSession(
