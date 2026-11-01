@@ -1,5 +1,14 @@
 # QuiStock Mobile
 
+<img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="QuiStock Mobile" width="80">
+
+![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-7F52FF?logo=kotlin&logoColor=white)
+![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Crashlytics-FFCA28?logo=firebase&logoColor=black)
+
+Android app do QuiStock, com áreas de login, perfil, home e chatbot. O projeto usa Kotlin, Views/XML e ViewBinding, com Clean Architecture e MVVM; confira a implementação e os testes para o estado atual de cada fluxo.
+
 ## Architecture guide
 
 The project follows a variation of **Clean Architecture with MVVM**, adapted for Android Views
