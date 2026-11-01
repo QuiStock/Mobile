@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/login_background"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.help.ContactFragment">
 
     <LinearLayout
@@ -20,11 +20,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView android:tag="current_profile_photo"
+        <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:contentDescription="@string/profile_store_name"
-            android:src="@drawable/ic_profile" />
+            android:src="@drawable/ic_profile"
+            android:tag="current_profile_photo" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -33,19 +34,21 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView android:tag="current_profile_store"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:tag="current_profile_store"
                 android:text="@string/profile_store_name"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <TextView android:tag="current_profile_header_name"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:tag="current_profile_header_name"
                 android:text="@string/profile_user_name"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
@@ -69,7 +72,8 @@
             android:layout_height="14dp"
             android:importantForAccessibility="no"
             android:rotation="180"
-            android:src="@drawable/arrow_right" />
+            android:src="@drawable/arrow_right"
+            app:tint="@color/color_text_title" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -77,7 +81,7 @@
             android:layout_marginStart="10dp"
             android:gravity="center_vertical"
             android:text="@string/profile_back"
-            android:textColor="@color/white"
+            android:textColor="@color/color_text_title"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -107,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:text="@string/help_contact_title"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -117,10 +121,10 @@
                 android:layout_marginStart="12dp"
                 android:labelFor="@id/contact_name_input"
                 android:text="@string/help_name_label"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="11sp" />
 
-            <EditText android:tag="current_profile_name_input"
+            <EditText
                 android:id="@+id/contact_name_input"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
@@ -130,8 +134,9 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:singleLine="true"
+                android:tag="current_profile_name_input"
                 android:text="@string/profile_user_name"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="12sp" />
 
             <TextView
@@ -141,10 +146,10 @@
                 android:layout_marginTop="14dp"
                 android:labelFor="@id/contact_email_input"
                 android:text="@string/help_email_label"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="11sp" />
 
-            <EditText android:tag="current_profile_email_input"
+            <EditText
                 android:id="@+id/contact_email_input"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
@@ -154,8 +159,9 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:singleLine="true"
+                android:tag="current_profile_email_input"
                 android:text="@string/help_email_value"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="12sp" />
 
             <TextView
@@ -165,7 +171,7 @@
                 android:layout_marginTop="14dp"
                 android:labelFor="@id/contact_problem_input"
                 android:text="@string/help_problem_label"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="11sp" />
 
             <EditText
@@ -179,8 +185,8 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:singleLine="true"
-                android:textColor="@color/white"
-                android:textColorHint="#805A8A"
+                android:textColor="@color/color_text_title"
+                android:textColorHint="@color/color_text_caption"
                 android:textSize="12sp" />
 
             <TextView
@@ -190,7 +196,7 @@
                 android:layout_marginTop="14dp"
                 android:labelFor="@id/contact_message_input"
                 android:text="@string/help_message_label"
-                android:textColor="@color/white"
+                android:textColor="@color/color_text_title"
                 android:textSize="11sp" />
 
             <EditText
@@ -203,8 +209,8 @@
                 android:hint="@string/help_message_hint"
                 android:inputType="textMultiLine|textCapSentences"
                 android:padding="12dp"
-                android:textColor="@color/white"
-                android:textColorHint="#805A8A"
+                android:textColor="@color/color_text_title"
+                android:textColorHint="@color/color_text_caption"
                 android:textSize="12sp" />
 
             <TextView

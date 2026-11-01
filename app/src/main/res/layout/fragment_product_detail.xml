@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.control.ProductDetailFragment">
 
     <ScrollView
@@ -48,7 +48,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Loja Av. Paulista"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_text_title"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -56,7 +56,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Milena Souza"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -90,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Voltar"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_text_title"
                     android:textSize="13sp" />
             </LinearLayout>
 
@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Leite Integral UHT 1L"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_text_title"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -108,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Código 1020 · Laticínios"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="13sp" />
 
             <LinearLayout
@@ -140,7 +140,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Leite Integral UHT 1L"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/color_text_title"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -149,7 +149,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
                             android:text="Laticínios · 25 un"
-                            android:textColor="#BFAFC5"
+                            android:textColor="@color/color_text_subtitle"
                             android:textSize="12sp" />
                     </LinearLayout>
 
@@ -184,7 +184,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Validade"
-                            android:textColor="#C7B7CC"
+                            android:textColor="@color/color_text_subtitle"
                             android:textSize="11sp" />
 
                         <TextView
@@ -192,7 +192,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="06/08/2026"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/color_text_title"
                             android:textSize="12sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -201,7 +201,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Vence em 2 dias"
-                        android:textColor="#A544FF"
+                        android:textColor="@color/color_lavana"
                         android:textSize="12sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -224,14 +224,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Venda média"
-                        android:textColor="#E8D2F0"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="5 un./dia"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -247,14 +247,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Estoque atual"
-                        android:textColor="#E8D2F0"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="25 un"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -270,14 +270,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Validade"
-                        android:textColor="#E8D2F0"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="06 ago."
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>

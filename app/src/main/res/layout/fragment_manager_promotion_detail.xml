@@ -53,7 +53,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Milena Souza"
-                    android:textColor="#BFAFC5"
+                    android:textColor="@color/color_text_subtitle"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -182,7 +182,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Laticínios - 25 un"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="10sp" />
 
             <!-- Validade e Vencimento -->
@@ -203,7 +203,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Validade"
-                        android:textColor="#C7B7CC"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="9sp" />
 
                     <TextView
@@ -327,7 +327,7 @@
                 android:layout_marginBottom="16dp"
                 android:saveEnabled="false"
                 android:text="@string/manager_request_review_notice"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="12sp"
                 android:visibility="gone" />
 

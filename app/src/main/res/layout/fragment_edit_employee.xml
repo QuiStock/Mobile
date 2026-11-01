@@ -53,7 +53,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Milena Souza"
-                    android:textColor="#BFAFC5"
+                    android:textColor="@color/color_text_subtitle"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:text="Nome Completo"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_title"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -163,7 +163,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="16dp"
                 android:text="E-mail"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_title"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -191,7 +191,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="16dp"
                 android:text="Cargo"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_title"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 

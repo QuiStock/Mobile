@@ -46,6 +46,7 @@ internal class HomeSummaryRenderer(private val context: Context, private val vie
         if (state.offline) views.bottomNavigation.isVisible = false
         views.btnPerfil.isVisible = !state.offline
         views.btnNotificacoes.isVisible = !state.offline
+        views.btnThemeToggle.isVisible = !state.offline
     }
 
     private fun failureMessage(reason: SummaryFailure): Int = when (reason) {

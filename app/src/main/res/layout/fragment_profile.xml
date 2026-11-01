@@ -47,9 +47,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_user_name"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnThemeToggle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/theme_toggle"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_theme_toggle"
+            app:tint="@color/color_text_title" />
     </LinearLayout>
 
     <!-- VOLTAR -->
@@ -139,7 +150,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/profile_role"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="13sp" />
 
             <!-- ROW: MINHA CONTA -->
@@ -175,7 +186,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_account_description"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -223,7 +234,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_store_name"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -276,7 +287,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/profile_help_description"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -319,3 +330,4 @@
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

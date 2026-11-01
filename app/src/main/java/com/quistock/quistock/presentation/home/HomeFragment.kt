@@ -22,6 +22,7 @@ import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType
+import com.quistock.quistock.presentation.common.ThemeManager
 import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
 import com.quistock.quistock.presentation.interferences.CreationPresentation
 import com.quistock.quistock.presentation.profile.LogoutConfirmationDialog
@@ -87,6 +88,7 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+        binding?.btnThemeToggle?.setOnClickListener { ThemeManager.toggleTheme(requireContext()) }
         viewModel.enter()
         binding?.btnPerfil?.setOnClickListener {
             if (viewModel.canNavigate() && findNavController().currentDestination?.id == R.id.homeFragment) {

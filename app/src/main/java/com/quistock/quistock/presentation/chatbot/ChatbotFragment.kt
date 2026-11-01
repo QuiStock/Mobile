@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.quistock.quistock.R
@@ -26,14 +28,18 @@ class ChatbotFragment : Fragment() {
             SkeletonScreenType.CHATBOT,
         )
 
-    override fun onViewCreated(view: View, savedInstanceState: android.os.Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.synchronizeSession()
         viewModel.load()
         val menuOverlay = view.findViewById<View>(R.id.chatMenuOverlay)
         val input = view.findViewById<EditText>(R.id.etPerguntaChatbot).apply { isSaveEnabled = false }
+        val welcomeLayout = view.findViewById<View>(R.id.layoutWelcomeChatbot)
+        val scrollMensagens = view.findViewById<ScrollView>(R.id.scrollMensagens)
+        val containerMensagens = view.findViewById<LinearLayout>(R.id.containerMensagens)
+
         bindMenu(view, menuOverlay)
         bindInput(view, input)
-        observeMessages(viewLifecycleOwner, view.findViewById(R.id.containerMensagens))
+        observeMessages(viewLifecycleOwner, containerMensagens, welcomeLayout, scrollMensagens)
         observeEndedConversations(viewLifecycleOwner, view.findViewById(R.id.recentConversations), menuOverlay)
         observeUiState(view, input, view.findViewById(R.id.btnEnviarPergunta))
     }
@@ -60,10 +66,25 @@ class ChatbotFragment : Fragment() {
         }
     }
 
-    private fun observeMessages(owner: LifecycleOwner, container: LinearLayout) {
+    private fun observeMessages(
+        owner: LifecycleOwner,
+        container: LinearLayout,
+        welcomeLayout: View?,
+        scrollMensagens: ScrollView?,
+    ) {
         viewModel.messages.observe(owner) { conversation ->
             container.removeAllViews()
-            conversation.forEach { addMessage(container, it.text, it.isUser) }
+            if (conversation.isNullOrEmpty()) {
+                welcomeLayout?.visibility = View.VISIBLE
+                scrollMensagens?.visibility = View.GONE
+            } else {
+                welcomeLayout?.visibility = View.GONE
+                scrollMensagens?.visibility = View.VISIBLE
+                conversation.forEach { addMessage(container, it.text, it.isUser) }
+                scrollMensagens?.post {
+                    scrollMensagens.fullScroll(View.FOCUS_DOWN)
+                }
+            }
         }
     }
 
@@ -143,23 +164,34 @@ class ChatbotFragment : Fragment() {
     private fun showError(view: View, message: Int) = PopupFeedback.showStatus(view, getString(message), isError = true)
 
     private fun addMessage(container: LinearLayout, message: String, isUser: Boolean) {
+        val density = resources.displayMetrics.density
         val text = TextView(requireContext()).apply {
             this.text = message
-            textSize = MESSAGE_TEXT_SIZE_SP
-            setTextColor(android.graphics.Color.WHITE)
-            setPadding(MESSAGE_PADDING_PX, MESSAGE_VERTICAL_PADDING_PX, MESSAGE_PADDING_PX, MESSAGE_VERTICAL_PADDING_PX)
-            setBackgroundResource(if (isUser) R.drawable.bg_chat_selected else R.drawable.bg_popup_dialog)
-            val bubbleWidth = if (isUser) USER_BUBBLE_WIDTH else ASSISTANT_BUBBLE_WIDTH
-            val params = LinearLayout.LayoutParams(
-                (resources.displayMetrics.widthPixels * bubbleWidth).toInt(),
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+            textSize = 14f
+            setTextColor(
+                if (isUser) {
+                    android.graphics.Color.WHITE
+                } else {
+                    ContextCompat.getColor(context, R.color.color_text_title)
+                },
             )
-            params.gravity = if (isUser) {
-                android.view.Gravity.END
-            } else {
-                android.view.Gravity.START
+            val padHorizontal = (16 * density).toInt()
+            val padVertical = (10 * density).toInt()
+            setPadding(padHorizontal, padVertical, padHorizontal, padVertical)
+            setBackgroundResource(if (isUser) R.drawable.bg_chat_bubble_user else R.drawable.bg_chat_bubble_bot)
+            maxWidth = (resources.displayMetrics.widthPixels * 0.78f).toInt()
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                gravity = if (isUser) android.view.Gravity.END else android.view.Gravity.START
+                bottomMargin = (8 * density).toInt()
+                if (isUser) {
+                    marginStart = (48 * density).toInt()
+                } else {
+                    marginEnd = (48 * density).toInt()
+                }
             }
-            params.bottomMargin = MESSAGE_BOTTOM_MARGIN_PX
             layoutParams = params
         }
         container.addView(text)
@@ -168,11 +200,5 @@ class ChatbotFragment : Fragment() {
     private companion object {
         const val HISTORY_TEXT_SIZE_SP = 13f
         const val HISTORY_TEXT_COLOR = 0xFFD2C7D8.toInt()
-        const val MESSAGE_TEXT_SIZE_SP = 14f
-        const val MESSAGE_PADDING_PX = 16
-        const val MESSAGE_VERTICAL_PADDING_PX = 12
-        const val MESSAGE_BOTTOM_MARGIN_PX = 12
-        const val USER_BUBBLE_WIDTH = 0.72f
-        const val ASSISTANT_BUBBLE_WIDTH = 0.78f
     }
 }

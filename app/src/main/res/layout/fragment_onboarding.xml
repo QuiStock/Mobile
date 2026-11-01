@@ -39,7 +39,7 @@
         android:layout_marginEnd="32dp"
         android:lineSpacingExtra="4dp"
         android:text="@string/onboarding_description"
-        android:textColor="@color/white"
+        android:textColor="@color/color_text_subtitle"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/onboarding_title"
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="@string/onboarding_continue"
-            android:textColor="@color/white"
+            android:textColor="@color/color_text_title"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -73,7 +73,8 @@
             android:contentDescription="@string/onboarding_continue"
             android:padding="14dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/arrow_right" />
+            android:src="@drawable/arrow_right"
+            app:tint="@color/white" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

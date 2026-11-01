@@ -61,7 +61,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Milena Souza"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -112,7 +112,7 @@
                         android:padding="0dp"
                         android:singleLine="true"
                         android:textColor="@color/color_branco"
-                        android:textColorHint="#C7B7CC"
+                        android:textColorHint="@color/color_text_subtitle"
                         android:textSize="13sp" />
 
                     <TextView
@@ -199,7 +199,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -227,7 +227,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -283,7 +283,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -311,7 +311,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -367,7 +367,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -395,7 +395,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -451,7 +451,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -479,7 +479,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -535,7 +535,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -563,7 +563,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -619,7 +619,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Laticínios · 25 un"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
@@ -647,7 +647,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Validade: "
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="12sp" />
                             <TextView
                                 android:layout_width="wrap_content"

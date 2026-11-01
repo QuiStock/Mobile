@@ -10,12 +10,12 @@
       android:scaleY="0.75">
     <path
         android:pathData="M21.6,0H2.4C1.08,0 0,1.08 0,2.4V24L4.8,19.2H21.6C22.92,19.2 24,18.12 24,16.8V2.4C24,1.08 22.92,0 21.6,0ZM21.6,16.8H3.84L2.4,18.24V2.4H21.6V16.8Z"
-        android:fillColor="#89B751"/>
+        android:fillColor="@color/color_limao"/>
   </group>
   <path
       android:pathData="M6,26L24,26"
       android:strokeWidth="2.5"
       android:fillColor="#00000000"
-      android:strokeColor="#89B751"
+      android:strokeColor="@color/color_limao"
       android:strokeLineCap="round"/>
 </vector>
