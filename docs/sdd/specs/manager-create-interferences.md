@@ -39,7 +39,7 @@ Adds `ManagerPromotionDetailFragment`, `ManagerOrderDetailFragment`, `fragment_m
 | Item | Status | Source or decision owner |
 | --- | --- | --- |
 | Dynamic data source for product parameters | Open | Backend / Infrastructure owner |
-| Approval and rejection network endpoints | Open | Feature owner |
+| Approval and rejection network endpoints | Confirmed | See [manager-interference-decisions.md](manager-interference-decisions.md) |
 
 ## Implementation outcome
 

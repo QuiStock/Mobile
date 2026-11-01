@@ -38,7 +38,7 @@ Adds `ManagerPromoApprovedFragment`, `ManagerOrderApprovedFragment`, `fragment_m
 
 | Item | Status | Source or decision owner |
 | --- | --- | --- |
-| Dynamic data binding for confirmation summary values | Open | Feature owner |
+| Dynamic data binding for confirmation summary values | Confirmed | Bound to the approved action; see [manager-interference-decisions.md](manager-interference-decisions.md) |
 
 ## Implementation outcome
 

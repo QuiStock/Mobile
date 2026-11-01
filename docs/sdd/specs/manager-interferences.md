@@ -33,8 +33,8 @@ Adds `ManagerInterferencesFragment` shell, `fragment_manager_interferences.xml` 
 
 | Item | Status | Source or decision owner |
 | --- | --- | --- |
-| Dynamic listing data source | Open | Backend / Infrastructure owner |
-| Action navigation when clicking "Analisar" | Open | Feature owner |
+| Dynamic listing data source | Confirmed | `GET /actions`; see [manager-interference-decisions.md](manager-interference-decisions.md) |
+| Action navigation when clicking "Analisar" | Confirmed | Opens the review screen for the type; see [manager-interference-decisions.md](manager-interference-decisions.md) |
 
 ## Implementation outcome
 
