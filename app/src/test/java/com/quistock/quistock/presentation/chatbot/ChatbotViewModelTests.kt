@@ -2,13 +2,20 @@ package com.quistock.quistock.presentation.chatbot
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
+import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.AlertRisk
 import com.quistock.quistock.domain.model.ChatbotConversation
 import com.quistock.quistock.domain.model.ChatbotConversationHistory
+import com.quistock.quistock.domain.model.ChatbotHttpException
+import com.quistock.quistock.domain.model.ChatbotProductCard
 import com.quistock.quistock.domain.model.ChatbotReply
 import com.quistock.quistock.domain.model.ChatbotRequest
+import com.quistock.quistock.domain.model.CreationRisk
+import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.StockFlow
 import com.quistock.quistock.domain.port.ChatbotConversationStore
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import com.quistock.quistock.domain.usecase.SessionLocalAccess
@@ -30,6 +37,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
+import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatbotViewModelTests {
@@ -101,6 +109,62 @@ class ChatbotViewModelTests {
     }
 
     @Test
+    fun `definitive client error is shown without enabling a retry`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns null
+        every { store.getOrCreate("user-a") } returns "stable-uuid"
+        every { store.setActive("user-a", "stable-uuid") } returns Unit
+        coEvery { send(any(), any()) } throws ChatbotHttpException(422)
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+
+        viewModel.sendMessage("invalid question")
+        advanceUntilIdle()
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.REQUEST_FAILED
+        viewModel.retryLastMessage()
+
+        coVerify(exactly = 1) { send(any(), any()) }
+    }
+
+    @Test
+    fun `FEFO help attaches only the alert product name and category to the request`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns null
+        every { store.getOrCreate("user-a") } returns "stable-uuid"
+        every { store.setActive("user-a", "stable-uuid") } returns Unit
+        coEvery { send(any(), any()) } returns ChatbotReply("stable-uuid", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val alert = PriorityAlert(
+            AlertProduct(
+                id = "product-id",
+                name = "Leite",
+                category = "Laticínios",
+                stock = BigDecimal.ONE,
+                expirationDays = 2,
+                flow = StockFlow.MEDIUM,
+                risks = setOf(CreationRisk.NEAR_EXPIRY),
+            ),
+            AlertRisk.EXPIRY,
+        )
+
+        viewModel.offerFefo(alert)
+        viewModel.sendMessage("Ajude com este alerta")
+        advanceUntilIdle()
+
+        coVerify {
+            send(
+                ChatbotRequest(
+                    "stable-uuid",
+                    "Ajude com este alerta",
+                    productCard = ChatbotProductCard("Leite", "Laticínios"),
+                ),
+                SessionSnapshot(1, true),
+            )
+        }
+    }
+
+    @Test
     fun `logout cancels pending work and clears visible conversation`() = runTest {
         val state = MutableStateFlow<SessionState>(SessionState.Active)
         val session = activeSession(state)
@@ -146,6 +210,78 @@ class ChatbotViewModelTests {
         }
         viewModel.endedConversations.value shouldBe
             listOf(ChatbotConversation("old-id", "Encerrada agora", "2026-10-31T10:00:00Z"))
+        viewModel.messages.value shouldBe emptyList()
+    }
+
+    @Test
+    fun `uncertain end keeps the conversation and exposes a recoverable error`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "old-id"
+        coEvery { send.end("old-id", SessionSnapshot(1, true)) } throws IOException("offline")
+        coEvery { send.history("old-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("old-id", "Title", "active", emptyList())
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.newConversation()
+        advanceUntilIdle()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.END_UNCERTAIN
+        verify(exactly = 0) { store.clear("user-a") }
+        coVerify(exactly = 1) { send.listEnded(SessionSnapshot(1, true)) }
+    }
+
+    @Test
+    fun `failed end is accepted when history confirms the conversation already ended`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "old-id"
+        every { store.clear("user-a") } returns Unit
+        coEvery { send.end("old-id", SessionSnapshot(1, true)) } throws IOException("response lost")
+        coEvery { send.history("old-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("old-id", "Title", "ended", emptyList())
+        var listCalls = 0
+        val ended = ChatbotConversation("old-id", "Encerrada", "2026-10-31T10:00:00Z")
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers {
+            if (listCalls++ == 0) emptyList() else listOf(ended)
+        }
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.newConversation()
+        advanceUntilIdle()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Idle
+        viewModel.endedConversations.value shouldBe listOf(ended)
+        verify(exactly = 1) { store.clear("user-a") }
+    }
+
+    @Test
+    fun `confirmed end with failed history refresh clears local state and reports refresh failure`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "old-id"
+        every { store.clear("user-a") } returns Unit
+        coEvery { send.end("old-id", SessionSnapshot(1, true)) } returns Unit
+        var listCalls = 0
+        coEvery { send.history("old-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("old-id", "Title", "active", emptyList())
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers {
+            if (listCalls++ == 0) emptyList() else throw IOException("offline")
+        }
+        val viewModel = ChatbotViewModel(send, store, activeSession())
+        viewModel.load()
+        advanceUntilIdle()
+
+        viewModel.newConversation()
+        advanceUntilIdle()
+
+        viewModel.uiState.value shouldBe ChatbotUiState.Error.HISTORY_REFRESH_FAILED
+        verify(exactly = 1) { store.clear("user-a") }
         viewModel.messages.value shouldBe emptyList()
     }
 
