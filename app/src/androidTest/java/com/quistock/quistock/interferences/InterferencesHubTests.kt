@@ -7,7 +7,10 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isClickable
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
+import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
 import org.junit.After
 import org.junit.Before
@@ -71,9 +75,18 @@ class InterferencesHubTests {
             onView(withText(R.string.creation_actions_loading)).check(matches(isDisplayed()))
 
             pending.complete(ActionListResult.Loaded(listOf(persisted)))
-            onView(withText(containsString("Refrigerante Guaraná"))).check(matches(isDisplayed()))
+            onView(withId(R.id.listaInterferenciasAtivas))
+                .check(matches(hasDescendant(withText(containsString("Refrigerante Guaraná")))))
+            onView(withId(R.id.listaInterferenciasRecentes))
+                .check(matches(hasDescendant(withText(containsString("Refrigerante Guaraná")))))
             onView(withText(containsString("product-47"))).check(doesNotExist())
-            onView(withText(containsString("Refrigerante Guaraná"))).perform(click())
+            onView(
+                allOf(
+                    isDescendantOfA(withId(R.id.listaInterferenciasAtivas)),
+                    isClickable(),
+                    hasDescendant(withText(containsString("Refrigerante Guaraná"))),
+                ),
+            ).perform(click())
             awaitDestination(scenario, R.id.orderFragment)
             onView(withId(R.id.creationSummary)).check(matches(withText(containsString("Quantidade: 4"))))
             onView(withId(R.id.creationSummary)).check(matches(withText(containsString("Refrigerante Guaraná"))))
