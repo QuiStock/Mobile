@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,42 +8,49 @@
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp">
+
     <TextView
         android:id="@+id/confirmationMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:lineSpacingExtra="3dp"
         android:paddingBottom="24dp"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
+        android:textColor="@color/color_text_title"
+        android:textSize="15sp"
         tools:text="@string/popup_exit_confirm" />
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <Button
             android:id="@+id/confirmationYes"
             android:layout_width="0dp"
-            android:layout_height="44dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:background="@drawable/bg_login_button"
             android:text="Sim"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/white"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
+
         <Button
             android:id="@+id/confirmationNo"
             android:layout_width="0dp"
-            android:layout_height="44dp"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_btn_action_reject"
+            android:background="@drawable/bg_btn_secondary"
             android:text="Não"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/color_violeta"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
     </LinearLayout>
 </LinearLayout>

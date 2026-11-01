@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.interferences.ManagerOrderApprovedFragment">
 
     <ScrollView
@@ -43,25 +43,27 @@
                 android:layout_marginTop="14dp"
                 android:gravity="center"
                 android:text="Pedido aprovado"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textColor="@color/color_text_title"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvSubtituloPedidoAprovado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:text="Pedido de lote realizado, aguarde a entrega feita pela distribuidora!"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp" />
+                android:textColor="@color/color_text_subtitle"
+                android:textSize="13sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="62dp"
-                android:orientation="vertical">
+                android:layout_marginTop="40dp"
+                android:background="@drawable/bg_card_summary"
+                android:orientation="vertical"
+                android:padding="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -73,23 +75,24 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Produto"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+android:text="Produto"
+                        android:textColor="@color/color_text_subtitle"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/tvResumoPedido"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="#001"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+                        android:textColor="@color/color_text_title"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -98,22 +101,23 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Quantidade"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+                        android:textColor="@color/color_text_subtitle"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/tvResumoQuantidade"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="20un"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+                        android:textColor="@color/color_text_title"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -121,31 +125,33 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Data desejada"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+android:text="Data desejada"
+                        android:textColor="@color/color_text_subtitle"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/tvResumoPrevisao"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="15 ago."
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp" />
+                        android:textColor="@color/color_text_title"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
             <Button
                 android:id="@+id/btnVoltarInterferencias"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:layout_marginTop="36dp"
                 android:background="@drawable/bg_login_button"
                 android:text="Voltar para Interferências"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <Space
                 android:layout_width="match_parent"

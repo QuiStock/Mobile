@@ -29,6 +29,10 @@
     <string name="creation_resume">Continuar rascunho</string>
     <string name="creation_forward">Revisar e encaminhar ação existente</string>
     <string name="creation_return">Voltar para Interferências</string>
+    <string name="creation_order_sent_title">Pedido enviado</string>
+    <string name="creation_order_sent_subtitle">Aguarde a aprovação do pedido!</string>
+    <string name="creation_promotion_sent_title">Promoção enviada para aprovação</string>
+    <string name="creation_promotion_sent_subtitle">O desconto já está disponível para o gerente da loja aprovar!</string>
     <string name="creation_loading">Consultando produtos, análises e interferências…</string>
     <string name="creation_action_refreshing">Atualizando os dados da ação…</string>
     <string name="creation_actions_loading">Consultando pedidos de compra e promoções…</string>

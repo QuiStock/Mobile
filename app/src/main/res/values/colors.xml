@@ -1,28 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta Principal QuiStock -->
-    <color name="color_branco">#F8E9F9</color>
+    <!-- Paleta Principal QuiStock (Modo Claro) -->
+    <color name="color_branco">#1A1126</color>
     <color name="color_lavana">#AF36DF</color>
-    <color name="color_limao">#89B751</color>
+    <color name="color_limao">#72A138</color>
     <color name="color_violeta">#7F3AEF</color>
-    <color name="color_petroleo">#11061F</color>
+    <color name="color_petroleo">#F9F7FA</color>
 
     <!-- Cores Adicionais -->
-    <color name="color_amarelo_tag">#F3F02E</color>
-    <color name="color_rosa_tag">#DA4DC8</color>
-    <color name="color_petrolhinho">#210E3E</color>
+    <color name="color_amarelo_tag">#C79500</color>
+    <color name="color_rosa_tag">#C2185B</color>
+    <color name="color_petrolhinho">#FFFFFF</color>
+
+    <!-- Textos e Hierarquia Visual -->
+    <color name="color_text_title">#1A1126</color>
+    <color name="color_text_subtitle">#6C6274</color>
+    <color name="color_text_caption">#8A7E91</color>
+
+    <!-- Superfícies e Bordas -->
+    <color name="color_card_border">#E3DCE7</color>
+    <color name="color_card_background">#FFFFFF</color>
+    <color name="color_card_inner">#F4EFF7</color>
+
+    <!-- Cores dos Ícones -->
+    <color name="color_icon">#1A1126</color>
+    <color name="color_icon_inactive">#6C6274</color>
+    <color name="color_icon_accent">#7F3AEF</color>
+
+    <!-- Skeleton Loading Screen -->
+    <color name="skeleton_screen">#F9F7FA</color>
+    <color name="skeleton_placeholder">#EAE4EE</color>
+    <color name="skeleton_highlight">#DAD1DF</color>
 
     <!-- Tokens Semânticos e Compatibilidade Legada -->
-    <color name="login_background">#11061F</color>
+    <color name="login_background">#F9F7FA</color>
     <color name="login_primary">#7F3AEF</color>
-    <color name="login_hint">#8F7898</color>
+    <color name="login_hint">#6C6274</color>
 
     <!-- Material / Cores de Suporte -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#7F3AEF</color>
-    <color name="purple_700">#210E3E</color>
-    <color name="teal_200">#89B751</color>
+    <color name="purple_700">#5D1BC7</color>
+    <color name="teal_200">#72A138</color>
     <color name="teal_700">#018786</color>
 </resources>

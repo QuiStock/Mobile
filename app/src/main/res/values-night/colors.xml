@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta Principal QuiStock (Modo Escuro com Contraste Suavizado) -->
+    <color name="color_branco">#EDE3F0</color>
+    <color name="color_lavana">#AF36DF</color>
+    <color name="color_limao">#89B751</color>
+    <color name="color_violeta">#7F3AEF</color>
+    <color name="color_petroleo">#1E182A</color>
+
+    <!-- Cores Adicionais -->
+    <color name="color_amarelo_tag">#E2DE2E</color>
+    <color name="color_rosa_tag">#D44DBF</color>
+    <color name="color_petrolhinho">#282038</color>
+
+    <!-- Textos e Hierarquia Visual -->
+    <color name="color_text_title">#E2D6E8</color>
+    <color name="color_text_subtitle">#AFA0B6</color>
+    <color name="color_text_caption">#9B8C9E</color>
+
+    <!-- Superfícies e Bordas -->
+    <color name="color_card_border">#3E334D</color>
+    <color name="color_card_background">#282038</color>
+    <color name="color_card_inner">#211A2D</color>
+
+    <!-- Cores dos Ícones -->
+    <color name="color_icon">#EDE3F0</color>
+    <color name="color_icon_inactive">#AFA0B6</color>
+    <color name="color_icon_accent">#AF36DF</color>
+
+    <!-- Skeleton Loading Screen -->
+    <color name="skeleton_screen">#1E182A</color>
+    <color name="skeleton_placeholder">#2E233D</color>
+    <color name="skeleton_highlight">#433454</color>
+
+    <!-- Tokens Semânticos e Compatibilidade Legada -->
+    <color name="login_background">#1E182A</color>
+    <color name="login_primary">#7F3AEF</color>
+    <color name="login_hint">#8F7E96</color>
+
+    <!-- Material / Cores de Suporte -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#7F3AEF</color>
+    <color name="purple_700">#282038</color>
+    <color name="teal_200">#89B751</color>
+    <color name="teal_700">#018786</color>
+</resources>

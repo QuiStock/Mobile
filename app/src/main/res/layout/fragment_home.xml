@@ -29,6 +29,7 @@
             android:padding="0dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_profile"
+            app:tint="@color/color_text_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -44,7 +45,7 @@
             android:textColor="@color/color_branco"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            app:layout_constraintEnd_toStartOf="@id/btnThemeToggle"
             app:layout_constraintStart_toEndOf="@id/btnPerfil"
             app:layout_constraintTop_toTopOf="@id/btnPerfil" />
 
@@ -55,24 +56,41 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Nome do usuário"
-            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            app:layout_constraintEnd_toStartOf="@id/btnThemeToggle"
             android:layout_marginEnd="12dp"
-            android:textColor="#BFAFC5"
+            android:textColor="@color/color_text_subtitle"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/tvNomeLoja"
             app:layout_constraintTop_toBottomOf="@id/tvNomeLoja" />
 
+        <!-- TEMA CLARO/ESCURO -->
+        <ImageButton
+            android:id="@+id/btnThemeToggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_circle_button"
+            android:contentDescription="@string/theme_toggle"
+            android:padding="9dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_theme_toggle"
+            app:tint="@color/color_text_title"
+            app:layout_constraintBottom_toBottomOf="@id/btnPerfil"
+            app:layout_constraintEnd_toStartOf="@id/btnNotificacoes"
+            app:layout_constraintTop_toTopOf="@id/btnPerfil" />
+
         <!-- NOTIFICAÇÕES -->
         <ImageButton
             android:id="@+id/btnNotificacoes"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginEnd="24dp"
-            android:background="@android:color/transparent"
+            android:background="@drawable/bg_circle_button"
             android:contentDescription="Notificações"
-            android:padding="0dp"
+            android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_notification"
+            app:tint="@color/color_text_title"
             app:layout_constraintBottom_toBottomOf="@id/btnPerfil"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/btnPerfil" />
@@ -90,7 +108,7 @@
             android:layout_marginEnd="24dp"
             android:layout_marginTop="24dp"
             android:text="Olá, usuário!"
-            android:textColor="#E8D2F0"
+            android:textColor="@color/color_text_title"
             android:textSize="26sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -104,88 +122,35 @@
         <LinearLayout
             android:id="@+id/containerResumo"
             android:layout_width="0dp"
-            android:layout_height="115dp"
+            android:layout_height="146dp"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:layout_marginEnd="24dp"
             android:orientation="horizontal"
-            android:weightSum="3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSaudacao">
 
-            <!-- CARD 1 -->
-            <LinearLayout
-                android:id="@+id/cardVencimento"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card_interference_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="8dp">
-
-                <TextView
-                    android:id="@+id/tvNumeroVencimento"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/summary_unavailable"
-                    android:textColor="#E8D2F0"
-                    android:textSize="26sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="Vencimento&#10;curto"
-                    android:textColor="#C7B7CC"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- CARD 2 -->
-            <LinearLayout
-                android:id="@+id/cardRuptura"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card_interference_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="8dp">
-
-                <TextView
-                    android:id="@+id/tvNumeroRuptura"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/summary_unavailable"
-                    android:textColor="#E8D2F0"
-                    android:textSize="26sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="Ruptura/&#10;Excesso"
-                    android:textColor="#C7B7CC"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- CARD 3 -->
+            <!-- CARD ESQUERDA: AÇÕES ATIVAS (DESTACADO EM VIOLETA) -->
             <LinearLayout
                 android:id="@+id/cardAcoes"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1.05"
                 android:background="@drawable/bg_card_active"
-                android:gravity="center"
+                android:gravity="bottom|start"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Ações ativas"
+                    android:textColor="#E0E7FF"
+                    android:textSize="13sp"
+                    android:textStyle="normal" />
 
                 <TextView
                     android:id="@+id/tvNumeroAcoes"
@@ -193,16 +158,97 @@
                     android:layout_height="wrap_content"
                     android:text="@string/summary_unavailable"
                     android:textColor="@color/color_branco"
-                    android:textSize="26sp"
+                    android:textSize="38sp"
                     android:textStyle="bold" />
+            </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="Ações ativas"
-                    android:textColor="#E8D2F0"
-                    android:textSize="12sp" />
+            <!-- COLUNA DIREITA: DOIS CARDS EMPILHADOS -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- CARD 1: VENCIMENTO CURTO -->
+                <LinearLayout
+                    android:id="@+id/cardVencimento"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_summary_item"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="10dp">
+
+                    <TextView
+                        android:id="@+id/tvNumeroVencimento"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="30dp"
+                        android:text="@string/summary_unavailable"
+                        android:textColor="@color/color_text_title"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_dot_yellow" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Vencimento&#10;curto"
+                        android:textColor="@color/color_text_subtitle"
+                        android:textSize="12sp"
+                        android:lineSpacingExtra="1dp" />
+                </LinearLayout>
+
+                <!-- CARD 2: RUPTURA E EXCESSO -->
+                <LinearLayout
+                    android:id="@+id/cardRuptura"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_summary_item"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="10dp">
+
+                    <TextView
+                        android:id="@+id/tvNumeroRuptura"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="30dp"
+                        android:text="@string/summary_unavailable"
+                        android:textColor="@color/color_text_title"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_dot_pink" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ruptura e&#10;excesso"
+                        android:textColor="@color/color_text_subtitle"
+                        android:textSize="12sp"
+                        android:lineSpacingExtra="1dp" />
+                </LinearLayout>
+
             </LinearLayout>
         </LinearLayout>
 
@@ -269,7 +315,7 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
             android:text="@string/home_alerts_title"
-            android:textColor="#E8D2F0"
+            android:textColor="@color/color_text_title"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -297,10 +343,13 @@
                 android:tag="current_manager_home_notice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_alert"
+                android:lineSpacingExtra="2dp"
+                android:padding="16dp"
                 android:saveEnabled="false"
                 android:text="@string/home_alerts_manager_notice"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="12sp"
                 android:visibility="gone" />
 
@@ -316,9 +365,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:accessibilityLiveRegion="polite"
-                android:padding="12dp"
-                android:textColor="#E8D2F0"
-                android:textSize="14sp"
+                android:background="@drawable/bg_alert"
+                android:padding="16dp"
+                android:textColor="@color/color_text_subtitle"
+                android:textSize="13sp"
                 android:visibility="gone" />
 
             <Button
@@ -425,3 +475,6 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
+
+
+

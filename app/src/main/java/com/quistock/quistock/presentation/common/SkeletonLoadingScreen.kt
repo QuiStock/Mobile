@@ -10,10 +10,8 @@ import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-
-private const val SCREEN_COLOR = 0xFF11061F.toInt()
-private const val PLACEHOLDER_COLOR = 0xFF30243D.toInt()
-private const val PLACEHOLDER_HIGHLIGHT = 0xFF443453.toInt()
+import androidx.core.content.ContextCompat
+import com.quistock.quistock.R
 private const val SKELETON_DURATION_MS = 550L
 private const val SKELETON_FADE_DURATION_MS = 160L
 private const val PLACEHOLDER_PULSE_DURATION_MS = 850L
@@ -59,10 +57,14 @@ object SkeletonLoadingScreen {
 
 private class SkeletonOverlay(context: Context, type: SkeletonScreenType) : FrameLayout(context) {
     private val placeholderDrawables = mutableListOf<GradientDrawable>()
+    private val screenColor = ContextCompat.getColor(context, R.color.skeleton_screen)
+    private val placeholderColor = ContextCompat.getColor(context, R.color.skeleton_placeholder)
+    private val placeholderHighlight = ContextCompat.getColor(context, R.color.skeleton_highlight)
+
     private val pulse = ValueAnimator.ofObject(
         ArgbEvaluator(),
-        PLACEHOLDER_COLOR,
-        PLACEHOLDER_HIGHLIGHT,
+        placeholderColor,
+        placeholderHighlight,
     ).apply {
         duration = PLACEHOLDER_PULSE_DURATION_MS
         repeatMode = ValueAnimator.REVERSE
@@ -75,11 +77,11 @@ private class SkeletonOverlay(context: Context, type: SkeletonScreenType) : Fram
 
     init {
         tag = SkeletonLoadingScreen.OVERLAY_TAG
-        setBackgroundColor(SCREEN_COLOR)
+        setBackgroundColor(screenColor)
         isClickable = true
         isFocusable = true
         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-        val skeleton = SkeletonLayoutFactory(context, placeholderDrawables).create(type)
+        val skeleton = SkeletonLayoutFactory(context, placeholderDrawables, placeholderColor).create(type)
         skeleton.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         addView(skeleton, LayoutParams(-1, -1))
     }
@@ -116,6 +118,7 @@ private class SkeletonOverlay(context: Context, type: SkeletonScreenType) : Fram
 private class SkeletonLayoutFactory(
     private val context: Context,
     private val placeholderDrawables: MutableList<GradientDrawable>,
+    private val placeholderColor: Int,
 ) {
     fun create(type: SkeletonScreenType): View {
         if (type == SkeletonScreenType.ORDER_SENT || type == SkeletonScreenType.PROMOTION_SENT) {
@@ -263,7 +266,7 @@ private class SkeletonLayoutFactory(
     }
 
     private fun placeholder(radius: Int) = GradientDrawable().apply {
-        setColor(PLACEHOLDER_COLOR)
+        setColor(placeholderColor)
         cornerRadius = dp(radius).toFloat()
         placeholderDrawables.add(this)
     }

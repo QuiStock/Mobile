@@ -68,8 +68,16 @@ internal class CreationFields(
     private fun renderVisibility(state: CreationState) {
         val order = state.type == ActionType.ORDER
         val form = state.phase == CreationPhase.FORM || state.phase == CreationPhase.REVIEW
-        listOf(views.creationQuantityLabel, views.creationOrderDateLabel).forEach { it.isVisible = form && order }
-        listOf(views.creationDiscountLabel, views.creationStartLabel, views.creationEndLabel).forEach {
+        listOf(views.creationQuantityLabel, views.creationOrderDateLabel, views.containerOrderDate).forEach {
+            it.isVisible = form && order
+        }
+        listOf(
+            views.creationDiscountLabel,
+            views.creationStartLabel,
+            views.containerStart,
+            views.creationEndLabel,
+            views.containerEnd,
+        ).forEach {
             it.isVisible = form && !order
         }
         inputs.forEach { (field, input) ->

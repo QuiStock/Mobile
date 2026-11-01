@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/notifications_user_name"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
@@ -163,7 +163,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/notifications_time_13_minutes"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="11sp" />
                 </LinearLayout>
 
@@ -227,7 +227,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/notifications_time_27_minutes"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -274,7 +274,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/notifications_time_1_hour_33_minutes"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="11sp" />
                 </LinearLayout>
 

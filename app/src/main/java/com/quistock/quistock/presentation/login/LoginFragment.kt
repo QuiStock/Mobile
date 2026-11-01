@@ -73,6 +73,9 @@ class LoginFragment : Fragment() {
 
     private fun setupListeners() {
         binding.btEntrarLogin.setOnClickListener { login() }
+        binding.btnThemeToggle.setOnClickListener {
+            com.quistock.quistock.presentation.common.ThemeManager.toggleTheme(requireContext())
+        }
     }
 
     private fun observeState() {

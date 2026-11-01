@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/profile_user_name"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="10sp" />
         </LinearLayout>
     </LinearLayout>

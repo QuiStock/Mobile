@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
             android:text="Estoquista"
-            android:textColor="#BFAFC5"
+            android:textColor="@color/color_text_subtitle"
             android:textSize="12sp" />
 
         <TextView
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Status"
-            android:textColor="#C7B7CC"
+            android:textColor="@color/color_text_subtitle"
             android:textSize="11sp" />
 
         <TextView

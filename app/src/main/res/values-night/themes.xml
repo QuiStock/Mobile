@@ -1,16 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Dark theme mirrors base since QuiStock is natively a dark-themed app. -->
+    <!-- Dark theme QuiStock (Menos contrastante). -->
     <style name="Theme.QuiStock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Paleta da Marca -->
         <item name="colorPrimary">@color/color_violeta</item>
         <item name="colorPrimaryVariant">@color/color_petrolhinho</item>
-        <item name="colorOnPrimary">@color/color_branco</item>
+        <item name="colorOnPrimary">@color/white</item>
 
         <item name="colorSecondary">@color/color_limao</item>
         <item name="colorSecondaryVariant">@color/color_lavana</item>
         <item name="colorOnSecondary">@color/color_petroleo</item>
 
-        <!-- Superfícies e Janelas em Tema Escuro -->
+        <!-- Superfícies e Janelas em Tema Escuro Suave -->
         <item name="android:windowBackground">@color/color_petroleo</item>
         <item name="android:colorBackground">@color/color_petroleo</item>
         <item name="colorSurface">@color/color_petrolhinho</item>
@@ -22,8 +22,19 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
 
+        <item name="android:datePickerDialogTheme">@style/ThemeOverlay.QuiStock.DatePicker</item>
+
         <!-- Tipografia Padrão Montserrat -->
         <item name="fontFamily">@font/montserrat</item>
         <item name="android:fontFamily">@font/montserrat</item>
+    </style>
+
+    <!-- DatePicker Theme QuiStock (Night) -->
+    <style name="ThemeOverlay.QuiStock.DatePicker" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/color_violeta</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSurface">@color/color_card_background</item>
+        <item name="colorOnSurface">@color/color_text_title</item>
+        <item name="android:textColorPrimary">@color/color_text_title</item>
     </style>
 </resources>

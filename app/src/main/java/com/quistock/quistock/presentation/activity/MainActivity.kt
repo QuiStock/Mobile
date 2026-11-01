@@ -58,8 +58,8 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) locationPrompt.askOnFirstLaunch()
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         setContentView(binding.root)
         bottomNavigation = BottomNavigation(this, binding, sessionViewModel)

@@ -58,7 +58,7 @@ internal class BottomBarView(private val container: LinearLayout, private val on
         val size = container.resources.getDimensionPixelSize(R.dimen.nav_bar_icon_size)
         drawable?.setBounds(0, 0, size, size)
         button.setCompoundDrawables(null, drawable, null, null)
-        val color = if (button.isSelected) R.color.color_limao else R.color.color_branco
+        val color = if (button.isSelected) R.color.color_limao else R.color.color_icon_inactive
         button.setTextColor(ContextCompat.getColor(container.context, color))
     }
 
