@@ -143,7 +143,7 @@ class OrderAndPromotionFragmentTests {
 
     private fun selectDate(id: Int, date: LocalDate) {
         onView(withId(id)).perform(scrollTo(), click())
-        onView(withId(android.R.id.datePicker)).inRoot(isDialog()).perform(setDate(date))
+        onView(isAssignableFrom(DatePicker::class.java)).inRoot(isDialog()).perform(setDate(date))
         onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
     }
 
