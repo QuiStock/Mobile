@@ -4,6 +4,16 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Decisão gerencial de intervenções implementada em 01/11/2026 conforme
+  `specs/manager-interference-decisions.md` e `api-contract.md` v3.1.0: hub do gerente
+  carrega SENT_TO_MANAGER/APPROVED/REJECTED da loja, filtra por tipo e exibe badges; detalhes
+  aprovam (confirmação) ou reprovam (justificativa obrigatória em bottom sheet) via
+  `PATCH /actions/{id}/status`. Autor e instante vêm do `sub` no Core; o app não os envia.
+  Estados finais bloqueados; conflito/incerteza recarregam a lista sem reenvio. Unitários,
+  Spotless, Detekt, Lint, compilação demo/androidTest e assembleRelease executados com
+  sucesso pelo agente; instrumentados, JaCoCo combinado, checagem visual e Core real pendentes.
+
+
 - Consulta de interferências corrigida em 30/10/2026 após retorno HTTP 200 fornecido
   pelo solicitante com MONITOR e pedidos históricos sem data desejada. Mapper de
   leitura agora preserva nulidade histórica e separa obrigatoriedade de formulário
