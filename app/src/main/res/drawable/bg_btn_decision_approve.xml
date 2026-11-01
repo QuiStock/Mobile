@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
+    <item>
+        <selector>
+            <item android:state_enabled="false">
+                <shape>
+                    <solid android:color="#4D7F3AEF" />
+                    <corners android:radius="@dimen/corner_radius_button_primary" />
+                </shape>
+            </item>
+            <item android:drawable="@drawable/bg_btn_action_approve" />
+        </selector>
+    </item>
+</ripple>
