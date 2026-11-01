@@ -2,6 +2,7 @@ package com.quistock.quistock.domain.model
 
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 enum class ActionType { ORDER, PROMOTION }
@@ -72,12 +73,13 @@ data class ActionDraft(
     }
 
     fun matches(type: ActionType, stored: ActionDraft): Boolean = if (type == ActionType.ORDER) {
-        quantity.trim().toIntOrNull() == stored.quantity.toIntOrNull() && orderDate == stored.orderDate
+        quantity.trim().toIntOrNull() == stored.quantity.toIntOrNull() &&
+            toIsoDate(orderDate) == toIsoDate(stored.orderDate)
     } else {
         val sameDiscount = discountValue()?.let { value ->
             stored.discountValue()?.let { value.compareTo(it) == 0 }
         } == true
-        sameDiscount && start == stored.start && end == stored.end
+        sameDiscount && toIsoDate(start) == toIsoDate(stored.start) && toIsoDate(end) == toIsoDate(stored.end)
     }
 
     fun isEmpty(): Boolean = listOf(quantity, orderDate, discount, start, end).all { it.isBlank() }
@@ -88,12 +90,26 @@ data class ActionDraft(
         private val MAX_DISCOUNT = BigDecimal("100")
 
         private val CIVIL_DATE = Regex("[0-9]{4}-[0-9]{2}-[0-9]{2}")
+        private val BR_DATE_DASH = Regex("[0-9]{2}-[0-9]{2}-[0-9]{4}")
+        private val BR_DATE_SLASH = Regex("[0-9]{2}/[0-9]{2}/[0-9]{4}")
+        private val BR_FORMATTER_DASH = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        private val BR_FORMATTER_SLASH = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         fun date(value: String): LocalDate? = try {
-            value.takeIf { CIVIL_DATE.matches(it) }?.let { LocalDate.parse(it) }
+            val trimmed = value.trim()
+            when {
+                CIVIL_DATE.matches(trimmed) -> LocalDate.parse(trimmed)
+                BR_DATE_DASH.matches(trimmed) -> LocalDate.parse(trimmed, BR_FORMATTER_DASH)
+                BR_DATE_SLASH.matches(trimmed) -> LocalDate.parse(trimmed, BR_FORMATTER_SLASH)
+                else -> null
+            }
         } catch (_: DateTimeParseException) {
             null
         }
+
+        fun toIsoDate(value: String): String = date(value)?.toString() ?: value.trim()
+
+        fun formatBrDate(value: String): String = date(value)?.format(BR_FORMATTER_DASH) ?: value.trim()
     }
 }
 

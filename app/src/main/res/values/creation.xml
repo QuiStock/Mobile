@@ -18,7 +18,7 @@
     <string name="creation_discount">Desconto (%)</string>
     <string name="creation_start">Data inicial inclusiva</string>
     <string name="creation_end">Data final inclusiva</string>
-    <string name="creation_date_hint">AAAA-MM-DD</string>
+    <string name="creation_date_hint">DD-MM-AAAA</string>
     <string name="creation_review">Revisar e enviar</string>
     <string name="creation_confirm">Confirmar envio</string>
     <string name="creation_cancel">Cancelar</string>
@@ -64,8 +64,8 @@
     <string name="creation_rejected">Operação recusada. Confira a ação antes de tentar novamente.</string>
     <string name="creation_quantity_error">Informe um inteiro entre 1 e 2147483647.</string>
     <string name="creation_discount_error">Informe de 0 a 100 com até duas casas decimais.</string>
-    <string name="creation_date_error">Informe uma data válida, hoje ou futura em São Paulo (AAAA-MM-DD).</string>
-    <string name="creation_end_error">Informe uma data final igual ou posterior à inicial (AAAA-MM-DD).</string>
+    <string name="creation_date_error">Informe uma data válida, hoje ou futura em São Paulo (DD-MM-AAAA).</string>
+    <string name="creation_end_error">Informe uma data final igual ou posterior à inicial (DD-MM-AAAA).</string>
     <string name="creation_product_summary">%1$s\n%2$s · Estoque: %3$s\nAnálise: %4$s</string>
     <string name="creation_order_summary">Quantidade: %1$s\nData desejada: %2$s</string>
     <string name="creation_promotion_summary">Desconto: %1$s\nInício: %2$s\nFim: %3$s</string>

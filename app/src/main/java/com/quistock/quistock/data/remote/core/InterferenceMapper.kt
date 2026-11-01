@@ -19,11 +19,11 @@ internal object InterferenceMapper {
         put("action_type", type.name)
         if (type == ActionType.ORDER) {
             put("quantity", draft.quantity.trim().toInt())
-            put("desired_order_date", draft.orderDate)
+            put("desired_order_date", ActionDraft.toIsoDate(draft.orderDate))
         } else {
             put("discount_percentage", JsonPrimitive(requireNotNull(draft.discountValue())))
-            put("promotion_valid_from", draft.start)
-            put("promotion_valid_until", draft.end)
+            put("promotion_valid_from", ActionDraft.toIsoDate(draft.start))
+            put("promotion_valid_until", ActionDraft.toIsoDate(draft.end))
         }
     }
 
