@@ -239,6 +239,11 @@
                 android:layout_height="1dp"
                 android:background="#337F3AEF" />
 
+            <!-- SEÇÃO: LOCALIZAÇÃO -->
+            <include
+                android:id="@+id/profile_location"
+                layout="@layout/view_store_location" />
+
             <!-- ROW: AJUDA -->
             <LinearLayout
                 android:id="@+id/profile_help_row"

@@ -20,7 +20,9 @@ import com.quistock.quistock.data.remote.core.RetrofitHomeSummaryRepository
 import com.quistock.quistock.data.remote.core.RetrofitPriorityAlertsRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileEditRepository
 import com.quistock.quistock.data.remote.core.RetrofitProfileRepository
+import com.quistock.quistock.data.remote.core.RetrofitStoreLocationRepository
 import com.quistock.quistock.data.remote.core.RetrofitTeamRepository
+import com.quistock.quistock.data.remote.core.StoreLocationApi
 import com.quistock.quistock.data.remote.core.TeamApi
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.data.remote.internal.chatbot.RetrofitChatbotRepository
@@ -34,6 +36,7 @@ import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.port.ProfileEditRepository
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
+import com.quistock.quistock.domain.port.StoreLocationRepository
 import com.quistock.quistock.domain.port.TeamRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import kotlinx.serialization.json.Json
@@ -101,6 +104,14 @@ val retrofitModule = module {
             .build().create(PriorityAlertsApi::class.java)
     }
     single<PriorityAlertsRepository> { RetrofitPriorityAlertsRepository(get(), get()) }
+    single<StoreLocationApi> {
+        Retrofit.Builder()
+            .baseUrl(get<Context>().getString(R.string.core_base_url))
+            .client(get<OkHttpClient>(named("CoreHttpClient")))
+            .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
+            .build().create(StoreLocationApi::class.java)
+    }
+    single<StoreLocationRepository> { RetrofitStoreLocationRepository(get(), get()) }
     single<ProfilePhotoRepository> { HttpProfilePhotoRepository() }
     single<ProfileApi> {
         Retrofit.Builder()
