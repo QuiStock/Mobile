@@ -4,6 +4,7 @@ import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
@@ -96,9 +97,9 @@ class InterferencesHubTests {
                 .inRoot(isDialog()).check(matches(isDisplayed()))
             onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
 
-            onView(withId(R.id.creationReturn)).perform(click())
+            onView(withId(R.id.creationReturn)).perform(scrollTo(), click())
             awaitDestination(scenario, R.id.interferencesFragment)
-            onView(withText(containsString("Refrigerante Guaraná"))).check(matches(isDisplayed()))
+            assertActionNameInLists("Refrigerante Guaraná")
             coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
             coVerify(exactly = 0) { actions.forward(any(), any()) }
         }
@@ -121,7 +122,7 @@ class InterferencesHubTests {
             openHub(scenario)
             onView(withText(R.string.creation_list_error)).check(matches(isDisplayed()))
             onView(withId(R.id.interferenceListRetry)).perform(click())
-            onView(withText(containsString("Refrigerante Guaraná"))).check(matches(isDisplayed()))
+            assertActionNameInLists("Refrigerante Guaraná")
             onView(withText(containsString("product-47"))).check(doesNotExist())
             coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
         }
@@ -133,7 +134,7 @@ class InterferencesHubTests {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             openHub(scenario)
-            onView(withText(containsString("Refrigerante Guaraná"))).check(matches(isDisplayed()))
+            assertActionNameInLists("Refrigerante Guaraná")
             onView(withText(containsString("product-47"))).check(doesNotExist())
         }
     }
@@ -145,7 +146,7 @@ class InterferencesHubTests {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             openHub(scenario)
-            onView(withText(containsString("Produto não identificado"))).check(matches(isDisplayed()))
+            assertActionNameInLists("Produto não identificado")
             onView(withText(containsString("product-47"))).check(doesNotExist())
         }
     }
@@ -156,5 +157,12 @@ class InterferencesHubTests {
             it.binding.navHostFragment.findNavController().navigate(R.id.interferencesFragment)
         }
         awaitDestination(scenario, R.id.interferencesFragment)
+    }
+
+    private fun assertActionNameInLists(name: String) {
+        onView(withId(R.id.listaInterferenciasAtivas))
+            .check(matches(hasDescendant(withText(containsString(name)))))
+        onView(withId(R.id.listaInterferenciasRecentes))
+            .check(matches(hasDescendant(withText(containsString(name)))))
     }
 }
