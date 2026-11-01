@@ -68,6 +68,7 @@ class ChatbotConversationTests {
         listOf(
             ChatbotHistoryMessage("m1", "user", "question", "2026-10-31T10:00:00Z"),
             ChatbotHistoryMessage("m2", "assistant", "answer", "2026-10-31T10:01:00Z"),
+            ChatbotHistoryMessage("m3", "system", "internal metadata", "2026-10-31T10:02:00Z"),
         ),
     )
 
