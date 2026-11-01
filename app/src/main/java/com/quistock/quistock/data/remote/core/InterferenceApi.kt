@@ -29,4 +29,11 @@ interface InterferenceApi {
         @Body body: JsonObject,
         @Tag expected: SessionSnapshot,
     ): Response<JsonObject>
+
+    @PATCH("actions/{id}/status")
+    suspend fun decide(
+        @Path("id") id: String,
+        @Body body: JsonObject,
+        @Tag expected: SessionSnapshot,
+    ): Response<JsonObject>
 }

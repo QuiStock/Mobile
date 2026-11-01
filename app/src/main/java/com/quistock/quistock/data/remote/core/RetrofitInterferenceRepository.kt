@@ -1,7 +1,9 @@
 package com.quistock.quistock.data.remote.core
 
+import com.quistock.quistock.data.remote.core.InterferenceMapper.descriptive
 import com.quistock.quistock.data.remote.core.InterferenceMapper.number
 import com.quistock.quistock.data.remote.core.InterferenceMapper.text
+import com.quistock.quistock.domain.model.ActionDecision
 import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionFailure
 import com.quistock.quistock.domain.model.ActionListResult
@@ -71,10 +73,29 @@ class RetrofitInterferenceRepository(private val api: InterferenceApi) : Interfe
         require(response.code() == HttpURLConnection.HTTP_OK)
         val body = requireNotNull(response.body())
         require(body.text("id") == action.id && body.text("status") == ActionStatus.SENT_TO_MANAGER.name)
+        ActionResult.Found(action.copy(status = ActionStatus.SENT_TO_MANAGER))
+    }
+
+    override suspend fun decide(
+        action: InterferenceAction,
+        decision: ActionDecision,
+        justification: String?,
+        expected: SessionSnapshot,
+    ): ActionResult = write {
+        val request = buildJsonObject {
+            put("status", decision.status.name)
+            justification?.let { put("justification", it) }
+        }
+        val response = api.decide(action.id, request, expected)
+        failure(response)?.let { return@write it }
+        require(response.code() == HttpURLConnection.HTTP_OK)
+        val body = requireNotNull(response.body())
+        // A body that does not confirm this exact transition is an uncertain write, never success.
+        require(body.text("id") == action.id && body.text("status") == decision.status.name)
         ActionResult.Found(
-            InterferenceAction(
-                action.id, action.flowId, action.productId, action.storeId, action.type,
-                ActionStatus.SENT_TO_MANAGER, action.values, action.referencePrice, action.promotionalPrice,
+            action.copy(
+                status = decision.status,
+                decisionJustification = body.descriptive("decision_justification") ?: justification,
             ),
         )
     }

@@ -1,5 +1,6 @@
 package com.quistock.quistock.domain.port
 
+import com.quistock.quistock.domain.model.ActionDecision
 import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionListResult
 import com.quistock.quistock.domain.model.ActionResult
@@ -18,4 +19,10 @@ interface InterferenceRepository {
         expected: SessionSnapshot,
     ): ActionResult
     suspend fun forward(action: InterferenceAction, expected: SessionSnapshot): ActionResult
+    suspend fun decide(
+        action: InterferenceAction,
+        decision: ActionDecision,
+        justification: String?,
+        expected: SessionSnapshot,
+    ): ActionResult
 }

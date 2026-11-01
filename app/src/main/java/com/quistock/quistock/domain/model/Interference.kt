@@ -16,6 +16,32 @@ enum class ActionStatus {
 
     val canForward: Boolean get() = this == GENERATED || this == IN_EMPLOYEE_TRIAGE
     val pending: Boolean get() = canForward || this == SENT_TO_MANAGER
+
+    /** Core accepts a manager decision only from SENT_TO_MANAGER. */
+    val canDecide: Boolean get() = this == SENT_TO_MANAGER
+    val decided: Boolean get() = this == APPROVED || this == REJECTED
+}
+
+/** Manager decision; author and instant are derived by Core from the authenticated token. */
+enum class ActionDecision(val status: ActionStatus) {
+    APPROVE(ActionStatus.APPROVED),
+    REJECT(ActionStatus.REJECTED),
+    ;
+
+    /** Trims the text; Core requires a nonblank justification only for REJECTED. */
+    fun justification(text: String): Justification {
+        val trimmed = text.trim()
+        return when {
+            trimmed.isNotEmpty() -> Justification.Valid(trimmed)
+            this == REJECT -> Justification.Missing
+            else -> Justification.Valid(null)
+        }
+    }
+}
+
+sealed interface Justification {
+    data class Valid(val text: String?) : Justification
+    data object Missing : Justification
 }
 
 data class ActionDraft(
@@ -84,6 +110,9 @@ data class InterferenceAction(
     val values: ActionDraft,
     val referencePrice: BigDecimal? = null,
     val promotionalPrice: BigDecimal? = null,
+    val productName: String? = null,
+    val justification: String? = null,
+    val decisionJustification: String? = null,
 ) {
     override fun toString(): String = "InterferenceAction"
 }

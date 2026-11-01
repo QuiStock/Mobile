@@ -44,17 +44,24 @@ internal object InterferenceMapper {
         require(promotional == null || promotional.signum() >= 0)
         requireTypeFields(row, type)
         return InterferenceAction(
-            requireNotNull(row.text("id")),
-            flowId,
-            requireNotNull(row.text("product_id")),
-            requireNotNull(row.number("store_id")).longValueExact().also { require(it > 0) },
-            type,
-            ActionStatus.valueOf(requireNotNull(row.text("status"))),
-            values(row),
-            reference,
-            promotional,
+            id = requireNotNull(row.text("id")),
+            flowId = flowId,
+            productId = requireNotNull(row.text("product_id")),
+            storeId = requireNotNull(row.number("store_id")).longValueExact().also { require(it > 0) },
+            type = type,
+            status = ActionStatus.valueOf(requireNotNull(row.text("status"))),
+            values = values(row),
+            referencePrice = reference,
+            promotionalPrice = promotional,
+            productName = row.descriptive("product_name"),
+            justification = row.descriptive("justification"),
+            decisionJustification = row.descriptive("decision_justification"),
         )
     }
+
+    /** Descriptive context is optional: absent, null, blank or non-text values stay unknown. */
+    fun JsonObject.descriptive(key: String): String? = (get(key) as? JsonPrimitive)?.takeIf { it.isString }
+        ?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
 
     private fun values(row: JsonObject): ActionDraft = ActionDraft(
         quantity = row.number("quantity")?.intValueExact()?.toString().orEmpty(),
