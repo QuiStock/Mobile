@@ -29,7 +29,8 @@ class InterferenceListTests {
     private val expected = SessionSnapshot(1, true)
     private val order = """
         {"id":"order","flow_id":"flow","product_id":"product","store_id":17,
-        "action_type":"ORDER","status":"GENERATED","quantity":2,"desired_order_date":null}
+        "product_name":"Arroz Branco 5kg","action_type":"ORDER","status":"GENERATED",
+        "quantity":2,"desired_order_date":null}
     """.trimIndent()
     private val monitor = """
         {"id":"monitor","flow_id":"monitor-flow","product_id":"other","store_id":17,
@@ -60,6 +61,7 @@ class InterferenceListTests {
         assertEquals(3, result.actions.count { it.type == ActionType.ORDER })
         assertEquals(2, result.actions.count { it.type == ActionType.PROMOTION })
         val pending = result.actions.single { it.id == "pending-order" }
+        assertEquals("Arroz Branco 5kg", pending.productName)
         assertEquals("2", pending.values.quantity)
         assertEquals("", pending.values.orderDate)
         assertTrue(pending.status.canForward)
@@ -69,10 +71,13 @@ class InterferenceListTests {
     @Test
     fun `missing persisted fields stay unknown while generation response stays strict`() = runTest {
         coEvery { api.list(17, null, expected) } returns response(
-            order.replace("\"flow\"", "null").replace("\"quantity\":2", "\"quantity\":null"),
+            order.replace("\"flow_id\":\"flow\"", "\"flow_id\":null")
+                .replace("\"product_name\":\"Arroz Branco 5kg\",", "")
+                .replace("\"quantity\":2", "\"quantity\":null"),
         )
         val result = repository.list(17, null, expected) as ActionListResult.Loaded
         assertNull(result.actions.single().flowId)
+        assertNull(result.actions.single().productName)
         assertEquals("", result.actions.single().values.quantity)
         coEvery { api.generate(any(), expected) } returns Response.success(
             201,
@@ -87,6 +92,16 @@ class InterferenceListTests {
             expected,
         ) as ActionResult.Failed
         assertEquals(ActionFailure.UNCERTAIN, generated.reason)
+    }
+
+    @Test
+    fun `malformed optional product name does not fail action list`() = runTest {
+        coEvery { api.list(17, null, expected) } returns response(
+            order.replace("\"product_name\":\"Arroz Branco 5kg\"", "\"product_name\":17"),
+        )
+
+        val result = repository.list(17, null, expected) as ActionListResult.Loaded
+        assertNull(result.actions.single().productName)
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionFailure
 import com.quistock.quistock.domain.model.ActionResult
 import com.quistock.quistock.domain.model.ActionStatus
+import com.quistock.quistock.domain.model.InterferenceAction
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.usecase.CreateInterferenceUseCase
@@ -30,7 +31,8 @@ internal class CreationSubmission(
 
     internal fun confirm() {
         val state = state.value
-        val available = state.phase == CreationPhase.REVIEW && !state.loading && operation?.isActive != true
+        val available = state.phase == CreationPhase.REVIEW && !state.loading && !state.listFailed &&
+            state.failure != ActionFailure.UNAUTHORIZED && operation?.isActive != true
         if (available && state.product != null) {
             val errors = state.draft.validate(state.type, create.today())
             if (errors.isNotEmpty()) {
@@ -54,7 +56,9 @@ internal class CreationSubmission(
     }
 
     private suspend fun generated(result: ActionResult, expected: SessionSnapshot) {
-        if (result is ActionResult.Found && !result.existing && result.action.status.canForward) {
+        if (result is ActionResult.Found && result.action.status == ActionStatus.SENT_TO_MANAGER) {
+            accept(ActionResult.Found(result.action, existing = true), expected)
+        } else if (result is ActionResult.Found && !result.existing && result.action.status.canForward) {
             mutableState.value = mutableState.value.copy(phase = CreationPhase.FORWARDING, action = result.action)
             accept(create.forward(result.action, expected), expected)
         } else {
@@ -65,7 +69,7 @@ internal class CreationSubmission(
     internal fun forward() {
         val state = state.value
         val action = state.action ?: return
-        if (state.phase != CreationPhase.EXISTING || !action.status.canForward || operation?.isActive == true) return
+        if (!canForward(state, action) || operation?.isActive == true) return
         val expected = session.snapshot()
         mutableState.value = state.copy(phase = CreationPhase.FORWARDING, failure = null)
         operation = scope.launch { guarded(expected) { accept(create.forward(action, expected), expected) } }
@@ -84,13 +88,14 @@ internal class CreationSubmission(
         val state = state.value
         mutableState.value = when (result) {
             is ActionResult.Found -> state.copy(
-                phase = if (result.action.status == ActionStatus.SENT_TO_MANAGER) {
+                phase = if (!result.existing && result.action.status == ActionStatus.SENT_TO_MANAGER) {
                     CreationPhase.SENT
                 } else {
                     CreationPhase.EXISTING
                 },
                 action = result.action,
-                draft = ActionDraft(),
+                requestedDraft = state.draft.takeIf { result.existing },
+                draft = if (result.existing) state.draft else ActionDraft(),
                 failure = null,
             )
 
@@ -115,3 +120,12 @@ internal class CreationSubmission(
         }
     }
 }
+
+private fun canForward(state: CreationState, action: InterferenceAction): Boolean =
+    state.phase == CreationPhase.EXISTING && action.status.canForward &&
+        state.failure !in setOf(
+            ActionFailure.FORBIDDEN,
+            ActionFailure.NOT_FOUND,
+            ActionFailure.CONFLICT,
+            ActionFailure.UNAUTHORIZED,
+        )

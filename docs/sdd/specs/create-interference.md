@@ -62,6 +62,11 @@ análise/aprovação e não estabelece o contrato de criação.
 - Selecionar produto da loja e análise atual, ANALYZED, do classificador atual.
   Não substituir silenciosamente uma análise rejeitada por outra. Não criar
   com produto fixo ou dados de demonstração. Navegar não faz escrita remota.
+- Antes de abrir o formulário, consultar as ações da loja: uma ação pendente do
+  mesmo tipo e produto abre seus dados/status e impede nova criação. Se a leitura
+  falhar, manter a seleção bloqueada até atualização, sem indicar que não há ação.
+  Aprovada/rejeitada libera produto em outra análise; na mesma análise/tipo,
+  informar que o Core reutiliza a ação final sem alterar seus valores.
 - Mostrar loja/usuário do perfil e resumo real do produto. Manter estoque decimal
   de até três casas efetivas, sem inferir unidade. Quantidade de pedido tem regra
   própria inteira. Contexto inválido/de outra sessão ou loja bloqueia escrita.
@@ -204,7 +209,7 @@ Evidência abaixo planejada, não executada. Aplicar Red–Green–Refactor.
 | AC-03 | Pedido exige inteiro 1..2147483647 e data hoje/futura; não envia campos de promoção. | Unitários de limites, frações, overflow e data; contrato do JSON e instrumentados. |
 | AC-04 | Promoção exige desconto 0..100 até duas casas e datas inclusivas com início hoje/futuro e fim >= início em São Paulo; não limita fim à validade nem envia campos de pedido/duração. | Unitários de limites/localização/virada de dia e contrato; instrumentados de campos. |
 | AC-05 | Confirmação mostra dados preenchidos; cancelar não escreve e preserva valores; confirmar repetidamente inicia uma operação. | Unitários de estado/concorrência e instrumentado do diálogo. |
-| AC-06 | Pendência de outra análise bloqueia; aprovada/rejeitada não bloqueia outra análise; mesmo flow/tipo reutiliza valores reais sem editar a existente. | Contrato simulado por estado/identidade e instrumentado de apresentação. |
+| AC-06 | Pendência do mesmo produto/tipo bloqueia formulário e abre ação existente; falha de leitura também impede escrita até retry. Outro tipo/produto permanece disponível; aprovada/rejeitada libera outra análise, enquanto mesma análise/tipo mostra a ação que o Core reutilizará sem alterar valores. | Unitários de seleção por loja/produto/tipo/status/análise, falha de consulta e aviso; instrumentado de apresentação. |
 | AC-07 | Gerar persiste GENERATED e encaminhar usa o id retornado; somente SENT_TO_MANAGER exibe sucesso. Gerada com encaminhamento falho permite repetir apenas PATCH. | Testes de repositório/use case/ViewModel com falha entre chamadas e recuperação. |
 | AC-08 | HTTP 201 com lista vazia não mostra sucesso nem envia PATCH; corpo incompatível após escrita produz incerteza. | Contrato de retorno vazio/inválido e teste de estado. |
 | AC-09 | Timeout de geração/PATCH informa incerteza e leva à lista sem reenvio; lista vazia/com falha não prova ausência de escrita. | Integração simulada de gravação seguida de timeout/consulta tardia e instrumentado. |
@@ -419,3 +424,48 @@ nenhuma etapa Red/Green observada. Revisão estática, parsing XML/fixtures JSON
 inspeção de imports/limites de estilo e `git diff --check` realizadas, sem Gradle.
 Após recompilar, conferir a lista de pedidos/promoções, o aviso de campo ausente e
 nova rodada de testes/checks fora do sandbox. Validação real e AC-17 seguem pendentes.
+
+### Regressão encontrada no hub — 31/10/2026
+
+Na revisão da `origin/main`, `InterferencesFragment` solicita `refreshList()`, mas
+`render()` não apresenta as ações recebidas. `fragment_interferences.xml` mantém
+pedidos/promoções de exemplo hardcoded. Ao retornar após geração/encaminhamento,
+`returnToHub()` limpa o estado antes da nova consulta; sem renderização dinâmica,
+nenhuma ação real fica disponível para conferência. Isso contradiz a leitura
+mínima exigida nesta spec e o histórico acima que dizia que o hub já exibia
+resumos reais.
+
+Correção autorizada: ligar o resultado real do GET à seção do hub, com estados
+distintos de carregamento, erro (retry manual) e vazio; remover conteúdo fictício,
+preservar o recorte de pedidos/promoções e conferir o retorno ao hub sem repetir
+POST/PATCH. Validar por regressões locais; AC-17 permanece pendente pois não há
+análise elegível na conta de produção de teste e nenhuma escrita real está
+autorizada nesta atividade.
+
+Implementação no Mobile: a seção agora apresenta os pedidos/promoções retornados
+por `GET /actions`, com estados de carregamento, erro e lista vazia; o retry é
+manual. Cartões de exemplo foram removidos. `InterferencesHubTests` cobre lista
+real, retorno sem nova geração/encaminhamento, estado vazio e falha seguida de
+retry. O contrato local Core 3.0.0 confirma `store_id` e `action_type` opcionais;
+nenhum repositório Core/Auth foi alterado e nenhuma chamada real foi feita.
+
+Verificação desta retomada: `git diff --check` e parsing XML foram realizados.
+`testDebugUnitTest` não iniciou: o wrapper não conseguiu criar o lock em
+`%USERPROFILE%\.gradle\wrapper\dists` por acesso negado no sandbox. Testes
+instrumentados, build e conferência visual não executados; AC-17 permanece
+pendente e nenhuma escrita de produção foi feita.
+
+### Nome de produto no hub — 01/11/2026
+
+O hub mostrava `product_id` técnico no cartão e na descrição acessível. O Mobile agora
+aproveita `product_name` da própria resposta `GET /actions`; não faz uma consulta
+adicional ao catálogo. Nome ausente, vazio ou malformado vira `null` sem rejeitar a
+ação, e a UI usa “Produto não identificado” sem expor o identificador técnico. O
+resumo aberto e o estado de encaminhamento preservam o nome retornado.
+
+`InterferencesHubTests` cobre nome vindo das ações, detalhes, fallback neutro e lista
+após retry. `InterferenceListTests` cobre extração do nome e campo opcional malformado.
+Também foi confirmado no mapper que linhas legadas `MONITOR` são descartadas antes
+do mapeamento de campos na consulta sem filtro usada pelo hub; nenhuma lógica de
+MONITOR foi alterada. Nenhum build ou teste Gradle foi executado nesta alteração;
+validar após a revisão estática.
