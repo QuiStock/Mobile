@@ -215,7 +215,9 @@
             app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_managerPromotionDetailFragment_to_managerPromoApprovedFragment"
-            app:destination="@id/managerPromoApprovedFragment" />
+            app:destination="@id/managerPromoApprovedFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
@@ -229,7 +231,9 @@
             app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_managerOrderDetailFragment_to_managerOrderApprovedFragment"
-            app:destination="@id/managerOrderApprovedFragment" />
+            app:destination="@id/managerOrderApprovedFragment"
+            app:popUpTo="@id/managerInterferencesFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment

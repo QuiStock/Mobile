@@ -97,11 +97,12 @@
                     android:layout_marginStart="5dp"
                     android:layout_marginEnd="13dp"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_card_interference_category"
+                    android:background="@drawable/bg_card_filter"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:stateListAnimator="@animator/press_scale">
 
                     <ImageView
                         android:layout_width="56dp"
@@ -125,11 +126,12 @@
                     android:layout_marginStart="13dp"
                     android:layout_marginEnd="5dp"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_card_interference_category"
+                    android:background="@drawable/bg_card_filter"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:stateListAnimator="@animator/press_scale">
 
                     <ImageView
                         android:layout_width="56dp"
@@ -148,17 +150,31 @@
             </LinearLayout>
 
             <!-- Seção de Pedidos para Analisar (Scroll 1) -->
+            <TextView
+                android:id="@+id/tvTituloPendentes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="20dp"
+                android:accessibilityHeading="true"
+                android:text="@string/manager_pending_title"
+                android:textColor="#E8D2F0"
+                android:textSize="13sp" />
+
             <ScrollView
                 android:id="@+id/scrollPedidosAnalisar"
                 android:layout_width="match_parent"
-                android:layout_height="108dp"
-                android:layout_marginTop="20dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp"
                 android:fillViewport="false"
                 android:nestedScrollingEnabled="true">
 
+                <!-- Static samples remain for the demo flavor; the real fragment replaces them with Core data. -->
                 <LinearLayout
+                    android:id="@+id/containerPendentes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:accessibilityLiveRegion="polite"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -235,10 +251,12 @@
 
             <!-- Seção: Interferências ativas (Scroll 2) -->
             <TextView
+                android:id="@+id/tvTituloDecididas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:layout_marginTop="16dp"
+                android:accessibilityHeading="true"
                 android:text="Interferências ativas"
                 android:textColor="#E8D2F0"
                 android:textSize="13sp" />
@@ -246,12 +264,13 @@
             <ScrollView
                 android:id="@+id/scrollInterferenciasAtivas"
                 android:layout_width="match_parent"
-                android:layout_height="108dp"
+                android:layout_height="200dp"
                 android:layout_marginTop="12dp"
                 android:fillViewport="false"
                 android:nestedScrollingEnabled="true">
 
                 <LinearLayout
+                    android:id="@+id/containerDecididas"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">

@@ -111,6 +111,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnVoltarPedido" />
 
+        <!-- Status da solicitação (aparece com micro-animação ao decidir) -->
+        <TextView
+            android:id="@+id/tvStatusDecisaoPedido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="27dp"
+            android:accessibilityLiveRegion="polite"
+            android:gravity="center"
+            android:minHeight="26dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/tvTituloDetalhePedido"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvTituloDetalhePedido" />
+
+
         <!-- Card do Produto -->
         <LinearLayout
             android:id="@+id/cardProdutoPedido"
@@ -268,6 +287,23 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/manager_reason_label"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvMotivoPedido"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/manager_not_informed"
+                android:textColor="#BFAFC5"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- Botões de Ação: Aprovar e Reprovar -->
@@ -295,12 +331,50 @@
                 android:textSize="12sp"
                 android:visibility="gone" />
 
+            <!-- Decisão final: bloqueia novas ações -->
+            <LinearLayout
+                android:id="@+id/cardDecisaoPedido"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_card_summary"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvRotuloJustificativaPedido"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/manager_decision_justification_label"
+                    android:textColor="#C7B7CC"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvJustificativaDecisaoPedido"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/manager_locked_notice"
+                    android:textColor="#BFAFC5"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+
             <Button
                 android:id="@+id/btnAprovarPedido"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:background="@drawable/bg_btn_action_approve"
-                android:text="Aprovar"
+                android:background="@drawable/bg_btn_decision_approve"
+                android:stateListAnimator="@animator/press_scale"
+                android:text="@string/manager_approve"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
@@ -312,8 +386,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="16dp"
-                android:background="@drawable/bg_btn_action_reject"
-                android:text="Reprovar"
+                android:background="@drawable/bg_btn_decision_reject"
+                android:stateListAnimator="@animator/press_scale"
+                android:text="@string/manager_reject"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
