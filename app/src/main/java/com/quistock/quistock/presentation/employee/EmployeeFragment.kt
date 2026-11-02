@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -34,6 +35,17 @@ class EmployeeFragment : Fragment() {
         }
         binding.etBuscaFuncionario.doAfterTextChanged {
             if (model.state.value.result is TeamResult.Success) renderMembers(binding)
+        }
+        binding.dropdownFiltroDataFuncionario.setOnClickListener { anchor ->
+            val popup = PopupMenu(requireContext(), anchor)
+            popup.menu.add("Mais recentes")
+            popup.menu.add("Mais antigos")
+            popup.menu.add("Ordem alfabética (A-Z)")
+            popup.setOnMenuItemClickListener { item ->
+                binding.tvFiltroDataFuncionario.text = item.title
+                true
+            }
+            popup.show()
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

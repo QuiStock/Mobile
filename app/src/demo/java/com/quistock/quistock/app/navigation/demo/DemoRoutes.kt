@@ -44,6 +44,8 @@ internal object DemoRoutes {
         ),
         R.id.editProfileFragment to listOf(DemoRoute(R.id.profile_save_changes_button, R.id.profileFragment)),
         R.id.faqFragment to listOf(DemoRoute(R.id.faq_contact_link, R.id.contactFragment)),
+        R.id.contactFragment to listOf(DemoRoute(R.id.contactSentFragment)),
+        R.id.contactSentFragment to listOf(DemoRoute(R.id.btnVoltarPerfilAjuda, R.id.profileFragment)),
         R.id.orderFragment to listOf(DemoRoute(R.id.btnSubmitOrder, R.id.orderSentFragment, true)),
         R.id.promotionFragment to listOf(DemoRoute(R.id.btnSubmitPromotion, R.id.promoSentFragment, true)),
         R.id.managerOrderDetailFragment to listOf(
@@ -73,7 +75,7 @@ internal object DemoRoutes {
         R.id.profile_change_photo_button, R.id.contact_send_button,
         R.id.btnReprovarPedido, R.id.btnReprovarPromocao, R.id.btnRecomendacaoFefo,
         R.id.notifications_analyze_stock_button, R.id.notifications_analyze_promotion_button,
-        R.id.btnEnviarPergunta, R.id.dropdownFiltroDataFuncionario, R.id.dropdownFiltroFluxo,
+        R.id.btnEnviarPergunta,
     )
 
     val completeTargets = mapOf(

@@ -172,6 +172,31 @@ class DemoPageFragment : Fragment() {
             view.findViewById<EditText>(R.id.etPerguntaChatbot).text.clear()
             view.findViewById<View>(R.id.chatMenuOverlay).visibility = View.GONE
         }
+        click(R.id.dropdownFiltroFluxo) {
+            val anchor = view.findViewById<View>(R.id.dropdownFiltroFluxo)
+            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), anchor)
+            popup.menu.add("Todos os fluxos")
+            popup.menu.add("Fluxo Alto")
+            popup.menu.add("Fluxo Médio")
+            popup.menu.add("Fluxo Baixo")
+            popup.setOnMenuItemClickListener { item ->
+                view.findViewById<android.widget.TextView>(R.id.tvFiltroFluxo)?.text = item.title
+                true
+            }
+            popup.show()
+        }
+        click(R.id.dropdownFiltroDataFuncionario) {
+            val anchor = view.findViewById<View>(R.id.dropdownFiltroDataFuncionario)
+            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), anchor)
+            popup.menu.add("Mais recentes")
+            popup.menu.add("Mais antigos")
+            popup.menu.add("Ordem alfabética (A-Z)")
+            popup.setOnMenuItemClickListener { item ->
+                view.findViewById<android.widget.TextView>(R.id.tvFiltroDataFuncionario)?.text = item.title
+                true
+            }
+            popup.show()
+        }
     }
 
     private fun click(id: Int, action: () -> Unit) {
