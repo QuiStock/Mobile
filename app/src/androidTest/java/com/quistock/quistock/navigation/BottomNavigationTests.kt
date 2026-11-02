@@ -66,6 +66,14 @@ class BottomNavigationTests {
         }
     }
 
+    @Test fun productControlDropdownCanBeClicked() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            visit(scenario, R.id.navigation_products, R.id.productControlFragment)
+            onView(withId(R.id.dropdownFiltroFluxo)).perform(click())
+        }
+    }
+
     @Test fun filtersSurviveTabSwitchAndRecreationAndReselection() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             awaitNavigationReady(scenario, R.id.homeFragment)

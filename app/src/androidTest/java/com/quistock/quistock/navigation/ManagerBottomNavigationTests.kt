@@ -45,6 +45,7 @@ class ManagerBottomNavigationTests {
             awaitNavigationReady(scenario, R.id.managerInterferencesFragment)
             onView(withId(R.id.navigation_employees)).perform(click())
             awaitNavigationReady(scenario, R.id.employeeFragment)
+            onView(withId(R.id.dropdownFiltroDataFuncionario)).perform(click())
             onView(withId(R.id.main_bottom_navigation)).check(matches(isDisplayed()))
         }
     }
