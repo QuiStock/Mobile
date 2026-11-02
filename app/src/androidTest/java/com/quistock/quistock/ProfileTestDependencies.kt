@@ -1,11 +1,15 @@
 package com.quistock.quistock
 
+import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.ProfileResult
+import com.quistock.quistock.domain.model.StoreLocationResult
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.model.UserStatus
+import com.quistock.quistock.domain.port.DeviceLocationProvider
 import com.quistock.quistock.domain.port.ProfilePhotoRepository
 import com.quistock.quistock.domain.port.ProfileRepository
+import com.quistock.quistock.domain.port.StoreLocationRepository
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -17,6 +21,8 @@ class ProfileTestDependencies(session: SessionUseCase, private val role: UserRol
     private val koin = GlobalContext.get()
     private val previousProfile = koin.get<ProfileUseCase>()
     private val previousPhoto = koin.get<LoadProfilePhotoUseCase>()
+    private val previousStoreLocation = koin.get<StoreLocationRepository>()
+    private val previousDeviceLocation = koin.get<DeviceLocationProvider>()
     private var beforeRead: suspend () -> Unit = {}
     private val repository = object : ProfileRepository {
         override suspend fun read(): ProfileResult {
@@ -43,6 +49,14 @@ class ProfileTestDependencies(session: SessionUseCase, private val role: UserRol
         profile,
         session,
     )
+    private val storeLocation = object : StoreLocationRepository {
+        override suspend fun read(storeId: Long): StoreLocationResult = StoreLocationResult.NoAddress
+    }
+    private val deviceLocation = object : DeviceLocationProvider {
+        override fun hasPermission(): Boolean = false
+
+        override suspend fun current(): GeoPoint? = null
+    }
 
     fun holdReadsUntil(release: Deferred<Unit>) {
         beforeRead = { release.await() }
@@ -51,10 +65,14 @@ class ProfileTestDependencies(session: SessionUseCase, private val role: UserRol
     fun install() {
         koin.declare(profile, allowOverride = true)
         koin.declare(photo, allowOverride = true)
+        koin.declare(storeLocation, allowOverride = true)
+        koin.declare(deviceLocation, allowOverride = true)
     }
 
     fun restore() {
         koin.declare(previousProfile, allowOverride = true)
         koin.declare(previousPhoto, allowOverride = true)
+        koin.declare(previousStoreLocation, allowOverride = true)
+        koin.declare(previousDeviceLocation, allowOverride = true)
     }
 }

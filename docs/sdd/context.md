@@ -9,7 +9,8 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
   apenas com o Perfil visível e mantida só em memória, ponto do usuário no mini mapa junto ao pino
   da loja e linha de distância em linha reta. Fluxo da loja (`specs/store-location.md`) inalterado.
   Unitários, Spotless, Detekt, Lint, assembleRelease e compilação androidTest executados com sucesso
-  pelo agente; instrumentados e checagem em dispositivo pendentes.
+  pelo agente; testes instrumentados de localização adicionados e ajustados para não iniciar o
+  renderer OpenGL do `MapView` nem lançar `MainActivity` repetidamente no emulador headless da CI.
 
 
 - Decisão gerencial de intervenções implementada em 01/11/2026 conforme

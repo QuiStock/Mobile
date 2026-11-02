@@ -1,38 +1,75 @@
 package com.quistock.quistock.presentation.profile
 
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.test.core.app.ActivityScenario
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.quistock.quistock.AuthenticatedSessionRule
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ViewStoreLocationBinding
 import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.StoreLocation
 import com.quistock.quistock.domain.model.distanceMetersTo
-import com.quistock.quistock.presentation.activity.MainActivity
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkConstructor
+import io.mockk.mockkStatic
+import io.mockk.runs
+import io.mockk.slot
+import io.mockk.unmockkAll
+import io.mockk.verify
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Rule
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class StoreLocationSectionTests {
-    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
+    private val map = mockk<GoogleMap>(relaxed = true)
+    private val mapClick = slot<GoogleMap.OnMapClickListener>()
     private val opened = mutableListOf<StoreLocation>()
     private var retries = 0
     private var userActions = 0
     private val store = StoreLocation("Loja Centro", "Rua A, 10", "Cidade", "SP", -23.5505, -46.6333)
     private val nearUser = GeoPoint(-23.5506, -46.6334)
     private val farUser = GeoPoint(-23.5600, -46.6500)
+
+    @Before fun setup() {
+        mockkConstructor(MapView::class)
+        mockkStatic(BitmapDescriptorFactory::class)
+        mockkStatic(CameraUpdateFactory::class)
+        every { BitmapDescriptorFactory.defaultMarker(any()) } returns mockk()
+        every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk()
+        every { CameraUpdateFactory.newLatLngZoom(any(), any()) } returns mockk()
+        every { CameraUpdateFactory.newLatLngBounds(any(), any(), any(), any()) } returns mockk()
+        every { anyConstructed<MapView>().onCreate(any()) } just runs
+        every { anyConstructed<MapView>().onStart() } just runs
+        every { anyConstructed<MapView>().onResume() } just runs
+        every { anyConstructed<MapView>().onPause() } just runs
+        every { anyConstructed<MapView>().onStop() } just runs
+        every { anyConstructed<MapView>().onDestroy() } just runs
+        every { anyConstructed<MapView>().getMapAsync(any()) } answers {
+            firstArg<OnMapReadyCallback>().onMapReady(map)
+        }
+        every { map.setOnMapClickListener(capture(mapClick)) } just runs
+    }
+
+    @After fun cleanup() = unmockkAll()
 
     @Test fun loadingShowsTheSkeletonAndCannotBeOpened() = withSection { _, binding ->
         assertTrue(binding.locationSkeleton.isVisible)
@@ -131,53 +168,48 @@ class StoreLocationSectionTests {
         assertNull(binding.locationCard.contentDescription)
     }
 
-    @Test fun previewMapFramesTheStoreAndUserWhenAttached() {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            lateinit var binding: ViewStoreLocationBinding
-            lateinit var section: StoreLocationSection
-            scenario.onActivity { activity ->
-                binding = ViewStoreLocationBinding.inflate(LayoutInflater.from(activity))
-                activity.addContentView(
-                    binding.root,
-                    ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
-                )
-                section = StoreLocationSection(binding, { opened += it }, { retries++ })
-                section.attach(activity)
-                section.render(StoreLocationState.Ready(store))
-            }
-            awaitMap(scenario, binding)
-            scenario.onActivity { section.renderUser(UserLocationState.Located(farUser)) }
-            awaitMap(scenario, binding)
-            scenario.onActivity { section.renderUser(UserLocationState.Located(nearUser)) }
-            awaitMap(scenario, binding)
-
-            assertTrue(binding.locationMap.isVisible)
-            assertTrue(opened.isEmpty())
+    @Test fun previewMapFramesTheStoreAndUserWhenAttached() = withSection { section, binding ->
+        val owner = object : LifecycleOwner {
+            val registry = LifecycleRegistry(this)
+            override val lifecycle: Lifecycle get() = registry
         }
-    }
+        owner.registry.currentState = Lifecycle.State.RESUMED
+        section.attach(owner)
+        section.render(StoreLocationState.Ready(store))
+        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
 
-    /** Map callbacks run in registration order, so a later callback means the section's ones already ran. */
-    private fun awaitMap(scenario: ActivityScenario<MainActivity>, binding: ViewStoreLocationBinding) {
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        val ready = CountDownLatch(1)
-        scenario.onActivity { binding.locationMap.getMapAsync { ready.countDown() } }
-        assertTrue("Map was not ready", ready.await(MAP_TIMEOUT_SECONDS, TimeUnit.SECONDS))
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        section.renderUser(UserLocationState.Located(farUser))
+        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+
+        section.renderUser(UserLocationState.Located(nearUser))
+        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+
+        mapClick.captured.onMapClick(LatLng(0.0, 0.0))
+        owner.registry.currentState = Lifecycle.State.DESTROYED
+
+        assertTrue(binding.locationMap.isVisible)
+        assertEquals(listOf(store), opened)
+        verify(exactly = 1) { CameraUpdateFactory.newLatLngBounds(any(), MAP_WIDTH, MAP_HEIGHT, any()) }
+        verify(exactly = 2) { CameraUpdateFactory.newLatLngZoom(any(), any()) }
+        verify(exactly = 1) { binding.locationMap.onDestroy() }
     }
 
     private fun text(binding: ViewStoreLocationBinding, id: Int) = binding.root.context.getString(id)
 
     private fun withSection(test: (StoreLocationSection, ViewStoreLocationBinding) -> Unit) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                val binding = ViewStoreLocationBinding.inflate(LayoutInflater.from(activity))
-                val section = StoreLocationSection(binding, { opened += it }, { retries++ }, { userActions++ })
-                test(section, binding)
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val context = ContextThemeWrapper(
+                InstrumentationRegistry.getInstrumentation().targetContext,
+                R.style.Theme_QuiStock,
+            )
+            val binding = ViewStoreLocationBinding.inflate(LayoutInflater.from(context))
+            val section = StoreLocationSection(binding, { opened += it }, { retries++ }, { userActions++ })
+            test(section, binding)
         }
     }
 
     private companion object {
-        const val MAP_TIMEOUT_SECONDS = 20L
+        const val MAP_WIDTH = 500
+        const val MAP_HEIGHT = 300
     }
 }

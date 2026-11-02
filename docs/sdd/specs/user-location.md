@@ -93,3 +93,8 @@ Android-bound location code had no tests. Instrumented tests were added (`StoreL
 `MapsLauncherTests`, `LocationPermissionTests`, `AndroidDeviceLocationProviderTests`,
 `AndroidAddressGeocoderTests`). Locally on an API 36 emulator: `connectedDebugAndroidTest` (107 tests, 0
 failures); combined unit + instrumented coverage 71.1% branches and 84.8% lines; gates unchanged.
+To prevent headless CI emulator (`swiftshader_indirect`) `ColorBuffer` exhaustion and `adb: device offline`
+timeouts on API 37, `StoreLocationSection` only attaches the `MapView` lifecycle when a store point is
+shown, `ProfileTestDependencies` stubs store/device location in general UI fixtures, and
+`StoreLocationSectionTests` inflates the section with a themed context and mocks the Maps delegate instead
+of launching `MainActivity` or starting the live OpenGL map renderer.
