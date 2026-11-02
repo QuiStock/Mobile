@@ -42,10 +42,10 @@ without leaving the Profile screen.
 | AC-01 | Given a branches array, when the profile store id matches exactly one entry, then address, city, state are mapped. | `RetrofitStoreLocationRepositoryTests` |
 | AC-02 | Given zero or several matching entries, or a non-2xx/IO/serialization error, then the result is Failure (cancellation propagates). | `RetrofitStoreLocationRepositoryTests` |
 | AC-03 | Given only one of latitude/longitude, or out-of-range values, then coordinates are discarded and the address is used. | `RetrofitStoreLocationRepositoryTests` |
-| AC-04 | Given coordinates, then the maps target is `lat,lng` with the store label; otherwise the address text without the store name. | `StoreLocationTests` |
-| AC-09 | Given no coordinates and an address, then a geocoded point only centers the preview and never changes the maps query; a failed lookup keeps the placeholder. | `LoadStoreLocationUseCaseTests` |
+| AC-04 | Given coordinates, then the maps target is `lat,lng` with the store label; otherwise the address text without the store name. | `StoreLocationTests`, `MapsLauncherTests` |
+| AC-09 | Given no coordinates and an address, then a geocoded point only centers the preview and never changes the maps query; a failed lookup keeps the placeholder. | `LoadStoreLocationUseCaseTests`, `AndroidAddressGeocoderTests` |
 | AC-05 | Given no address and no coordinates, then the result is NoAddress. | `RetrofitStoreLocationRepositoryTests` |
-| AC-06 | Given a Ready profile, when the screen loads, then Loading → Ready/NoAddress/Failure; retry reloads; same store is not reloaded on re-collect. | `StoreLocationViewModelTests` |
+| AC-06 | Given a Ready profile, when the screen loads, then Loading → Ready/NoAddress/Failure; retry reloads; same store is not reloaded on re-collect. | `StoreLocationViewModelTests`; rendering in `StoreLocationSectionTests` |
 | AC-07 | Given EMPLOYEE or MANAGER, when Profile opens, then the section is shown. | Manual check (same layout and destination); instrumented test deferred |
 | AC-08 | Given the section, then touch targets are at least 48dp and elements have content descriptions. | Manual TalkBack/visual check |
 
@@ -69,3 +69,9 @@ The Maps API key stays in `local.properties`; `secrets.defaults.properties` keep
 ## Implementation outcome
 
 Implemented. `spotlessCheck`, `testDebugUnitTest`, `detekt`, and `lintDebug` passed locally. The button was confirmed on a device. The preview map was blank on the device because the Maps key was rejected (`Authorization failure`); it has not been seen rendering. Instrumented tests were not run.
+
+Coverage follow-up: CI failed `jacocoAggregateCoverageVerification` (branches 0.69 < 0.70) because the new
+Android-bound location code had no tests. Instrumented tests were added (`StoreLocationSectionTests`,
+`MapsLauncherTests`, `LocationPermissionTests`, `AndroidDeviceLocationProviderTests`,
+`AndroidAddressGeocoderTests`). Locally on an API 36 emulator: `connectedDebugAndroidTest` (107 tests, 0
+failures); combined unit + instrumented coverage 71.1% branches and 84.8% lines; gates unchanged.
