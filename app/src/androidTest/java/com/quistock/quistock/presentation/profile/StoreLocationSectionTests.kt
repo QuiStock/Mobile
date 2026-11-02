@@ -20,6 +20,9 @@ import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.StoreLocation
 import com.quistock.quistock.domain.model.distanceMetersTo
 import com.quistock.quistock.presentation.activity.MainActivity
+import io.mockk.clearConstructorMockk
+import io.mockk.clearMocks
+import io.mockk.clearStaticMockk
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -27,24 +30,31 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
-import io.mockk.unmockkAll
+import io.mockk.unmockkConstructor
+import io.mockk.unmockkStatic
 import io.mockk.verify
-import org.junit.After
+import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class StoreLocationSectionTests {
-    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
-    private val map = mockk<GoogleMap>(relaxed = true)
-    private val mapClick = slot<GoogleMap.OnMapClickListener>()
+    @get:Rule val authenticatedSession = TestRule { base, description ->
+        if (description.methodName == "previewMapFramesTheStoreAndUserWhenAttached") {
+            AuthenticatedSessionRule().apply(base, description)
+        } else {
+            base
+        }
+    }
     private val opened = mutableListOf<StoreLocation>()
     private var retries = 0
     private var userActions = 0
@@ -52,27 +62,12 @@ class StoreLocationSectionTests {
     private val nearUser = GeoPoint(-23.5506, -46.6334)
     private val farUser = GeoPoint(-23.5600, -46.6500)
 
-    @Before fun setup() {
-        mockkConstructor(MapView::class)
-        mockkStatic(BitmapDescriptorFactory::class)
-        mockkStatic(CameraUpdateFactory::class)
-        every { BitmapDescriptorFactory.defaultMarker(any()) } returns mockk(relaxed = true)
-        every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk(relaxed = true)
-        every { CameraUpdateFactory.newLatLngZoom(any(), any()) } returns mockk()
-        every { CameraUpdateFactory.newLatLngBounds(any(), any(), any(), any()) } returns mockk()
-        every { anyConstructed<MapView>().onCreate(any()) } just runs
-        every { anyConstructed<MapView>().onStart() } just runs
-        every { anyConstructed<MapView>().onResume() } just runs
-        every { anyConstructed<MapView>().onPause() } just runs
-        every { anyConstructed<MapView>().onStop() } just runs
-        every { anyConstructed<MapView>().onDestroy() } just runs
-        every { anyConstructed<MapView>().getMapAsync(any()) } answers {
-            firstArg<OnMapReadyCallback>().onMapReady(map)
-        }
-        every { map.setOnMapClickListener(capture(mapClick)) } just runs
+    @Before fun clearPreviousMockInteractions() {
+        clearMocks(map, answers = false)
+        clearConstructorMockk(MapView::class, answers = false)
+        clearStaticMockk(BitmapDescriptorFactory::class, CameraUpdateFactory::class, answers = false)
+        mapClick.clear()
     }
-
-    @After fun cleanup() = unmockkAll()
 
     @Test fun loadingShowsTheSkeletonAndCannotBeOpened() = withSection { _, binding ->
         assertTrue(binding.locationSkeleton.isVisible)
@@ -220,8 +215,39 @@ class StoreLocationSectionTests {
         }
     }
 
-    private companion object {
+    companion object {
+        private val map = mockk<GoogleMap>(relaxed = true)
+        private val mapClick = slot<GoogleMap.OnMapClickListener>()
         const val MAP_WIDTH = 500
         const val MAP_HEIGHT = 300
+
+        @JvmStatic
+        @BeforeClass
+        fun mockMapsOnce() {
+            mockkConstructor(MapView::class)
+            mockkStatic(BitmapDescriptorFactory::class)
+            mockkStatic(CameraUpdateFactory::class)
+            every { BitmapDescriptorFactory.defaultMarker(any()) } returns mockk(relaxed = true)
+            every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk(relaxed = true)
+            every { CameraUpdateFactory.newLatLngZoom(any(), any()) } returns mockk()
+            every { CameraUpdateFactory.newLatLngBounds(any(), any(), any(), any()) } returns mockk()
+            every { anyConstructed<MapView>().onCreate(any()) } just runs
+            every { anyConstructed<MapView>().onStart() } just runs
+            every { anyConstructed<MapView>().onResume() } just runs
+            every { anyConstructed<MapView>().onPause() } just runs
+            every { anyConstructed<MapView>().onStop() } just runs
+            every { anyConstructed<MapView>().onDestroy() } just runs
+            every { anyConstructed<MapView>().getMapAsync(any()) } answers {
+                firstArg<OnMapReadyCallback>().onMapReady(map)
+            }
+            every { map.setOnMapClickListener(capture(mapClick)) } just runs
+        }
+
+        @JvmStatic
+        @AfterClass
+        fun restoreMapHooks() {
+            unmockkConstructor(MapView::class)
+            unmockkStatic(BitmapDescriptorFactory::class, CameraUpdateFactory::class)
+        }
     }
 }
