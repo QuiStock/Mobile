@@ -45,14 +45,14 @@ their store and how far away it is.
 | ID | Observable given / when / then | Planned test or check |
 | --- | --- | --- |
 | UL-01 | Given no location permission, when Profile refreshes the user location, then the state is PermissionNeeded and the device is not read. | `UserLocationViewModelTests` |
-| UL-02 | Given permission, when the position is read, then Locating → Located; with no fix, Unavailable; a retry reads again. | `UserLocationViewModelTests` |
+| UL-02 | Given permission, when the position is read, then Locating → Located; with no fix, Unavailable; a retry reads again. | `UserLocationViewModelTests`, `AndroidDeviceLocationProviderTests` |
 | UL-03 | Given a known position, when a new read is pending or fails, then the known position stays; a refresh during a read does not start another read. | `UserLocationViewModelTests` |
 | UL-04 | Given permission revoked between reads, when Profile refreshes, then the read is cancelled and PermissionNeeded is shown. | `UserLocationViewModelTests` |
 | UL-05 | Given two points, then the distance is the haversine great-circle distance (symmetric, zero for the same point). | `GeoDistanceTests` |
 | UL-06 | Given a distance in meters, then it is formatted as described above. | `DistanceFormatterTests` |
-| UL-07 | Given a fresh install, when the app opens for the first time, then the system location dialog is shown once and not on later launches or recreation. | Manual check on device (instrumented tests pre-grant the permission through `QuiStockTestRunner`) |
-| UL-08 | Given a granted permission and a store point, when Profile opens, then the map shows the store pin and the user dot framed together, and the distance line is shown. | Manual check on device |
-| UL-09 | Given a permanent denial, when the permission line is tapped, then the app's system settings open; returning to Profile re-reads the permission. | Manual check on device |
+| UL-07 | Given a fresh install, when the app opens for the first time, then the system location dialog is shown once and not on later launches or recreation. | `LocationPermissionTests` (asks once, skips when already granted); the system dialog itself is a manual check on device (instrumented tests pre-grant the permission through `QuiStockTestRunner`) |
+| UL-08 | Given a granted permission and a store point, when Profile opens, then the map shows the store pin and the user dot framed together, and the distance line is shown. | `StoreLocationSectionTests` (distance line, preview drawn with the user point); the visual framing is a manual check on device |
+| UL-09 | Given a permanent denial, when the permission line is tapped, then the app's system settings open; returning to Profile re-reads the permission. | `LocationPermissionTests` (settings intent for the app package); the re-read on return is a manual check on device |
 | UL-10 | The permission/retry line has a 48dp touch target and is read by TalkBack. | Manual TalkBack/visual check |
 
 ## Technical impact
@@ -87,3 +87,9 @@ Implemented. Locally passed: `spotlessCheck`, `testDebugUnitTest` (399 tests, 0 
 `lintDebug`, `assembleRelease`, and `compileDebugAndroidTestKotlin`. Instrumented tests were not run (no
 device or emulator connected). UL-07 to UL-10 were not checked on a device yet. The map preview still
 depends on the Maps key authorization noted in `store-location.md`.
+
+Coverage follow-up: CI failed `jacocoAggregateCoverageVerification` (branches 0.69 < 0.70) because the new
+Android-bound location code had no tests. Instrumented tests were added (`StoreLocationSectionTests`,
+`MapsLauncherTests`, `LocationPermissionTests`, `AndroidDeviceLocationProviderTests`,
+`AndroidAddressGeocoderTests`). Locally on an API 36 emulator: `connectedDebugAndroidTest` (107 tests, 0
+failures); combined unit + instrumented coverage 71.1% branches and 84.8% lines; gates unchanged.
