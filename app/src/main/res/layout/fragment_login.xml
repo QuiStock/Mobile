@@ -81,7 +81,7 @@
                 android:inputType="textEmailAddress"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/color_branco"
+                android:textColor="@color/color_text_title"
                 android:textColorHint="@color/login_hint"
                 android:textSize="14sp" />
 
@@ -94,18 +94,35 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/senha_login"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_input_outline"
-                android:hint="@string/login_password_hint"
-                android:inputType="textPassword"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="@color/color_branco"
-                android:textColorHint="@color/login_hint"
-                android:textSize="14sp" />
+                android:layout_height="50dp">
+
+                <EditText
+                    android:id="@+id/senha_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_input_outline"
+                    android:hint="@string/login_password_hint"
+                    android:inputType="textPassword"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textColor="@color/color_text_title"
+                    android:textColorHint="@color/login_hint"
+                    android:textSize="14sp" />
+
+                <ImageButton
+                    android:id="@+id/btnTogglePasswordVisibility"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/show_password"
+                    android:padding="12dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_visibility"
+                    app:tint="@color/color_text_subtitle" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/forgotPasswordLogin"
