@@ -37,4 +37,4 @@ Actual AWS hostname is generated during deployment; pass it locally, never put c
 
 ## Implementation outcome
 
-Build properties implemented. A regression test covers /auth/ CSRF and refresh routing, denying root and Core paths. Local Gradle checks could not run because the daemon cannot establish a loopback connection; CI and device validation remain required.
+Build properties implemented. Regression tests exercise actual Retrofit login/CSRF/refresh/logout paths under /auth/, and cookie staging denies root and Core paths. Local Gradle checks could not run because the daemon cannot establish a loopback connection; CI and device validation remain required.

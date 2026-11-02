@@ -198,11 +198,20 @@ tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification"
     }
 }
 
-fun deploymentBaseUrl(property: String, fallback: String): String {
-    val value = providers.gradleProperty(property).orElse(fallback).get().trim()
+fun deploymentBaseUrl(
+    property: String,
+    fallback: String,
+): String {
+    val value = providers
+        .gradleProperty(property)
+        .orElse(fallback)
+        .get()
+        .trim()
     val uri = URI(value)
-    require(uri.scheme == "https" && !uri.host.isNullOrBlank() &&
-        uri.userInfo == null && uri.query == null && uri.fragment == null) {
+    require(
+        uri.scheme == "https" && !uri.host.isNullOrBlank() &&
+            uri.userInfo == null && uri.query == null && uri.fragment == null,
+    ) {
         "$property must be an absolute HTTPS URL without credentials, query or fragment"
     }
     return value.trimEnd('/') + "/"
@@ -215,8 +224,16 @@ android {
     }
 
     defaultConfig {
-        resValue("string", "auth_base_url", deploymentBaseUrl("quistock.authBaseUrl", "https://ds-auth-v3rj.onrender.com/"))
-        resValue("string", "core_base_url", deploymentBaseUrl("quistock.coreBaseUrl", "https://api-core-49tp.onrender.com/"))
+        resValue(
+            "string",
+            "auth_base_url",
+            deploymentBaseUrl("quistock.authBaseUrl", "https://ds-auth-v3rj.onrender.com/"),
+        )
+        resValue(
+            "string",
+            "core_base_url",
+            deploymentBaseUrl("quistock.coreBaseUrl", "https://api-core-49tp.onrender.com/"),
+        )
         applicationId = "com.quistock.quistock"
         minSdk = 26
         targetSdk = 37
