@@ -74,7 +74,7 @@ class AuthTransportDiagnosticsTests {
                 logger.debug(
                     "Auth HTTP request started",
                     match { context ->
-                        context.keys == setOf("operation", "https", "placeholder_host", "base_path_discarded") &&
+                        context.keys == setOf("operation", "https", "placeholder_host", "base_path_configured") &&
                             context["operation"] == "auth_logout" && context["https"] == false
                     },
                 )

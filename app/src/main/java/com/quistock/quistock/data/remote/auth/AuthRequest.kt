@@ -213,7 +213,7 @@ internal class AuthRequest(
             logContext + mapOf(
                 "https" to context.origin.isHttps,
                 "placeholder_host" to context.origin.host.endsWith(".invalid"),
-                "base_path_discarded" to (context.origin.encodedPath != "/"),
+                "base_path_configured" to (context.origin.encodedPath != "/"),
             ),
         )
     }

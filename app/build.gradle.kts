@@ -197,6 +197,16 @@ tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification"
     }
 }
 
+fun deploymentBaseUrl(property: String, fallback: String): String {
+    val value = providers.gradleProperty(property).orElse(fallback).get().trim()
+    val uri = java.net.URI(value)
+    require(uri.scheme == "https" && !uri.host.isNullOrBlank() &&
+        uri.userInfo == null && uri.query == null && uri.fragment == null) {
+        "$property must be an absolute HTTPS URL without credentials, query or fragment"
+    }
+    return value.trimEnd('/') + "/"
+}
+
 android {
     namespace = "com.quistock.quistock"
     compileSdk {
@@ -204,6 +214,8 @@ android {
     }
 
     defaultConfig {
+        resValue("string", "auth_base_url", deploymentBaseUrl("quistock.authBaseUrl", "https://ds-auth-v3rj.onrender.com/"))
+        resValue("string", "core_base_url", deploymentBaseUrl("quistock.coreBaseUrl", "https://api-core-49tp.onrender.com/"))
         applicationId = "com.quistock.quistock"
         minSdk = 26
         targetSdk = 37

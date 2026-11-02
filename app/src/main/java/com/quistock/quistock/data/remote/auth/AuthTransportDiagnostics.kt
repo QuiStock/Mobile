@@ -20,7 +20,7 @@ internal class AuthTransportDiagnostics(private val baseUrl: HttpUrl, private va
             context + mapOf(
                 "https" to baseUrl.isHttps,
                 "placeholder_host" to baseUrl.host.endsWith(".invalid"),
-                "base_path_discarded" to (baseUrl.encodedPath != "/"),
+                "base_path_configured" to (baseUrl.encodedPath != "/"),
             ),
         )
         return started

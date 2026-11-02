@@ -15,7 +15,7 @@ interface AuthApi {
     @POST(AuthCookieCustody.LOGOUT_PATH)
     fun logout(@Header("X-CSRF-TOKEN") csrfToken: String? = null): Call<Unit>
 
-    @POST("/login")
+    @POST("login")
     fun login(@Body request: LoginRequest): Call<Unit>
 
     @POST(AuthCookieCustody.REFRESH_PATH)

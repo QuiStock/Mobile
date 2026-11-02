@@ -187,10 +187,10 @@ class AuthCookieCustody(
     companion object {
         const val ACCESS = "access_token"
         const val REFRESH = "refresh_token"
-        const val REFRESH_PATH = "/refresh"
-        const val CSRF_PATH = "/csrf"
+        const val REFRESH_PATH = "refresh"
+        const val CSRF_PATH = "csrf"
         const val CSRF = "AUTH-XSRF-TOKEN"
-        const val LOGOUT_PATH = "/logout"
+        const val LOGOUT_PATH = "logout"
     }
 }
 
@@ -207,7 +207,7 @@ class StagedAuthCookieJar(
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         if (sameOrigin(url)) {
             synchronized(received) {
-                if (url.encodedPath == AuthCookieCustody.CSRF_PATH) {
+                if (url.encodedPath == origin.resolve(AuthCookieCustody.CSRF_PATH)?.encodedPath) {
                     csrf.addAll(cookies.filter { it.name == AuthCookieCustody.CSRF })
                 } else {
                     received.addAll(
@@ -230,7 +230,7 @@ class StagedAuthCookieJar(
     fun received(): List<Cookie> = synchronized(received) { received.toList() }
     fun hasRefresh(url: HttpUrl): Boolean = loadForRequest(url).any { it.name == AuthCookieCustody.REFRESH }
     fun hasCsrf(url: HttpUrl): Boolean = synchronized(received) {
-        sameOrigin(url) && url.encodedPath == requestPath &&
+        sameOrigin(url) && url.encodedPath == origin.resolve(requestPath)?.encodedPath &&
             csrf.size == 1 && eligibleCsrf(csrf.single(), url)
     }
     fun discardCsrf() = synchronized(received) { csrf.clear() }
