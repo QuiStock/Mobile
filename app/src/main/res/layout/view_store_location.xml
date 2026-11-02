@@ -97,6 +97,20 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/location_distance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="?attr/selectableItemBackground"
+            app:drawableStartCompat="@drawable/ic_user_location_dot"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:textColor="@color/color_branco"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/location_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

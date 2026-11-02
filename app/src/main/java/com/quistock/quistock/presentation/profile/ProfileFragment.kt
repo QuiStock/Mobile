@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -12,9 +13,13 @@ import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentProfileBinding
 import com.quistock.quistock.domain.model.ProfileState
+import com.quistock.quistock.domain.port.LocationPromptPreferences
 import com.quistock.quistock.presentation.activity.SessionViewModel
+import com.quistock.quistock.presentation.common.LOCATION_PERMISSIONS
 import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.presentation.common.openAppSettings
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -22,6 +27,11 @@ class ProfileFragment : Fragment() {
     private var binding: FragmentProfileBinding? = null
     private val sessionViewModel: SessionViewModel by activityViewModel()
     private val locationViewModel: StoreLocationViewModel by viewModel()
+    private val userLocationViewModel: UserLocationViewModel by viewModel()
+    private val locationPrompt: LocationPromptPreferences by inject()
+    private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        userLocationViewModel.refresh()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         FragmentProfileBinding.inflate(inflater, container, false).also {
@@ -65,6 +75,7 @@ class ProfileFragment : Fragment() {
                 }
             },
             onRetry = locationViewModel::retry,
+            onUserLocationAction = ::onUserLocationAction,
         )
         section.attach(viewLifecycleOwner)
         viewLifecycleOwner.lifecycleScope.launch {
@@ -75,7 +86,25 @@ class ProfileFragment : Fragment() {
                     }
                 }
                 launch { locationViewModel.state.collect { section.render(it) } }
+                // Also re-reads permission after returning from the system settings.
+                userLocationViewModel.refresh()
+                launch { userLocationViewModel.state.collect { section.renderUser(it) } }
             }
+        }
+    }
+
+    private fun onUserLocationAction() {
+        if (userLocationViewModel.state.value != UserLocationState.PermissionNeeded) {
+            userLocationViewModel.refresh()
+            return
+        }
+        val canAsk = LOCATION_PERMISSIONS.any { shouldShowRequestPermissionRationale(it) } || !locationPrompt.wasAsked()
+        if (canAsk) {
+            locationPrompt.markAsked()
+            locationPermission.launch(LOCATION_PERMISSIONS)
+        } else {
+            // Denied permanently ("don't ask again"): only the system settings can grant it now.
+            openAppSettings(requireContext())
         }
     }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "You are here" dot: user's position on the Profile map preview and in the distance line. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <size
+        android:width="18dp"
+        android:height="18dp" />
+    <solid android:color="@color/color_limao" />
+    <stroke
+        android:width="3dp"
+        android:color="@color/color_branco" />
+</shape>
