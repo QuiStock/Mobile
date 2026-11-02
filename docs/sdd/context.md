@@ -179,3 +179,7 @@ Server revocation while disconnected is detected at recovery or local expiry. Au
 requires an active store for mobile EMPLOYEE/MANAGER at login/refresh; no-store users
 are blocked, superseding the old PR #44 blank-cards/retained-session decision. Documentation
 of planned checks is not test evidence; final executed results belong in the PR.
+
+## AWS deployment test
+
+Public endpoint build overrides are documented in `specs/aws-test-endpoints.md`. Pass `-Pquistock.authBaseUrl` and `-Pquistock.coreBaseUrl` with HTTPS gateway URLs.

@@ -8,14 +8,6 @@
         user_id
     </string>
 
-    <string name="auth_base_url" translatable="false">
-        https://ds-auth-v3rj.onrender.com
-    </string>
-
-    <string name="core_base_url" translatable="false">
-        https://api-core-49tp.onrender.com
-    </string>
-
     <string name="profile_cloudinary_cloud" translatable="false">
         j55mgzod
     </string>

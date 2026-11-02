@@ -37,6 +37,22 @@ class AuthCookieCustodyTests {
         assertFalse(jar.hasCsrf(origin.resolve("/refresh")!!))
     }
 
+    @Test fun gatewayPrefixKeepsCsrfAndRefreshWithinAuth() {
+        val gateway = "https://gateway.example.test/auth/".toHttpUrl()
+        val refresh = Cookie.Builder().name(AuthCookieCustody.REFRESH).value("synthetic")
+            .hostOnlyDomain(gateway.host).path("/").secure().httpOnly().expiresAt(2000).build()
+        val csrf = Cookie.Builder().name(AuthCookieCustody.CSRF).value("synthetic-csrf")
+            .hostOnlyDomain(gateway.host).path("/").secure().httpOnly().expiresAt(2000).build()
+        val jar = StagedAuthCookieJar(gateway, listOf(refresh), { 1000 })
+        jar.saveFromResponse(gateway.resolve("csrf")!!, listOf(csrf))
+        val endpoint = gateway.resolve(AuthCookieCustody.REFRESH_PATH)!!
+        assertEquals("/auth/refresh", endpoint.encodedPath)
+        assertTrue(jar.hasCsrf(endpoint))
+        assertEquals(2, jar.loadForRequest(endpoint).size)
+        assertTrue(jar.loadForRequest(gateway.resolve("/refresh")!!).isEmpty())
+        assertTrue(jar.loadForRequest(gateway.resolve("/api/refresh")!!).isEmpty())
+    }
+
     private val origin = "https://auth.example.test/".toHttpUrl()
     private var time = 1000L
     private val store = MemoryCookieStore()
