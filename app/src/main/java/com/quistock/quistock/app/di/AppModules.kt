@@ -13,6 +13,7 @@ val appInternalModule = module {
     includes(
         domainModule,
         geocodingModule,
+        locationModule,
         presentationModule,
         observabilityModule,
         preferencesModule,
