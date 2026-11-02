@@ -50,8 +50,11 @@ internal class CreationFields(
             }
         }
         dateInputs.forEach { (field, input) ->
+            input.keyListener = null
             input.showSoftInputOnFocus = false
+            input.isFocusable = false
             input.isFocusableInTouchMode = false
+            input.isClickable = true
             input.setOnClickListener { showDatePicker(field, input) }
         }
     }
@@ -83,6 +86,10 @@ internal class CreationFields(
         inputs.forEach { (field, input) ->
             input.isVisible = form && ((field == ActionField.QUANTITY || field == ActionField.ORDER_DATE) == order)
             input.isEnabled = state.phase == CreationPhase.FORM && !state.loading
+            if (field in dateInputs) {
+                input.isFocusable = false
+                input.isClickable = state.phase == CreationPhase.FORM && !state.loading
+            }
         }
     }
 
