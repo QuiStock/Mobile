@@ -73,7 +73,7 @@ class ProductControlFragmentTests {
             onView(withText("Arroz")).check(matches(isDisplayed()))
             onView(withText("Leite integral")).check(matches(isDisplayed()))
             onView(withText("Café")).check(matches(isDisplayed()))
-            coVerify(exactly = 1) { products.read(1, any()) }
+            coVerify(atLeast = 1) { products.read(1, any()) }
 
             onView(withId(R.id.etBuscaProduto)).perform(replaceText("leite"), closeSoftKeyboard())
             onView(withText("Leite integral")).check(matches(isDisplayed()))

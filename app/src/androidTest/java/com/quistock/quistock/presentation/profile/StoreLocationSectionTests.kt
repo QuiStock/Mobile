@@ -2,10 +2,9 @@ package com.quistock.quistock.presentation.profile
 
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -14,11 +13,13 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ViewStoreLocationBinding
 import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.StoreLocation
 import com.quistock.quistock.domain.model.distanceMetersTo
+import com.quistock.quistock.presentation.activity.MainActivity
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -35,11 +36,13 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class StoreLocationSectionTests {
+    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
     private val map = mockk<GoogleMap>(relaxed = true)
     private val mapClick = slot<GoogleMap.OnMapClickListener>()
     private val opened = mutableListOf<StoreLocation>()
@@ -53,8 +56,8 @@ class StoreLocationSectionTests {
         mockkConstructor(MapView::class)
         mockkStatic(BitmapDescriptorFactory::class)
         mockkStatic(CameraUpdateFactory::class)
-        every { BitmapDescriptorFactory.defaultMarker(any()) } returns mockk()
-        every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk()
+        every { BitmapDescriptorFactory.defaultMarker(any()) } returns mockk(relaxed = true)
+        every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk(relaxed = true)
         every { CameraUpdateFactory.newLatLngZoom(any(), any()) } returns mockk()
         every { CameraUpdateFactory.newLatLngBounds(any(), any(), any(), any()) } returns mockk()
         every { anyConstructed<MapView>().onCreate(any()) } just runs
@@ -168,29 +171,38 @@ class StoreLocationSectionTests {
         assertNull(binding.locationCard.contentDescription)
     }
 
-    @Test fun previewMapFramesTheStoreAndUserWhenAttached() = withSection { section, binding ->
-        val owner = object : LifecycleOwner {
-            val registry = LifecycleRegistry(this)
-            override val lifecycle: Lifecycle get() = registry
+    @Test fun previewMapFramesTheStoreAndUserWhenAttached() {
+        lateinit var binding: ViewStoreLocationBinding
+        lateinit var section: StoreLocationSection
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                binding = ViewStoreLocationBinding.inflate(LayoutInflater.from(activity))
+                activity.addContentView(
+                    binding.root,
+                    ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
+                )
+                section = StoreLocationSection(binding, { opened += it }, { retries++ }, { userActions++ })
+                section.attach(activity)
+                section.render(StoreLocationState.Ready(store))
+                binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+            }
+
+            scenario.onActivity {
+                section.renderUser(UserLocationState.Located(farUser))
+                binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+            }
+            scenario.onActivity {
+                section.renderUser(UserLocationState.Located(nearUser))
+                binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+                mapClick.captured.onMapClick(LatLng(0.0, 0.0))
+            }
+
+            assertTrue(binding.locationMap.isVisible)
+            assertEquals(listOf(store), opened)
+            verify(exactly = 1) { CameraUpdateFactory.newLatLngBounds(any(), MAP_WIDTH, MAP_HEIGHT, any()) }
+            verify(exactly = 2) { CameraUpdateFactory.newLatLngZoom(any(), any()) }
         }
-        owner.registry.currentState = Lifecycle.State.RESUMED
-        section.attach(owner)
-        section.render(StoreLocationState.Ready(store))
-        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
 
-        section.renderUser(UserLocationState.Located(farUser))
-        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
-
-        section.renderUser(UserLocationState.Located(nearUser))
-        binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
-
-        mapClick.captured.onMapClick(LatLng(0.0, 0.0))
-        owner.registry.currentState = Lifecycle.State.DESTROYED
-
-        assertTrue(binding.locationMap.isVisible)
-        assertEquals(listOf(store), opened)
-        verify(exactly = 1) { CameraUpdateFactory.newLatLngBounds(any(), MAP_WIDTH, MAP_HEIGHT, any()) }
-        verify(exactly = 2) { CameraUpdateFactory.newLatLngZoom(any(), any()) }
         verify(exactly = 1) { binding.locationMap.onDestroy() }
     }
 
