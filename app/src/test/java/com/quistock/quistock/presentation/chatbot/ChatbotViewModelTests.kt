@@ -216,6 +216,7 @@ class ChatbotViewModelTests {
         val store = mockk<ChatbotConversationStore>()
         every { store.current("user-a") } returns "first-id"
         every { store.current("user-b") } returns "second-id"
+        every { store.setActive("user-b", "second-id") } returns Unit
         coEvery { send.history("first-id", SessionSnapshot(1, true)) } returns
             ChatbotConversationHistory("first-id", "First", "active", emptyList())
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
