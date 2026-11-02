@@ -245,6 +245,11 @@ android {
         viewBinding = true
     }
 
+    testOptions {
+        // Dialog enter animations make Espresso click mid-transition on devices with animations on.
+        animationsDisabled = true
+    }
+
     if (providers.gradleProperty("demoTests").isPresent) {
         testBuildType = "demo"
         sourceSets.getByName("androidTest").setRoot("src/demoAndroidTest")
