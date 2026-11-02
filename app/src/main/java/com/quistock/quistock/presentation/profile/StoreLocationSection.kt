@@ -8,23 +8,24 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionManager
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ViewStoreLocationBinding
-import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.StoreLocation
+import com.quistock.quistock.domain.model.distanceMetersTo
 
-/** Renders [StoreLocationState] into the Profile "Localização" card and owns the preview map lifecycle. */
+/**
+ * Renders [StoreLocationState] and [UserLocationState] into the Profile "Localização" card and owns the
+ * preview map lifecycle. [onUserLocationAction] runs when the user taps the permission or retry line.
+ */
 class StoreLocationSection(
     private val binding: ViewStoreLocationBinding,
     private val onOpen: (StoreLocation) -> Unit,
     private val onRetry: () -> Unit,
+    private val onUserLocationAction: () -> Unit = {},
 ) {
     private var location: StoreLocation? = null
+    private var user: UserLocationState = UserLocationState.Locating
+    private val preview = StoreMapPreview(binding.locationMap)
     private var pulse: ObjectAnimator? = null
 
     init {
@@ -32,6 +33,7 @@ class StoreLocationSection(
         binding.locationCard.setOnClickListener(open)
         binding.locationOpenButton.setOnClickListener(open)
         binding.locationRetryButton.setOnClickListener { onRetry() }
+        binding.locationDistance.setOnClickListener { onUserLocationAction() }
         render(StoreLocationState.Loading)
     }
 
@@ -64,6 +66,51 @@ class StoreLocationSection(
         }
         binding.locationCard.isClickable = location != null
         binding.locationCard.isFocusable = location != null
+        renderDistance()
+    }
+
+    /** Adds the user's position to the preview and shows the distance to the store. */
+    fun renderUser(state: UserLocationState) {
+        val previous = (user as? UserLocationState.Located)?.point
+        user = state
+        val store = location
+        val storePoint = store?.mapPoint
+        val point = (state as? UserLocationState.Located)?.point
+        if (store != null && storePoint != null && point !== previous) {
+            preview.show(store, storePoint, point) { onOpen(store) }
+        }
+        renderDistance()
+    }
+
+    /** Distance line, only when the store has a point on the map to measure from. */
+    private fun renderDistance() {
+        val store = location
+        val storePoint = store?.mapPoint
+        val row = binding.locationDistance
+        row.isVisible = storePoint != null
+        if (store == null || storePoint == null) return
+        val context = binding.root.context
+        val state = user
+        row.text = when (state) {
+            UserLocationState.PermissionNeeded -> context.getString(R.string.user_location_permission)
+
+            UserLocationState.Locating -> context.getString(R.string.user_location_locating)
+
+            UserLocationState.Unavailable -> context.getString(R.string.user_location_unavailable)
+
+            // Without stored coordinates the store point is the geocoded address, so the distance is approximate.
+            is UserLocationState.Located -> context.getString(
+                if (store.hasCoordinates) {
+                    R.string.user_location_distance
+                } else {
+                    R.string.user_location_distance_approximate
+                },
+                DistanceFormatter.format(storePoint.distanceMetersTo(state.point)),
+            )
+        }
+        val actionable = state == UserLocationState.PermissionNeeded || state == UserLocationState.Unavailable
+        row.isClickable = actionable
+        row.isFocusable = actionable
     }
 
     private fun resetVisibility() {
@@ -102,26 +149,10 @@ class StoreLocationSection(
         binding.locationOpenButton.isVisible = true
         binding.locationCard.contentDescription =
             binding.root.context.getString(R.string.location_open_description, store.name)
-        store.mapPoint?.let { showMap(store, it) }
-    }
-
-    private fun showMap(store: StoreLocation, point: GeoPoint) {
-        val position = LatLng(point.latitude, point.longitude)
-        binding.locationMap.isVisible = true
-        binding.locationPinPlaceholder.isVisible = false
-        binding.locationMap.getMapAsync { map ->
-            map.uiSettings.setAllGesturesEnabled(false)
-            map.uiSettings.isMapToolbarEnabled = false
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(binding.root.context, R.raw.map_style_dark_purple))
-            map.clear()
-            map.addMarker(
-                MarkerOptions()
-                    .position(position)
-                    .title(store.name)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)),
-            )
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, MAP_ZOOM))
-            map.setOnMapClickListener { onOpen(store) }
+        store.mapPoint?.let { point ->
+            binding.locationMap.isVisible = true
+            binding.locationPinPlaceholder.isVisible = false
+            preview.show(store, point, (user as? UserLocationState.Located)?.point) { onOpen(store) }
         }
     }
 
@@ -143,7 +174,6 @@ class StoreLocationSection(
     }
 
     private companion object {
-        const val MAP_ZOOM = 16f
         const val PULSE_MIN_ALPHA = 0.35f
         const val PULSE_MILLIS = 900L
     }

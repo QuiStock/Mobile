@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="user_location_distance">Você está a %1$s da loja</string>
+    <string name="user_location_distance_approximate">Você está a cerca de %1$s da loja</string>
+    <string name="user_location_locating">Obtendo sua localização…</string>
+    <string name="user_location_permission">Permitir localização para ver a distância até a loja</string>
+    <string name="user_location_unavailable">Não foi possível obter sua localização. Toque para tentar novamente.</string>
+    <string name="user_location_marker">Você</string>
+</resources>
