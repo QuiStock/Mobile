@@ -7,6 +7,7 @@ import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentCadastroPessoalBinding
 import com.quistock.quistock.databinding.FragmentChatbotBinding
 import com.quistock.quistock.databinding.FragmentContactBinding
+import com.quistock.quistock.databinding.FragmentContactSentBinding
 import com.quistock.quistock.databinding.FragmentEditEmployeeBinding
 import com.quistock.quistock.databinding.FragmentEditProfileBinding
 import com.quistock.quistock.databinding.FragmentEmployeeBinding
@@ -41,6 +42,7 @@ private val pageBindings: Map<Int, (LayoutInflater, ViewGroup?, Boolean) -> View
     R.layout.fragment_profile to FragmentProfileBinding::inflate,
     R.layout.fragment_faq to FragmentFaqBinding::inflate,
     R.layout.fragment_contact to FragmentContactBinding::inflate,
+    R.layout.fragment_contact_sent to FragmentContactSentBinding::inflate,
     R.layout.fragment_edit_profile to FragmentEditProfileBinding::inflate,
     R.layout.fragment_notifications to FragmentNotificationsBinding::inflate,
     R.layout.fragment_chatbot to FragmentChatbotBinding::inflate,

@@ -13,5 +13,9 @@ class ContactFragment : Fragment(R.layout.fragment_contact) {
         view.findViewById<View>(R.id.contact_back_control).setOnClickListener {
             findNavController().navigate(R.id.action_contactFragment_to_faqFragment)
         }
+
+        view.findViewById<View>(R.id.contact_send_button)?.setOnClickListener {
+            findNavController().navigate(R.id.action_contactFragment_to_contactSentFragment)
+        }
     }
 }

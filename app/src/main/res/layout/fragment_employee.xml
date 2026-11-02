@@ -130,25 +130,26 @@
             android:background="@drawable/bg_card_summary"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="gone"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="12dp"
             android:paddingEnd="10dp">
 
             <TextView
+                android:id="@+id/tvFiltroDataFuncionario"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Filtrar por data"
-                android:textColor="@color/color_branco"
+                android:textColor="@color/color_text_title"
                 android:textSize="13sp" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="Abrir filtro de data"
-                android:src="@drawable/arrow_down" />
+                android:src="@drawable/arrow_down"
+                app:tint="@color/color_icon" />
         </LinearLayout>
     </LinearLayout>
 

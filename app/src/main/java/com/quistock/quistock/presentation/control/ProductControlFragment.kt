@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
@@ -34,6 +36,19 @@ class ProductControlFragment : Fragment() {
                 findNavController()
                     .navigate(R.id.action_productControlFragment_to_productDetailFragment)
             }
+        }
+
+        view.findViewById<View>(R.id.dropdownFiltroFluxo)?.setOnClickListener { anchor ->
+            val popup = PopupMenu(requireContext(), anchor)
+            popup.menu.add("Todos os fluxos")
+            popup.menu.add("Fluxo Alto")
+            popup.menu.add("Fluxo Médio")
+            popup.menu.add("Fluxo Baixo")
+            popup.setOnMenuItemClickListener { item ->
+                view.findViewById<TextView>(R.id.tvFiltroFluxo)?.text = item.title
+                true
+            }
+            popup.show()
         }
     }
 }
