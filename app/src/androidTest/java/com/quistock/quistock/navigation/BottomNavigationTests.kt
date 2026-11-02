@@ -22,7 +22,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.AuthenticatedSessionRule
 import com.quistock.quistock.R
+import com.quistock.quistock.domain.model.AlertProduct
+import com.quistock.quistock.domain.model.AlertProductsResult
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
@@ -34,6 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
+import java.math.BigDecimal
 
 @RunWith(AndroidJUnit4::class)
 class BottomNavigationTests {
@@ -120,6 +124,17 @@ class BottomNavigationTests {
     }
 
     @Test fun reselectionScrollsProductsToTopWithoutAddingAVisit() {
+        GlobalContext.get().declare(
+            object : PriorityAlertsRepository {
+                override suspend fun read(storeId: Long, storeCode: String?) = AlertProductsResult.Success(
+                    (1..20).map { index ->
+                        AlertProduct("product-$index", "Produto $index", "Categoria", BigDecimal.ONE, 9, null)
+                    },
+                    0,
+                )
+            },
+            allowOverride = true,
+        )
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             awaitNavigationReady(scenario, R.id.homeFragment)
             visit(scenario, R.id.navigation_products, R.id.productControlFragment)
