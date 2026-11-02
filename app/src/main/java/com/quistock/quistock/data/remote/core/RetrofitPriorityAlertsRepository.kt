@@ -75,6 +75,9 @@ class RetrofitPriorityAlertsRepository(private val api: PriorityAlertsApi, priva
         } else {
             requireNotNull(value.number("expiration_days")).intValueExact()
         }
+        val sales7d = value["sales_7d"]?.takeUnless { it == JsonNull }?.let {
+            requireNotNull(value.number("sales_7d")).also { sales -> require(sales.signum() >= 0) }
+        }
         AlertProduct(
             id = requireNotNull(value.text("id")),
             name = requireNotNull(value.text("name")),
@@ -82,6 +85,8 @@ class RetrofitPriorityAlertsRepository(private val api: PriorityAlertsApi, priva
             stock = stock,
             expirationDays = days,
             flow = null,
+            sku = value.text("sku"),
+            sales7d = sales7d,
         )
     } catch (_: IllegalArgumentException) {
         null

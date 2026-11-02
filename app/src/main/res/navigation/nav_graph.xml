@@ -281,10 +281,14 @@
             app:destination="@id/productDetailFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/productDetailFragment"
-        android:name="com.quistock.quistock.presentation.control.ProductDetailFragment"
-        android:label="Detalhes do produto" />
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="com.quistock.quistock.presentation.control.ProductDetailFragment"
+        android:label="Detalhes do produto">
+        <action
+            android:id="@+id/action_productDetailFragment_to_chatbotFragment"
+            app:destination="@id/chatbotFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/employeeFragment"

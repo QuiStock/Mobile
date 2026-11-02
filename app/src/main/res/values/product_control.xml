@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="product_control_search">Pesquisar pelo nome</string>
+    <string name="product_control_filter">Filtrar por fluxo</string>
+    <string name="product_control_all_flows">Todos os fluxos</string>
+    <string name="product_control_high">Fluxo Alto</string>
+    <string name="product_control_medium">Fluxo Médio</string>
+    <string name="product_control_low">Fluxo Baixo</string>
+    <string name="product_control_unavailable_flow">Fluxo indisponível</string>
+    <string name="product_control_loading">Carregando produtos</string>
+    <string name="product_control_error">Não foi possível carregar os produtos</string>
+    <string name="product_control_empty">Nenhum produto disponível nesta loja</string>
+    <string name="product_control_no_matches">Nenhum produto corresponde à busca ou ao filtro</string>
+    <string name="product_control_partial">Alguns produtos não puderam ser carregados</string>
+    <string name="product_control_retry">Tentar novamente</string>
+    <string name="product_control_unavailable">Indisponível</string>
+    <string name="product_control_sku">SKU %1$s · %2$s</string>
+    <string name="product_control_sales_7d">Média diária (últimos 7 dias)</string>
+    <string name="product_control_expiration_days">Validade em %1$d dias</string>
+    <string name="product_control_expiration_days_value">%1$d dias</string>
+    <string name="product_control_expiration_days_today">Hoje</string>
+    <string name="product_control_expiration_days_single">1 dia</string>
+    <string name="product_control_expiration_days_past_day">1 dia atrás</string>
+    <string name="product_control_expiration_days_past">%1$d dias atrás</string>
+</resources>

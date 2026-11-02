@@ -47,7 +47,7 @@
                     <TextView android:tag="current_profile_store"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Loja Av. Paulista"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_text_title"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -55,7 +55,7 @@
                     <TextView android:tag="current_profile_header_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Milena Souza"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -98,7 +98,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Leite Integral UHT 1L"
+                android:id="@+id/detailProductTitle"
+                android:text="@string/product_control_unavailable"
                 android:textColor="@color/color_text_title"
                 android:textSize="22sp"
                 android:textStyle="bold" />
@@ -107,7 +108,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Código 1020 · Laticínios"
+                android:id="@+id/detailProductSubtitle"
+                android:text="@string/product_control_unavailable"
                 android:textColor="@color/color_text_subtitle"
                 android:textSize="13sp" />
 
@@ -139,7 +141,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Leite Integral UHT 1L"
+                            android:id="@+id/detailSummaryName"
+                            android:text="@string/product_control_unavailable"
                             android:textColor="@color/color_text_title"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -148,7 +151,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
-                            android:text="Laticínios · 25 un"
+                            android:id="@+id/detailSummaryMeta"
+                            android:text="@string/product_control_unavailable"
                             android:textColor="@color/color_text_subtitle"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -161,7 +165,8 @@
                         android:paddingTop="4dp"
                         android:paddingEnd="10dp"
                         android:paddingBottom="4dp"
-                        android:text="Fluxo Baixo"
+                        android:id="@+id/detailFlow"
+                        android:text="@string/product_control_unavailable_flow"
                         android:textColor="#DA4DC8"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -191,7 +196,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="06/08/2026"
+                            android:id="@+id/detailExpiryDays"
+                            android:text="@string/product_control_unavailable"
                             android:textColor="@color/color_text_title"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -200,7 +206,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Vence em 2 dias"
+                        android:id="@+id/detailExpiryStatus"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_lavana"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -223,14 +230,16 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Venda média"
+                        android:id="@+id/detailSalesLabel"
+                        android:text="@string/product_control_sales_7d"
                         android:textColor="@color/color_text_subtitle"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="5 un./dia"
+                        android:id="@+id/detailSalesValue"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -253,7 +262,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="25 un"
+                        android:id="@+id/detailStockValue"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -276,7 +286,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="06 ago."
+                        android:id="@+id/detailValidityValue"
+                        android:text="@string/product_control_unavailable"
                         android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />

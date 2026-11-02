@@ -19,6 +19,7 @@ import com.quistock.quistock.domain.model.PriorityAlert
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.chatbot.ChatbotViewModel
+import com.quistock.quistock.presentation.chatbot.offerFefo
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.SkeletonLoadingScreen
 import com.quistock.quistock.presentation.common.SkeletonScreenType

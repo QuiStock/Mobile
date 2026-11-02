@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.quistock.quistock.domain.model.AlertProduct
 import com.quistock.quistock.domain.model.ChatbotConversation
 import com.quistock.quistock.domain.model.ChatbotHttpException
 import com.quistock.quistock.domain.model.ChatbotProductCard
@@ -165,13 +166,9 @@ class ChatbotViewModel(
         }
     }
 
-    fun offerFefo(alert: PriorityAlert) {
-        pendingCard = alert.let {
-            ChatbotProductCard(
-                it.product.name,
-                it.product.category,
-            )
-        }
+    fun offerFefo(product: AlertProduct) {
+        synchronizeSession()
+        pendingCard = ChatbotProductCard(product.name, product.category)
     }
 
     fun sendMessage(message: String) = send(message, pendingCard, retry = false)
@@ -347,3 +344,5 @@ class ChatbotViewModel(
 }
 
 data class ChatMessage(val text: String, val isUser: Boolean)
+
+fun ChatbotViewModel.offerFefo(alert: PriorityAlert) = offerFefo(alert.product)

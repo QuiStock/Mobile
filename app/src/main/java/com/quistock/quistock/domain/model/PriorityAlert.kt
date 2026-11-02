@@ -17,6 +17,8 @@ data class AlertProduct(
     val analysisId: String? = null,
     val analysisDate: Instant? = null,
     val risks: Set<CreationRisk> = emptySet(),
+    val sku: String? = null,
+    val sales7d: BigDecimal? = null,
 ) {
     fun actionTypes(): Set<ActionType> = buildSet {
         if (analysisId == null || flow == null) return@buildSet

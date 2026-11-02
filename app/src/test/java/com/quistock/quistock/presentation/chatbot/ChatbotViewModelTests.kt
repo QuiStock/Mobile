@@ -169,7 +169,7 @@ class ChatbotViewModelTests {
     }
 
     @Test
-    fun `FEFO help attaches only the alert product name and category to the request`() = runTest {
+    fun `FEFO help attaches selected product name and category to the current conversation`() = runTest {
         val send = mockk<SendMessageToChatbotUseCase>()
         val store = mockk<ChatbotConversationStore>()
         every { store.current("user-a") } returns null
@@ -190,7 +190,7 @@ class ChatbotViewModelTests {
             AlertRisk.EXPIRY,
         )
 
-        viewModel.offerFefo(alert)
+        viewModel.offerFefo(alert.product)
         viewModel.sendMessage("Ajude com este alerta")
         advanceUntilIdle()
 
@@ -204,6 +204,54 @@ class ChatbotViewModelTests {
                 SessionSnapshot(1, true),
             )
         }
+    }
+
+    @Test
+    fun `offering FEFO after account change attaches product to the new account conversation`() = runTest {
+        var accountBinding = binding("user-a")
+        var generation = 1L
+        val state = MutableStateFlow<SessionState>(SessionState.Active)
+        val session = activeSession(state, accountBinding, generation) { accountBinding to generation }
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        every { store.current("user-a") } returns "first-id"
+        every { store.current("user-b") } returns "second-id"
+        coEvery { send.history("first-id", SessionSnapshot(1, true)) } returns
+            ChatbotConversationHistory("first-id", "First", "active", emptyList())
+        coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
+        coEvery {
+            send(
+                ChatbotRequest("second-id", "new account", productCard = ChatbotProductCard("Arroz", "Grãos")),
+                SessionSnapshot(2, true),
+            )
+        } returns ChatbotReply("second-id", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, session)
+        viewModel.load()
+        advanceUntilIdle()
+
+        accountBinding = binding("user-b")
+        generation = 2
+        viewModel.offerFefo(
+            AlertProduct(
+                id = "product-b",
+                name = "Arroz",
+                category = "Grãos",
+                stock = BigDecimal.ONE,
+                expirationDays = null,
+                flow = null,
+            ),
+        )
+        viewModel.sendMessage("new account")
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            send(
+                ChatbotRequest("second-id", "new account", productCard = ChatbotProductCard("Arroz", "Grãos")),
+                SessionSnapshot(2, true),
+            )
+        }
+        verify { store.current("user-b") }
+        coVerify(exactly = 0) { send.end("first-id", any()) }
     }
 
     @Test

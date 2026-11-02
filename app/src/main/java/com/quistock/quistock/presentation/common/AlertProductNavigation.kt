@@ -20,6 +20,8 @@ object AlertProductNavigation {
     private const val ANALYSIS_DATE = "priority_alert_analysis_date"
     private const val RISKS = "priority_alert_risks"
     private const val DECIMAL_PLACES = 3
+    private const val SKU = "priority_alert_sku"
+    private const val SALES_7D = "priority_alert_sales_7d"
 
     fun arguments(product: AlertProduct) = Bundle().apply {
         putString(PRODUCT_ID, product.id)
@@ -31,6 +33,8 @@ object AlertProductNavigation {
         putString(ANALYSIS_ID, product.analysisId)
         putString(ANALYSIS_DATE, product.analysisDate?.toString())
         putStringArrayList(RISKS, ArrayList(product.risks.map { it.name }))
+        putString(SKU, product.sku)
+        putString(SALES_7D, product.sales7d?.toPlainString())
     }
 
     fun product(arguments: Bundle?): AlertProduct? {
@@ -49,6 +53,8 @@ object AlertProductNavigation {
                 args.getStringArrayList(RISKS).orEmpty().mapNotNull { name ->
                     CreationRisk.entries.find { it.name == name }
                 }.toSet(),
+                args.getString(SKU),
+                args.getString(SALES_7D)?.toBigDecimalOrNull()?.takeIf { it.signum() >= 0 },
             )
         } else {
             null
