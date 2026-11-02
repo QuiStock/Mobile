@@ -68,6 +68,16 @@ class FaqFragmentTests {
         assertDestination(navController, NavGraph.Destinations.FAQ)
     }
 
+    @Test
+    fun submittingContactFormNavigatesToSentConfirmationAndBackToProfile() = runInstrumented { navController ->
+        onView(withId(R.id.faq_contact_link)).perform(scrollTo(), click())
+        assertDestination(navController, NavGraph.Destinations.CONTACT)
+        onView(withId(R.id.contact_send_button)).perform(scrollTo(), click())
+        assertDestination(navController, R.id.contactSentFragment)
+        onView(withId(R.id.btnVoltarPerfilAjuda)).perform(click())
+        assertDestination(navController, NavGraph.Destinations.PROFILE)
+    }
+
     private fun runInstrumented(test: (NavController) -> Unit) {
         lateinit var navController: NavController
 

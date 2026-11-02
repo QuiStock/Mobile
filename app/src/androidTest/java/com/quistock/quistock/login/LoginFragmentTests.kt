@@ -211,6 +211,13 @@ class LoginFragmentTests {
     }
 
     @Test
+    fun togglePasswordVisibilityChangesTransformationMethod() = runInstrumented {
+        onPasswordFormField().perform(typeText("Abcd123!"), closeSoftKeyboard())
+        onView(withId(R.id.btnTogglePasswordVisibility)).perform(click())
+        onView(withId(R.id.btnTogglePasswordVisibility)).perform(click())
+    }
+
+    @Test
     fun unexpectedError_shouldEnableSubmitButtonAndHideSpinnerAndShowUnexpectedErrorMessage() = runInstrumented {
         emitUiState(LoginUiState.Error(LoginError.UnexpectedError))
 

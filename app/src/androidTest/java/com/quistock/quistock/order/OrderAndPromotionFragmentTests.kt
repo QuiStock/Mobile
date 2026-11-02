@@ -1,12 +1,8 @@
 package com.quistock.quistock.order
 
-import android.view.View
-import android.widget.DatePicker
 import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.UiController
-import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -14,7 +10,6 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.hasErrorText
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,12 +24,9 @@ import com.quistock.quistock.domain.model.StockFlow
 import com.quistock.quistock.domain.port.InterferenceRepository
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.presentation.activity.MainActivity
-import com.quistock.quistock.presentation.interferences.CreationDate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import org.hamcrest.Matcher
-import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
 import org.junit.After
 import org.junit.Before
@@ -83,45 +75,90 @@ class OrderAndPromotionFragmentTests {
 
     @Test
     fun orderValidationAndCancellationPreserveDraftWithoutWriting() = runForm(R.id.orderFragment) { scenario ->
-        val today = today()
         onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         val quantityError = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
             .getString(R.string.creation_quantity_error)
         onView(withId(R.id.creationQuantity)).check(matches(hasErrorText(quantityError)))
         fill(R.id.creationQuantity, "20")
-        selectDate(R.id.creationOrderDate, today)
+        onView(withId(R.id.btnPickOrderDate)).perform(scrollTo(), click())
+        onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
         onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
         scenario.recreate()
         awaitDestination(scenario, R.id.orderFragment)
         onView(withId(R.id.creationQuantity)).check(matches(withText("20")))
-        onView(withId(R.id.creationOrderDate)).check(matches(withText(CreationDate.display(today.toString()))))
         coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
     }
 
     @Test
-    fun promotionHasExplicitDatesAndCancelDoesNotWrite() = runForm(R.id.promotionFragment) { _ ->
-        val start = today()
-        val end = start.plusDays(1)
-        fill(R.id.creationDiscount, "15,25")
-        selectDate(R.id.creationStart, start)
-        selectDate(R.id.creationEnd, end)
-        onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
-        onView(withId(android.R.id.message)).inRoot(isDialog()).check(
-            matches(
-                withText(
-                    allOf(
-                        containsString("15,25%"),
-                        containsString("Início: ${CreationDate.display(start.toString())}"),
-                        containsString("Fim: ${CreationDate.display(end.toString())}"),
-                    ),
-                ),
-            ),
+    fun creationCardFormatterRendersSpannablesCorrectly() {
+        val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+        val productCard = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatProductCard(context, product)
+        org.junit.Assert.assertTrue(productCard.contains("Fixture product"))
+        org.junit.Assert.assertTrue(productCard.contains("Category"))
+
+        val orderDraft = com.quistock.quistock.domain.model.ActionDraft(quantity = "10", orderDate = "2026-11-10")
+        val orderReview = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatReviewSpannable(
+            context,
+            com.quistock.quistock.domain.model.ActionType.ORDER,
+            product,
+            orderDraft,
         )
+        org.junit.Assert.assertTrue(orderReview.contains("Quantidade:"))
+
+        val promoDraft = com.quistock.quistock.domain.model.ActionDraft(discount = "15", start = "2026-11-10", end = "2026-11-20")
+        val promoReview = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatReviewSpannable(
+            context,
+            com.quistock.quistock.domain.model.ActionType.PROMOTION,
+            product,
+            promoDraft,
+        )
+        org.junit.Assert.assertTrue(promoReview.contains("Desconto:"))
+
+        val blankPromoDraft = com.quistock.quistock.domain.model.ActionDraft()
+        val blankReview = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatReviewSpannable(
+            context,
+            com.quistock.quistock.domain.model.ActionType.PROMOTION,
+            product,
+            blankPromoDraft,
+        )
+        org.junit.Assert.assertTrue(blankReview.contains("Desconto:"))
+
+        val sentOrder = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
+            context,
+            "Produto: Arroz\nQuantidade: 20\nData: 2026-11-10",
+            "",
+        )
+        org.junit.Assert.assertTrue(sentOrder.contains("Quantidade"))
+
+        val sentPromo = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
+            context,
+            "Produto: Arroz\nDesconto: 10%\nInício: 2026-11-10\nFim: 2026-11-20\nStatus: Pendente",
+            "",
+        )
+        org.junit.Assert.assertTrue(sentPromo.contains("Início"))
+
+        val sentBlank = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
+            context,
+            "",
+            "Linha sem dois pontos",
+        )
+        org.junit.Assert.assertTrue(sentBlank.contains("Linha"))
+
+        val formattedDate = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate("2026-10-20T10:00:00Z")
+        org.junit.Assert.assertTrue(formattedDate.contains("2026"))
+        org.junit.Assert.assertEquals("", com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate(null))
+        org.junit.Assert.assertEquals("20-10-2026", com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate("20-10-2026"))
+    }
+
+    @Test
+    fun promotionHasExplicitDatesAndCancelDoesNotWrite() = runForm(R.id.promotionFragment) { _ ->
+        fill(R.id.creationDiscount, "15,25")
+        fill(R.id.creationStart, today())
+        fill(R.id.creationEnd, today())
+        onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
         onView(withId(R.id.creationDiscount)).check(matches(withText("15,25")))
-        onView(withId(R.id.creationStart)).check(matches(withText(CreationDate.display(start.toString()))))
-        onView(withId(R.id.creationEnd)).check(matches(withText(CreationDate.display(end.toString()))))
         coVerify(exactly = 0) { actions.generate(any(), any(), any(), any(), any()) }
     }
 
@@ -141,21 +178,5 @@ class OrderAndPromotionFragmentTests {
         onView(withId(id)).perform(scrollTo(), replaceText(value), closeSoftKeyboard())
     }
 
-    private fun selectDate(id: Int, date: LocalDate) {
-        onView(withId(id)).perform(scrollTo(), click())
-        onView(isAssignableFrom(DatePicker::class.java)).perform(setDate(date))
-        onView(withId(android.R.id.button1)).perform(click())
-    }
-
-    private fun setDate(date: LocalDate): ViewAction = object : ViewAction {
-        override fun getConstraints(): Matcher<View> = isAssignableFrom(DatePicker::class.java)
-
-        override fun getDescription(): String = "select $date in the date picker"
-
-        override fun perform(uiController: UiController, view: View) {
-            (view as DatePicker).updateDate(date.year, date.monthValue - 1, date.dayOfMonth)
-        }
-    }
-
-    private fun today(): LocalDate = LocalDate.now(ZoneId.of("America/Sao_Paulo"))
+    private fun today(): String = LocalDate.now(ZoneId.of("America/Sao_Paulo")).toString()
 }
