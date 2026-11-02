@@ -51,6 +51,7 @@ internal class CreationFields(
         }
         dateInputs.forEach { (field, input) ->
             input.showSoftInputOnFocus = false
+            input.isFocusableInTouchMode = false
             input.setOnClickListener { showDatePicker(field, input) }
         }
     }
