@@ -70,7 +70,7 @@ internal object CreationPresentation {
         product.name,
         product.category,
         product.stock.stripTrailingZeros().toPlainString(),
-        product.analysisDate?.toString().orEmpty(),
+        CreationCardFormatter.formatAnalysisDate(product.analysisDate?.toString()),
     )
 
     fun failure(reason: ActionFailure): Int = when (reason) {
