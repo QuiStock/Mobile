@@ -1,5 +1,6 @@
 package com.quistock.quistock.presentation.interferences
 
+import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionFailure
 import com.quistock.quistock.domain.model.ActionResult
@@ -122,5 +123,93 @@ class CreationSubmissionTests {
         assertEquals(CreationPhase.FORM, state.value.phase)
         assertTrue(state.value.errors.isNotEmpty())
         coVerify(exactly = 1) { create.generate(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `reused action keeps requested values distinct from persisted values and is not forwarded automatically`() =
+        runTest {
+            setup()
+            val requested = ActionDraft(quantity = "67", orderDate = "2026-11-12")
+            val persisted = action.copy(values = draft, status = ActionStatus.SENT_TO_MANAGER)
+            val state = MutableStateFlow(
+                CreationState(phase = CreationPhase.REVIEW, product = product, draft = requested),
+            )
+            coEvery { create.generate(product, ActionType.ORDER, requested, expected) } returns
+                ActionResult.Found(persisted, existing = true)
+            val submission = CreationSubmission(create, session, state, this) { true }
+
+            submission.confirm()
+            runCurrent()
+
+            assertEquals(CreationPhase.EXISTING, state.value.phase)
+            assertEquals(persisted, state.value.action)
+            assertEquals(requested, state.value.draft)
+            assertEquals(requested, state.value.requestedDraft)
+            assertTrue(state.value.requestDiffersFromExisting)
+            coVerify(exactly = 0) { create.forward(any(), any()) }
+        }
+
+    @Test
+    fun `refresh errors take precedence over reused values while retaining request notice`() {
+        val reused = CreationState(
+            phase = CreationPhase.EXISTING,
+            action = action.copy(status = ActionStatus.SENT_TO_MANAGER),
+            requestedDraft = ActionDraft(quantity = "67", orderDate = "2026-11-12"),
+            failure = ActionFailure.READ,
+        )
+
+        assertEquals(R.string.creation_action_refresh_error, CreationPresentation.existingNotice(reused))
+        assertEquals(
+            R.string.creation_action_missing,
+            CreationPresentation.existingNotice(reused.copy(failure = ActionFailure.NOT_FOUND)),
+        )
+        assertEquals(
+            R.string.creation_action_refreshing,
+            CreationPresentation.existingNotice(reused.copy(failure = null, loading = true)),
+        )
+    }
+
+    @Test
+    fun `generation returning an already sent action is not reported as a new success`() = runTest {
+        setup()
+        val requested = ActionDraft(quantity = "67", orderDate = "2026-11-12")
+        val concurrent = action.copy(
+            values = draft,
+            status = ActionStatus.SENT_TO_MANAGER,
+        )
+        val state = MutableStateFlow(
+            CreationState(phase = CreationPhase.REVIEW, product = product, draft = requested),
+        )
+        coEvery { create.generate(product, ActionType.ORDER, requested, expected) } returns
+            ActionResult.Found(concurrent, existing = false)
+        val submission = CreationSubmission(create, session, state, this) { true }
+
+        submission.confirm()
+        runCurrent()
+
+        assertEquals(CreationPhase.EXISTING, state.value.phase)
+        assertEquals(concurrent, state.value.action)
+        assertEquals(requested, state.value.requestedDraft)
+        assertTrue(state.value.requestDiffersFromExisting)
+        coVerify(exactly = 0) { create.forward(any(), any()) }
+    }
+
+    @Test
+    fun `unauthorized existing action cannot be forwarded`() = runTest {
+        setup()
+        val state = MutableStateFlow(
+            CreationState(
+                phase = CreationPhase.EXISTING,
+                action = action,
+                failure = ActionFailure.UNAUTHORIZED,
+            ),
+        )
+        val submission = CreationSubmission(create, session, state, this) { false }
+
+        submission.forward()
+
+        assertEquals(CreationPhase.EXISTING, state.value.phase)
+        assertEquals(ActionFailure.UNAUTHORIZED, state.value.failure)
+        coVerify(exactly = 0) { create.forward(any(), any()) }
     }
 }

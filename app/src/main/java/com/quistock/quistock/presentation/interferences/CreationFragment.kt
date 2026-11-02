@@ -1,5 +1,6 @@
 package com.quistock.quistock.presentation.interferences
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -43,11 +44,13 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         views.creationForward.setOnClickListener {
             val action = model.state.value.action ?: return@setOnClickListener
             dialog = AlertDialog.Builder(requireContext())
-                .setMessage(CreationPresentation.action(requireContext(), action))
+                .setMessage(CreationActionPresentation.action(requireContext(), action))
                 .setPositiveButton(R.string.creation_confirm) { _, _ -> model.forward() }
                 .setNegativeButton(R.string.creation_cancel, null).show()
         }
-        views.creationRetry.setOnClickListener { model.load() }
+        views.creationRetry.setOnClickListener {
+            if (model.state.value.phase == CreationPhase.EXISTING) model.refreshExisting() else model.load()
+        }
         views.creationReturn.setOnClickListener { returnToHub() }
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -76,29 +79,35 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         val views = binding ?: return
         fields?.render(state)
         views.creationTitle.setText(CreationPresentation.type(state.type))
+        CreationFragmentRendering.renderVisibility(views, state)
+        CreationFragmentRendering.renderResult(requireContext(), views, state)
         views.creationProgress.isVisible = state.loading || state.busy
         renderActions(views, state)
-        views.creationProduct.text = state.product?.let { CreationPresentation.product(requireContext(), it) }.orEmpty()
-        views.creationSummary.text = state.action?.let { CreationPresentation.action(requireContext(), it) }.orEmpty()
-        val message = getString(message(state))
-        if (views.creationMessage.text.toString() != message) views.creationMessage.text = message
+        CreationFragmentRendering.renderSummary(requireContext(), views, state)
+        CreationFragmentRendering.renderMessage(requireContext(), views, state)
         views.creationProgress.contentDescription = getString(
             if (state.busy) R.string.creation_sending else R.string.creation_loading,
         )
         renderProducts(state)
+        views.creationProducts.isVisible = state.phase == CreationPhase.SELECT && !state.loading
         if (state.phase == CreationPhase.REVIEW && dialog?.isShowing != true) showReview(state)
     }
 
     private fun renderActions(views: FragmentCreationBinding, state: CreationState) {
         views.creationBack.isEnabled = !state.busy
         views.creationSubmit.isVisible = state.phase == CreationPhase.FORM
-        views.creationSubmit.isEnabled = !state.loading
+        views.creationSubmit.isEnabled = !state.loading && !state.listFailed &&
+            state.failure != ActionFailure.UNAUTHORIZED
         views.creationRetry.isEnabled = !state.loading
+        views.creationRetry.setText(
+            if (state.phase == CreationPhase.EXISTING) R.string.creation_refresh_action else R.string.creation_retry,
+        )
         views.creationForward.isVisible = state.phase == CreationPhase.EXISTING &&
             state.action?.status?.canForward == true && state.failure !in setOf(
                 ActionFailure.FORBIDDEN,
                 ActionFailure.NOT_FOUND,
                 ActionFailure.CONFLICT,
+                ActionFailure.UNAUTHORIZED,
             )
         views.creationRetry.isVisible = !state.busy && state.phase != CreationPhase.REVIEW &&
             state.phase != CreationPhase.SENT && !state.mustCheckList
@@ -121,22 +130,29 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
                 Button(requireContext()).apply {
                     text = CreationPresentation.product(context, product)
                     isAllCaps = false
+                    gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
+                    setPadding(
+                        dp(PRODUCT_HORIZONTAL_PADDING),
+                        dp(PRODUCT_VERTICAL_PADDING),
+                        dp(PRODUCT_HORIZONTAL_PADDING),
+                        dp(PRODUCT_VERTICAL_PADDING),
+                    )
+                    setTextColor(resources.getColor(R.color.color_branco, null))
+                    textSize = PRODUCT_TEXT_SIZE
+                    minHeight = dp(PRODUCT_MIN_HEIGHT)
+                    setBackgroundResource(R.drawable.bg_card_summary)
+                    contentDescription = text
                     setOnClickListener { model.select(product) }
                 },
+                android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply { bottomMargin = dp(PRODUCT_BOTTOM_MARGIN) },
             )
         }
     }
 
-    private fun message(state: CreationState): Int = when {
-        state.busy -> R.string.creation_sending
-        state.loading -> R.string.creation_loading
-        state.failure != null -> CreationPresentation.failure(state.failure)
-        state.phase == CreationPhase.SENT -> R.string.creation_sent
-        state.phase == CreationPhase.EXISTING -> R.string.creation_existing
-        state.phase == CreationPhase.EMPTY -> R.string.creation_no_generation
-        state.phase == CreationPhase.SELECT && state.products.isEmpty() -> R.string.creation_empty
-        else -> R.string.creation_select
-    }
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun showReview(state: CreationState) {
         val product = state.product ?: return
@@ -177,4 +193,115 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
             },
         )
     }
+
+    private companion object {
+        const val PRODUCT_HORIZONTAL_PADDING = 16
+        const val PRODUCT_VERTICAL_PADDING = 12
+        const val PRODUCT_TEXT_SIZE = 12f
+        const val PRODUCT_MIN_HEIGHT = 64
+        const val PRODUCT_BOTTOM_MARGIN = 8
+    }
+}
+
+private object CreationFragmentRendering {
+    fun renderVisibility(views: FragmentCreationBinding, state: CreationState) {
+        val sent = state.phase == CreationPhase.SENT
+        val result = state.phase in RESULT_PHASES
+        views.creationHeader.isVisible = !sent
+        views.creationBack.isVisible = !sent
+        views.creationTitle.isVisible = !sent
+        views.creationSelection.isVisible = state.phase == CreationPhase.SELECT
+        views.creationMessage.isVisible = !result &&
+            (state.phase == CreationPhase.SELECT || state.loading || state.busy || state.failure != null)
+        views.creationProduct.isVisible = state.product != null && !result
+        views.creationForm.isVisible = state.phase in FORM_PHASES
+        views.creationResult.isVisible = result
+        views.creationSuccessIcon.isVisible = sent
+        views.creationSuccessTitle.isVisible = sent
+        views.creationSuccessMessage.isVisible = sent
+        views.creationResultMessage.isVisible = result && !sent
+        views.creationSummary.isVisible = state.action != null
+    }
+
+    fun renderResult(context: Context, views: FragmentCreationBinding, state: CreationState) {
+        val sent = state.phase == CreationPhase.SENT
+        if (sent) {
+            views.creationSuccessMessage.setText(
+                if (state.type == ActionType.ORDER) {
+                    R.string.creation_order_success_wait
+                } else {
+                    R.string.creation_promotion_success_wait
+                },
+            )
+        }
+        views.creationSuccessTitle.setText(
+            if (state.type == ActionType.ORDER) R.string.creation_sent_order else R.string.creation_sent_promotion,
+        )
+        val notice = CreationPresentation.existingNotice(state)
+        views.creationResultMessage.text = notice?.let { existingMessage(context, it, state) }
+            ?: context.getString(message(state))
+    }
+
+    private fun existingMessage(context: Context, notice: Int, state: CreationState): String {
+        val draft = state.requestedDraft ?: return context.getString(notice)
+        val requested = CreationPresentation.values(context, state.type, draft)
+        return if (state.loading || state.failure != null) {
+            context.getString(notice) + "\n" + context.getString(R.string.creation_requested_values, requested)
+        } else {
+            context.getString(notice, requested)
+        }
+    }
+
+    fun renderSummary(context: Context, views: FragmentCreationBinding, state: CreationState) {
+        views.creationProduct.text = state.product?.let { CreationPresentation.product(context, it) }.orEmpty()
+        views.creationSummary.text = state.action?.let {
+            CreationActionPresentation.action(context, it, state.product?.name ?: it.productName)
+        }.orEmpty()
+    }
+
+    fun renderMessage(context: Context, views: FragmentCreationBinding, state: CreationState) {
+        val text = context.getString(message(state))
+        if (views.creationMessage.text.toString() != text) views.creationMessage.text = text
+    }
+
+    private fun message(state: CreationState): Int = when {
+        state.busy -> R.string.creation_sending
+
+        state.loading && state.phase == CreationPhase.EXISTING -> R.string.creation_action_refreshing
+
+        state.loading -> R.string.creation_loading
+
+        state.phase == CreationPhase.SELECT && state.listFailed -> R.string.creation_selection_list_error
+
+        state.phase == CreationPhase.EXISTING && state.failure == ActionFailure.READ ->
+            R.string.creation_action_refresh_error
+
+        state.phase == CreationPhase.EXISTING && state.failure == ActionFailure.NOT_FOUND ->
+            R.string.creation_action_missing
+
+        state.failure != null -> CreationPresentation.failure(state.failure)
+
+        else -> phaseMessage(state)
+    }
+
+    private fun phaseMessage(state: CreationState): Int = when {
+        state.phase == CreationPhase.SENT -> R.string.creation_sent
+        state.phase == CreationPhase.EXISTING -> R.string.creation_existing
+        state.phase == CreationPhase.EMPTY -> R.string.creation_no_generation
+        state.phase == CreationPhase.SELECT && state.products.isEmpty() -> R.string.creation_empty
+        else -> R.string.creation_select
+    }
+
+    private val RESULT_PHASES = setOf(
+        CreationPhase.SENT,
+        CreationPhase.EXISTING,
+        CreationPhase.EMPTY,
+        CreationPhase.ERROR,
+    )
+    private val FORM_PHASES = setOf(
+        CreationPhase.FORM,
+        CreationPhase.REVIEW,
+        CreationPhase.CHECKING,
+        CreationPhase.FORWARDING,
+    )
 }
