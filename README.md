@@ -206,6 +206,30 @@ The `demo` build installs as **QuiStock Demo**, alongside the regular app. Build
 `./gradlew assembleDemo` (Windows: `.\gradlew.bat assembleDemo`). The APK is generated at
 `app/build/outputs/apk/demo/app-demo.apk`.
 
+### Signing a release APK
+
+Release signing is configured locally through the ignored root `local.properties`, or in CI
+through environment variables. Use the same release keystore and alias for every official
+build. Never commit the keystore or its passwords. The root file `quistock-release.jks` is
+ignored by Git; back it up securely and share it only through an approved secrets channel.
+
+Add these entries to `local.properties` (use the actual keystore password and alias):
+
+```properties
+release.storeFile=quistock-release.jks
+release.storePassword=<keystore-password>
+release.keyAlias=quistock-release
+release.keyPassword=<key-password>
+```
+
+Alternatively, set `QUISTOCK_RELEASE_STORE_FILE`, `QUISTOCK_RELEASE_STORE_PASSWORD`,
+`QUISTOCK_RELEASE_KEY_ALIAS`, and `QUISTOCK_RELEASE_KEY_PASSWORD` in the build environment.
+Environment variables take precedence. Configure all four values; partial configuration fails
+the Gradle build. With them set, run `assembleRelease` to produce a signed APK at
+`app/build/outputs/apk/release/app-release.apk`. Inspect the signing report with
+`signingReport`; the Maps SHA1 can be read using
+`keytool -list -v -keystore quistock-release.jks`.
+
 The preview reuses the 28 existing page layouts. It starts at Splash, continues through
 Onboarding and Login, then opens Home without credentials. **Criar conta** opens the personal
 registration example. The persistent top button switches between operational and manager
