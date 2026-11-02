@@ -1,8 +1,13 @@
 package com.quistock.quistock.order
 
+import android.view.View
+import android.widget.DatePicker
+
 import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -10,6 +15,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.hasErrorText
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,6 +34,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -80,8 +87,7 @@ class OrderAndPromotionFragmentTests {
             .getString(R.string.creation_quantity_error)
         onView(withId(R.id.creationQuantity)).check(matches(hasErrorText(quantityError)))
         fill(R.id.creationQuantity, "20")
-        onView(withId(R.id.btnPickOrderDate)).perform(scrollTo(), click())
-        onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+        selectDate(R.id.creationOrderDate, LocalDate.now(ZoneId.of("America/Sao_Paulo")))
         onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
         scenario.recreate()
@@ -178,5 +184,24 @@ class OrderAndPromotionFragmentTests {
         onView(withId(id)).perform(scrollTo(), replaceText(value), closeSoftKeyboard())
     }
 
-    private fun today(): String = LocalDate.now(ZoneId.of("America/Sao_Paulo")).toString()
+    private fun selectDate(id: Int, date: LocalDate) {
+        onView(withId(id)).perform(scrollTo(), click())
+        try {
+            onView(isAssignableFrom(DatePicker::class.java)).inRoot(isDialog()).perform(setDate(date))
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+        } catch (_: Throwable) {
+            onView(isAssignableFrom(DatePicker::class.java)).perform(setDate(date))
+            onView(withId(android.R.id.button1)).perform(click())
+        }
+    }
+
+    private fun setDate(date: LocalDate): ViewAction = object : ViewAction {
+        override fun getConstraints(): Matcher<View> = isAssignableFrom(DatePicker::class.java)
+        override fun getDescription(): String = "select $date in the date picker"
+        override fun perform(uiController: UiController, view: View) {
+            (view as DatePicker).updateDate(date.year, date.monthValue - 1, date.dayOfMonth)
+        }
+    }
+
+    private fun today(): LocalDate = LocalDate.now(ZoneId.of("America/Sao_Paulo"))
 }
