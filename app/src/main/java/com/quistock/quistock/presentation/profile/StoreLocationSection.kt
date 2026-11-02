@@ -6,6 +6,7 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.view.isVisible
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionManager
 import com.quistock.quistock.R
@@ -25,8 +26,17 @@ class StoreLocationSection(
 ) {
     private var location: StoreLocation? = null
     private var user: UserLocationState = UserLocationState.Locating
+    private var lifecycle: Lifecycle? = null
     private val preview = StoreMapPreview(binding.locationMap)
     private var pulse: ObjectAnimator? = null
+    private val mapObserver = object : DefaultLifecycleObserver {
+        override fun onCreate(owner: LifecycleOwner) = binding.locationMap.onCreate(null)
+        override fun onStart(owner: LifecycleOwner) = binding.locationMap.onStart()
+        override fun onResume(owner: LifecycleOwner) = binding.locationMap.onResume()
+        override fun onPause(owner: LifecycleOwner) = binding.locationMap.onPause()
+        override fun onStop(owner: LifecycleOwner) = binding.locationMap.onStop()
+        override fun onDestroy(owner: LifecycleOwner) = binding.locationMap.onDestroy()
+    }
 
     init {
         val open = View.OnClickListener { location?.let(onOpen) }
@@ -38,18 +48,10 @@ class StoreLocationSection(
     }
 
     fun attach(owner: LifecycleOwner) {
-        val map = binding.locationMap
-        map.onCreate(null)
+        lifecycle = owner.lifecycle
         owner.lifecycle.addObserver(
             object : DefaultLifecycleObserver {
-                override fun onStart(owner: LifecycleOwner) = map.onStart()
-                override fun onResume(owner: LifecycleOwner) = map.onResume()
-                override fun onPause(owner: LifecycleOwner) = map.onPause()
-                override fun onStop(owner: LifecycleOwner) = map.onStop()
-                override fun onDestroy(owner: LifecycleOwner) {
-                    stopPulse()
-                    map.onDestroy()
-                }
+                override fun onDestroy(owner: LifecycleOwner) = stopPulse()
             },
         )
     }
@@ -152,6 +154,7 @@ class StoreLocationSection(
         store.mapPoint?.let { point ->
             binding.locationMap.isVisible = true
             binding.locationPinPlaceholder.isVisible = false
+            lifecycle?.addObserver(mapObserver)
             preview.show(store, point, (user as? UserLocationState.Located)?.point) { onOpen(store) }
         }
     }
