@@ -2,12 +2,15 @@ package com.quistock.quistock.presentation.interferences
 
 import android.content.Context
 import android.os.Bundle
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -21,6 +24,10 @@ import com.quistock.quistock.domain.model.ActionFailure
 import com.quistock.quistock.domain.model.ActionType
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+
+private const val PRODUCT_CARD_TEXT_SIZE_SP = 14f
+private const val PRODUCT_CARD_HORIZONTAL_PADDING_DP = 18
+private const val PRODUCT_CARD_VERTICAL_PADDING_DP = 14
 
 abstract class CreationFragment(private val type: ActionType) : Fragment() {
     private var binding: FragmentCreationBinding? = null
@@ -128,19 +135,16 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
         state.products.forEach { product ->
             views.creationProducts.addView(
                 Button(requireContext()).apply {
-                    text = CreationPresentation.product(context, product)
+                    text = CreationCardFormatter.formatProductCard(context, product)
                     isAllCaps = false
-                    gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
-                    setPadding(
-                        dp(PRODUCT_HORIZONTAL_PADDING),
-                        dp(PRODUCT_VERTICAL_PADDING),
-                        dp(PRODUCT_HORIZONTAL_PADDING),
-                        dp(PRODUCT_VERTICAL_PADDING),
-                    )
-                    setTextColor(resources.getColor(R.color.color_branco, null))
-                    textSize = PRODUCT_TEXT_SIZE
-                    minHeight = dp(PRODUCT_MIN_HEIGHT)
-                    setBackgroundResource(R.drawable.bg_card_summary)
+                    background = ContextCompat.getDrawable(context, R.drawable.bg_card_summary)
+                    setTextColor(ContextCompat.getColor(context, R.color.color_text_title))
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, PRODUCT_CARD_TEXT_SIZE_SP)
+                    val horizontalPadding = dp(PRODUCT_CARD_HORIZONTAL_PADDING_DP)
+                    val verticalPadding = dp(PRODUCT_CARD_VERTICAL_PADDING_DP)
+                    setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    gravity = Gravity.START or Gravity.CENTER_VERTICAL
                     contentDescription = text
                     setOnClickListener { model.select(product) }
                 },
@@ -195,10 +199,6 @@ abstract class CreationFragment(private val type: ActionType) : Fragment() {
     }
 
     private companion object {
-        const val PRODUCT_HORIZONTAL_PADDING = 16
-        const val PRODUCT_VERTICAL_PADDING = 12
-        const val PRODUCT_TEXT_SIZE = 12f
-        const val PRODUCT_MIN_HEIGHT = 64
         const val PRODUCT_BOTTOM_MARGIN = 8
     }
 }
@@ -207,39 +207,42 @@ private object CreationFragmentRendering {
     fun renderVisibility(views: FragmentCreationBinding, state: CreationState) {
         val sent = state.phase == CreationPhase.SENT
         val result = state.phase in RESULT_PHASES
-        views.creationHeader.isVisible = !sent
-        views.creationBack.isVisible = !sent
+        views.creationHeaderContainer.isVisible = !sent
+        views.creationBackContainer.isVisible = !sent
         views.creationTitle.isVisible = !sent
-        views.creationSelection.isVisible = state.phase == CreationPhase.SELECT
-        views.creationMessage.isVisible = !result &&
-            (state.phase == CreationPhase.SELECT || state.loading || state.busy || state.failure != null)
-        views.creationProduct.isVisible = state.product != null && !result
-        views.creationForm.isVisible = state.phase in FORM_PHASES
-        views.creationResult.isVisible = result
-        views.creationSuccessIcon.isVisible = sent
-        views.creationSuccessTitle.isVisible = sent
-        views.creationSuccessMessage.isVisible = sent
-        views.creationResultMessage.isVisible = result && !sent
-        views.creationSummary.isVisible = state.action != null
+        views.creationAdvisory.isVisible = !sent
+        views.creationMessage.isVisible = !sent
+        views.creationProduct.isVisible = state.product != null && !result && state.phase != CreationPhase.SELECT
+        views.creationSummary.isVisible = state.action != null && !sent
+        views.creationSentTopSpace.isVisible = sent
+        views.creationSentBottomSpace.isVisible = sent
+        views.creationSentContainer.isVisible = sent
     }
 
     fun renderResult(context: Context, views: FragmentCreationBinding, state: CreationState) {
         val sent = state.phase == CreationPhase.SENT
-        if (sent) {
-            views.creationSuccessMessage.setText(
-                if (state.type == ActionType.ORDER) {
-                    R.string.creation_order_success_wait
-                } else {
-                    R.string.creation_promotion_success_wait
-                },
-            )
-        }
-        views.creationSuccessTitle.setText(
-            if (state.type == ActionType.ORDER) R.string.creation_sent_order else R.string.creation_sent_promotion,
-        )
+        if (sent) renderSent(context, views, state)
+        views.creationReturn.setText(R.string.creation_return)
         val notice = CreationPresentation.existingNotice(state)
-        views.creationResultMessage.text = notice?.let { existingMessage(context, it, state) }
-            ?: context.getString(message(state))
+        if (!sent) {
+            views.creationMessage.text = notice?.let { existingMessage(context, it, state) }
+                ?: context.getString(message(state))
+        }
+    }
+
+    private fun renderSent(context: Context, views: FragmentCreationBinding, state: CreationState) {
+        val isOrder = state.type == ActionType.ORDER
+        views.creationSentTitle.setText(
+            if (isOrder) R.string.creation_order_sent_title else R.string.creation_promotion_sent_title,
+        )
+        views.creationSentSubtitle.setText(
+            if (isOrder) R.string.creation_order_sent_subtitle else R.string.creation_promotion_sent_subtitle,
+        )
+        val productText = state.product?.let { CreationPresentation.product(context, it) }.orEmpty()
+        val summaryText = state.action?.let {
+            CreationActionPresentation.action(context, it, state.product?.name ?: it.productName)
+        }.orEmpty()
+        views.creationSentDetailsText.text = CreationCardFormatter.formatSentDetails(summaryText, productText)
     }
 
     private fun existingMessage(context: Context, notice: Int, state: CreationState): String {
@@ -253,7 +256,8 @@ private object CreationFragmentRendering {
     }
 
     fun renderSummary(context: Context, views: FragmentCreationBinding, state: CreationState) {
-        views.creationProduct.text = state.product?.let { CreationPresentation.product(context, it) }.orEmpty()
+        views.creationProduct.text =
+            state.product?.let { CreationCardFormatter.formatProductCard(context, it) } ?: ""
         views.creationSummary.text = state.action?.let {
             CreationActionPresentation.action(context, it, state.product?.name ?: it.productName)
         }.orEmpty()
@@ -297,11 +301,5 @@ private object CreationFragmentRendering {
         CreationPhase.EXISTING,
         CreationPhase.EMPTY,
         CreationPhase.ERROR,
-    )
-    private val FORM_PHASES = setOf(
-        CreationPhase.FORM,
-        CreationPhase.REVIEW,
-        CreationPhase.CHECKING,
-        CreationPhase.FORWARDING,
     )
 }
