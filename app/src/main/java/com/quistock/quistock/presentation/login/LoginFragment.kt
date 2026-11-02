@@ -76,6 +76,22 @@ class LoginFragment : Fragment() {
         binding.btnThemeToggle.setOnClickListener {
             com.quistock.quistock.presentation.common.ThemeManager.toggleTheme(requireContext())
         }
+        var passwordVisible = false
+        binding.btnTogglePasswordVisibility.setOnClickListener {
+            passwordVisible = !passwordVisible
+            if (passwordVisible) {
+                binding.senhaLogin.transformationMethod =
+                    android.text.method.HideReturnsTransformationMethod.getInstance()
+                binding.btnTogglePasswordVisibility.setImageResource(R.drawable.ic_visibility_off)
+                binding.btnTogglePasswordVisibility.contentDescription = getString(R.string.hide_password)
+            } else {
+                binding.senhaLogin.transformationMethod =
+                    android.text.method.PasswordTransformationMethod.getInstance()
+                binding.btnTogglePasswordVisibility.setImageResource(R.drawable.ic_visibility)
+                binding.btnTogglePasswordVisibility.contentDescription = getString(R.string.show_password)
+            }
+            binding.senhaLogin.setSelection(binding.senhaLogin.text?.length ?: 0)
+        }
     }
 
     private fun observeState() {

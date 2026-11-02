@@ -32,7 +32,7 @@
             android:layout_marginTop="24dp"
             android:letterSpacing="0.05"
             android:text="@string/loading_text"
-            android:textColor="#D8C9E0"
+            android:textColor="@color/color_text_title"
             android:textSize="22sp" />
     </LinearLayout>
 
