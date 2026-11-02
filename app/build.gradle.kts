@@ -22,6 +22,24 @@ val localSettings = Properties().apply {
 val employeePassword = providers
     .environmentVariable("QUISTOCK_EMPLOYEE_INITIAL_PASSWORD")
     .orElse(localSettings.getProperty("employee.initial.password", ""))
+val releaseSigningValues = mapOf(
+    "QUISTOCK_RELEASE_STORE_FILE" to
+        providers.environmentVariable("QUISTOCK_RELEASE_STORE_FILE")
+            .orElse(localSettings.getProperty("release.storeFile", "")),
+    "QUISTOCK_RELEASE_STORE_PASSWORD" to
+        providers.environmentVariable("QUISTOCK_RELEASE_STORE_PASSWORD")
+            .orElse(localSettings.getProperty("release.storePassword", "")),
+    "QUISTOCK_RELEASE_KEY_ALIAS" to
+        providers.environmentVariable("QUISTOCK_RELEASE_KEY_ALIAS")
+            .orElse(localSettings.getProperty("release.keyAlias", "")),
+    "QUISTOCK_RELEASE_KEY_PASSWORD" to
+        providers.environmentVariable("QUISTOCK_RELEASE_KEY_PASSWORD")
+            .orElse(localSettings.getProperty("release.keyPassword", "")),
+).mapValues { (_, value) -> value.get().trim() }
+val configuredReleaseSigningValues = releaseSigningValues.values.count(String::isNotEmpty)
+require(configuredReleaseSigningValues == 0 || configuredReleaseSigningValues == releaseSigningValues.size) {
+    "Release signing is incomplete. Configure store file, store password, key alias, and key password."
+}
 
 kotlin {
     compilerOptions {
@@ -253,6 +271,14 @@ android {
             matchingFallbacks += "debug"
         }
         release {
+            if (configuredReleaseSigningValues == releaseSigningValues.size) {
+                signingConfig = signingConfigs.create("release") {
+                    storeFile = rootProject.file(releaseSigningValues.getValue("QUISTOCK_RELEASE_STORE_FILE"))
+                    storePassword = releaseSigningValues.getValue("QUISTOCK_RELEASE_STORE_PASSWORD")
+                    keyAlias = releaseSigningValues.getValue("QUISTOCK_RELEASE_KEY_ALIAS")
+                    keyPassword = releaseSigningValues.getValue("QUISTOCK_RELEASE_KEY_PASSWORD")
+                }
+            }
             optimization {
                 enable = true
             }
