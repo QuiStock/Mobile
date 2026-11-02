@@ -5,6 +5,7 @@ import android.widget.ScrollView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.pressBack
@@ -138,6 +139,11 @@ class BottomNavigationTests {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             awaitNavigationReady(scenario, R.id.homeFragment)
             visit(scenario, R.id.navigation_products, R.id.productControlFragment)
+            awaitNavigationReady(scenario, R.id.productControlFragment) { activity ->
+                val scroll = activity.findViewById<ScrollView>(R.id.scrollProductControl)
+                val products = activity.findViewById<RecyclerView>(R.id.rvProducts)
+                products.adapter?.itemCount == 20 && scroll.canScrollVertically(1)
+            }
             scenario.onActivity { activity ->
                 val scroll = activity.findViewById<ScrollView>(R.id.scrollProductControl)
                 scroll.scrollTo(0, scroll.getChildAt(0).height)
