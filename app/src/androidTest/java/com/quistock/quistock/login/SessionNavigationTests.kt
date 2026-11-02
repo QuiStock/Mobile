@@ -13,6 +13,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.quistock.quistock.AutofillExclusionRule
 import com.quistock.quistock.ProfileTestDependencies
 import com.quistock.quistock.R
 import com.quistock.quistock.domain.model.AuthResult
@@ -31,12 +32,15 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 
 @RunWith(AndroidJUnit4::class)
 class SessionNavigationTests {
+    @get:Rule val autofillExclusion = AutofillExclusionRule()
+
     @Test fun protocolFailureHidesProtectedContentAcrossRecreationUntilManualRecovery() {
         coEvery { auth.refresh(any()) } returns com.quistock.quistock.domain.model.AuthRefreshError.ProtocolError
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
