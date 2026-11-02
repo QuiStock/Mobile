@@ -10,6 +10,8 @@
     <string name="home_alerts_expiry_days">Vence em %1$d dias</string>
     <string name="home_alerts_expiry_tomorrow">Vence em 1 dia</string>
     <string name="home_alerts_expiry_unknown">Não informada</string>
+    <string name="home_alerts_expiry_past_day">Vencido há 1 dia</string>
+    <string name="home_alerts_expiry_past_days">Vencido há %1$d dias</string>
     <string name="home_alerts_quantity">%1$s • %2$s</string>
     <string name="home_alerts_promotion">Criar promoção</string>
     <string name="home_alerts_order">Criar pedido</string>

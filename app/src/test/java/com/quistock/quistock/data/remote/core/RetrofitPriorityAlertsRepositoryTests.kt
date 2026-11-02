@@ -49,6 +49,35 @@ class RetrofitPriorityAlertsRepositoryTests {
     }
 
     @Test
+    fun `catalog returns optional sku and weekly sales without requiring an analysis`() = runTest {
+        setup(
+            """[{"id":"item-1","sku":"SKU-1","name":"Item","category":"Food",
+            "current_stock":3,"sales_7d":14.5,"expiration_days":null,"branch":"Fixture store"}]""",
+        )
+
+        val product = (repository.read(17, "store") as AlertProductsResult.Success).products.single()
+
+        assertEquals("SKU-1", product.sku)
+        assertEquals(BigDecimal("14.5"), product.sales7d)
+        assertEquals(null, product.analysisId)
+        assertEquals(null, product.flow)
+    }
+
+    @Test
+    fun `missing optional catalog values remain absent while invalid weekly sales rows are skipped`() = runTest {
+        val negativeSales = product("negative").replace("\"branch\"", "\"sales_7d\":-1,\"branch\"")
+        val malformedSales = product("malformed").replace("\"branch\"", "\"sales_7d\":\"unknown\",\"branch\"")
+        setup("[${product("missing")},$negativeSales,$malformedSales]")
+
+        val result = repository.read(17, "store") as AlertProductsResult.Success
+
+        assertEquals(listOf("missing"), result.products.map { it.id })
+        assertEquals(null, result.products.single().sku)
+        assertEquals(null, result.products.single().sales7d)
+        assertEquals(2, result.invalidCount)
+    }
+
+    @Test
     fun `fraction beyond contract precision is omitted with partial count without rounding`() = runTest {
         setup("[${product("valid", "2.3750")},${product("invalid", "2.3751")}]")
 
