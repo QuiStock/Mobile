@@ -22,6 +22,7 @@ import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionFailure
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.presentation.common.FirstLaunchLocationPrompt
 import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
 import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
 import com.quistock.quistock.presentation.navigation.BottomNavigation
@@ -29,6 +30,7 @@ import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.get
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
@@ -52,6 +54,8 @@ class MainActivity : AppCompatActivity() {
             ProfileBindingCallbacks(sessionViewModel),
             true,
         )
+        val locationPrompt = FirstLaunchLocationPrompt(this, get())
+        if (savedInstanceState == null) locationPrompt.askOnFirstLaunch()
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
