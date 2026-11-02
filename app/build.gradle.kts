@@ -24,16 +24,20 @@ val employeePassword = providers
     .orElse(localSettings.getProperty("employee.initial.password", ""))
 val releaseSigningValues = mapOf(
     "QUISTOCK_RELEASE_STORE_FILE" to
-        providers.environmentVariable("QUISTOCK_RELEASE_STORE_FILE")
+        providers
+            .environmentVariable("QUISTOCK_RELEASE_STORE_FILE")
             .orElse(localSettings.getProperty("release.storeFile", "")),
     "QUISTOCK_RELEASE_STORE_PASSWORD" to
-        providers.environmentVariable("QUISTOCK_RELEASE_STORE_PASSWORD")
+        providers
+            .environmentVariable("QUISTOCK_RELEASE_STORE_PASSWORD")
             .orElse(localSettings.getProperty("release.storePassword", "")),
     "QUISTOCK_RELEASE_KEY_ALIAS" to
-        providers.environmentVariable("QUISTOCK_RELEASE_KEY_ALIAS")
+        providers
+            .environmentVariable("QUISTOCK_RELEASE_KEY_ALIAS")
             .orElse(localSettings.getProperty("release.keyAlias", "")),
     "QUISTOCK_RELEASE_KEY_PASSWORD" to
-        providers.environmentVariable("QUISTOCK_RELEASE_KEY_PASSWORD")
+        providers
+            .environmentVariable("QUISTOCK_RELEASE_KEY_PASSWORD")
             .orElse(localSettings.getProperty("release.keyPassword", "")),
 ).mapValues { (_, value) -> value.get().trim() }
 val configuredReleaseSigningValues = releaseSigningValues.values.count(String::isNotEmpty)

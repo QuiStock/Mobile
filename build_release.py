@@ -11,6 +11,9 @@ APK = ROOT / "app" / "build" / "outputs" / "apk" / "release" / "app-release.apk"
 
 
 def main() -> int:
+    core_url = input("Core URL [render]: ").strip()
+    auth_url = input("Auth URL [render]: ").strip()
+
     wrapper = "gradlew.bat" if os.name == "nt" else "gradlew"
     wrapper_path = ROOT / wrapper
     if not wrapper_path.is_file():
@@ -18,6 +21,10 @@ def main() -> int:
         return 2
 
     command = [str(wrapper_path), ":app:assembleRelease", "--console=verbose"]
+    if core_url:
+        command.append(f"-Pquistock.coreBaseUrl={core_url}")
+    if auth_url:
+        command.append(f"-Pquistock.authBaseUrl={auth_url}")
     if os.name != "nt":
         command[0] = f"./{wrapper}"
 

@@ -10,20 +10,21 @@ The root Python helper should build the official Android release APK on Windows,
 
 ## Scope
 
-**In scope:** choose the platform Gradle wrapper, run `:app:assembleRelease`, show Gradle progress, and report the build result and APK path.  
-**Out of scope:** choosing endpoint overrides, installing Android SDK/platform tools, installing the APK, or changing signing configuration.
+**In scope:** prompt for Core and Auth base URLs, choose the platform Gradle wrapper, run `:app:assembleRelease`, show Gradle progress, and report the build result and APK path.
+**Out of scope:** installing Android SDK/platform tools, installing the APK, or changing signing configuration.
 
 ## Expected behavior
 
-Running `python build_release.py` invokes `gradlew.bat` on Windows or `./gradlew` on macOS/Linux from the repository root. Gradle output is inherited by the terminal and uses verbose console output. The helper reports a missing wrapper, process launch failure, nonzero Gradle result, or missing output APK with a nonzero exit status. On success it prints the APK path.
+Running `python build_release.py` first prompts for Core URL and then Auth URL, as the former install helper did. Blank input omits that Gradle property and uses its configured default; nonblank input is passed as `-Pquistock.coreBaseUrl` or `-Pquistock.authBaseUrl`. It then invokes `gradlew.bat` on Windows or `./gradlew` on macOS/Linux from the repository root, running only `:app:assembleRelease`. Gradle output is inherited by the terminal and uses verbose console output. The helper reports a missing wrapper, process launch failure, nonzero Gradle result, or missing output APK with a nonzero exit status. On success it prints the APK path.
 
 ## Acceptance criteria and evidence
 
 | ID | Observable behavior | Planned check |
 | --- | --- | --- |
-| AC-01 | Correct wrapper is chosen per platform and build runs from repository root | Code inspection and mocked subprocess check |
-| AC-02 | Build progress is shown while Gradle runs | Direct stdout/stderr inheritance and `--console=verbose` inspection |
-| AC-03 | Failures return nonzero; success reports the APK | Control-flow inspection and syntax check |
+| AC-01 | Core and Auth prompts appear in order and blank values are omitted | Code inspection and mocked input/subprocess check |
+| AC-02 | Entered endpoints become Gradle properties and only the release APK is built | Code inspection and mocked subprocess check |
+| AC-03 | Correct wrapper is chosen per platform and build runs from repository root with visible progress | Direct stdout/stderr inheritance and `--console=verbose` inspection |
+| AC-04 | Failures return nonzero; success reports the APK | Control-flow inspection and syntax check |
 
 ## Technical impact
 
@@ -37,4 +38,4 @@ Root-level `build_release.py` replaces the prior installation helper. No externa
 
 ## Implementation outcome
 
-The helper now builds only the release APK; it no longer prompts for endpoints or invokes ADB. Python syntax and `git diff --check` were verified. A Gradle build was not executed because the local Gradle runtime could not establish its loopback connection.
+The helper prompts for Core and Auth URLs, passes nonblank values as Gradle properties, builds only the release APK, and does not invoke ADB. Python syntax plus mocked Windows/macOS/Linux wrapper and URL forwarding paths passed; `git diff --check` passed. A Gradle build was not executed because the local Gradle runtime could not establish its loopback connection.
