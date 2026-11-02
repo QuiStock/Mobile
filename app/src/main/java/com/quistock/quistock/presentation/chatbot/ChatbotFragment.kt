@@ -34,12 +34,11 @@ class ChatbotFragment : Fragment() {
         val menuOverlay = view.findViewById<View>(R.id.chatMenuOverlay)
         val input = view.findViewById<EditText>(R.id.etPerguntaChatbot).apply { isSaveEnabled = false }
         val welcomeLayout = view.findViewById<View>(R.id.layoutWelcomeChatbot)
-        val scrollMensagens = view.findViewById<ScrollView>(R.id.scrollMensagens)
         val containerMensagens = view.findViewById<LinearLayout>(R.id.containerMensagens)
 
         bindMenu(view, menuOverlay)
         bindInput(view, input)
-        observeMessages(viewLifecycleOwner, containerMensagens, welcomeLayout, scrollMensagens)
+        observeMessages(viewLifecycleOwner, containerMensagens, welcomeLayout)
         observeEndedConversations(viewLifecycleOwner, view.findViewById(R.id.recentConversations), menuOverlay)
         observeUiState(view, input, view.findViewById(R.id.btnEnviarPergunta))
     }
@@ -62,28 +61,21 @@ class ChatbotFragment : Fragment() {
             } else {
                 input.text.clear()
                 viewModel.sendMessage(message)
+                view.findViewById<ScrollView>(R.id.scrollMensagens)?.post {
+                    view.findViewById<ScrollView>(R.id.scrollMensagens)?.fullScroll(View.FOCUS_DOWN)
+                }
             }
         }
     }
 
-    private fun observeMessages(
-        owner: LifecycleOwner,
-        container: LinearLayout,
-        welcomeLayout: View?,
-        scrollMensagens: ScrollView?,
-    ) {
+    private fun observeMessages(owner: LifecycleOwner, container: LinearLayout, welcomeLayout: View?) {
         viewModel.messages.observe(owner) { conversation ->
             container.removeAllViews()
             if (conversation.isNullOrEmpty()) {
                 welcomeLayout?.visibility = View.VISIBLE
-                scrollMensagens?.visibility = View.GONE
             } else {
                 welcomeLayout?.visibility = View.GONE
-                scrollMensagens?.visibility = View.VISIBLE
                 conversation.forEach { addMessage(container, it.text, it.isUser) }
-                scrollMensagens?.post {
-                    scrollMensagens.fullScroll(View.FOCUS_DOWN)
-                }
             }
         }
     }
