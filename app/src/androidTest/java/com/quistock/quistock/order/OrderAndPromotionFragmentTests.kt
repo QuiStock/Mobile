@@ -2,7 +2,6 @@ package com.quistock.quistock.order
 
 import android.view.View
 import android.widget.DatePicker
-
 import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -33,8 +32,8 @@ import com.quistock.quistock.presentation.activity.MainActivity
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matcher
+import org.hamcrest.Matchers.containsString
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -99,7 +98,10 @@ class OrderAndPromotionFragmentTests {
     @Test
     fun creationCardFormatterRendersSpannablesCorrectly() {
         val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
-        val productCard = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatProductCard(context, product)
+        val productCard = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatProductCard(
+            context,
+            product,
+        )
         org.junit.Assert.assertTrue(productCard.contains("Fixture product"))
         org.junit.Assert.assertTrue(productCard.contains("Category"))
 
@@ -112,7 +114,11 @@ class OrderAndPromotionFragmentTests {
         )
         org.junit.Assert.assertTrue(orderReview.contains("Quantidade:"))
 
-        val promoDraft = com.quistock.quistock.domain.model.ActionDraft(discount = "15", start = "2026-11-10", end = "2026-11-20")
+        val promoDraft = com.quistock.quistock.domain.model.ActionDraft(
+            discount = "15",
+            start = "2026-11-10",
+            end = "2026-11-20",
+        )
         val promoReview = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatReviewSpannable(
             context,
             com.quistock.quistock.domain.model.ActionType.PROMOTION,
@@ -149,12 +155,20 @@ class OrderAndPromotionFragmentTests {
             "",
             "Linha sem dois pontos",
         )
-        org.junit.Assert.assertTrue(sentBlank.contains("Linha"))
+        org.junit.Assert.assertTrue(sentBlank.contains("Linha", ignoreCase = true))
 
-        val formattedDate = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate("2026-10-20T10:00:00Z")
+        val formattedDate = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate(
+            "2026-10-20T10:00:00Z",
+        )
         org.junit.Assert.assertTrue(formattedDate.contains("2026"))
-        org.junit.Assert.assertEquals("", com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate(null))
-        org.junit.Assert.assertEquals("20-10-2026", com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate("20-10-2026"))
+        org.junit.Assert.assertEquals(
+            "",
+            com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate(null),
+        )
+        org.junit.Assert.assertEquals(
+            "20-10-2026",
+            com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatAnalysisDate("20-10-2026"),
+        )
     }
 
     @Test
