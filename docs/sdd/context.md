@@ -4,6 +4,14 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Localização do usuário no Perfil implementada em 02/11/2026 conforme `specs/user-location.md`:
+  pedido de permissão (somente primeiro plano) na primeira abertura do app, posição atual lida
+  apenas com o Perfil visível e mantida só em memória, ponto do usuário no mini mapa junto ao pino
+  da loja e linha de distância em linha reta. Fluxo da loja (`specs/store-location.md`) inalterado.
+  Unitários, Spotless, Detekt, Lint, assembleRelease e compilação androidTest executados com sucesso
+  pelo agente; instrumentados e checagem em dispositivo pendentes.
+
+
 - Decisão gerencial de intervenções implementada em 01/11/2026 conforme
   `specs/manager-interference-decisions.md` e `api-contract.md` v3.1.0: hub do gerente
   carrega SENT_TO_MANAGER/APPROVED/REJECTED da loja, filtra por tipo e exibe badges; detalhes
