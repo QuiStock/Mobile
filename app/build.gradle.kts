@@ -212,7 +212,7 @@ android {
         val quotedPassword = employeePassword.get().replace("\\", "\\\\").replace("\"", "\\\"")
         buildConfigField("String", "EMPLOYEE_INITIAL_PASSWORD", "\"$quotedPassword\"")
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.quistock.quistock.QuiStockTestRunner"
     }
 
     buildTypes {
