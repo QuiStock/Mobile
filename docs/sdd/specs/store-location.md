@@ -21,6 +21,7 @@ without leaving the Profile screen.
 
 **Out of scope:**
 - Device GPS, location permission, background tracking, route calculation inside the app.
+  The user position and distance were added later in [user-location.md](user-location.md).
 - Editing store address; geocoding addresses to coordinates.
 
 ## Expected behavior
