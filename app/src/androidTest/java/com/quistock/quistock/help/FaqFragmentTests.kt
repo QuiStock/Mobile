@@ -64,7 +64,7 @@ class FaqFragmentTests {
         onView(withId(R.id.faq_back_control)).perform(click())
         assertDestination(navController, NavGraph.Destinations.PROFILE)
 
-        onView(withId(R.id.profile_help_row)).perform(click())
+        onView(withId(R.id.profile_help_row)).perform(scrollTo(), click())
         assertDestination(navController, NavGraph.Destinations.FAQ)
     }
 
