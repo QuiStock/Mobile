@@ -1,6 +1,7 @@
 import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.tasks.JacocoReportBase
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.net.URI
 import java.util.Properties
 
 plugins {
@@ -199,7 +200,7 @@ tasks.register<JacocoCoverageVerification>("jacocoAggregateCoverageVerification"
 
 fun deploymentBaseUrl(property: String, fallback: String): String {
     val value = providers.gradleProperty(property).orElse(fallback).get().trim()
-    val uri = java.net.URI(value)
+    val uri = URI(value)
     require(uri.scheme == "https" && !uri.host.isNullOrBlank() &&
         uri.userInfo == null && uri.query == null && uri.fragment == null) {
         "$property must be an absolute HTTPS URL without credentials, query or fragment"
