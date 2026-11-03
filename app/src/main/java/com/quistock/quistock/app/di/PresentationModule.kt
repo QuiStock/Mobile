@@ -17,7 +17,7 @@ val presentationModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::StoreLocationViewModel)
     viewModelOf(::UserLocationViewModel)
-    viewModel { ChatbotViewModel(get(), get(), get()) }
+    viewModel { ChatbotViewModel(get(), get(), get(), get()) }
     viewModelOf(::LoginViewModel)
     viewModel { SessionViewModel(get(), get(), get(), get(), getOrNull()) }
     viewModelOf(::TeamViewModel)
