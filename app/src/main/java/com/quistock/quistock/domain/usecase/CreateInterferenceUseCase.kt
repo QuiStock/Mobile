@@ -4,6 +4,7 @@ import com.quistock.quistock.domain.model.ActionDraft
 import com.quistock.quistock.domain.model.ActionFailure
 import com.quistock.quistock.domain.model.ActionListResult
 import com.quistock.quistock.domain.model.ActionResult
+import com.quistock.quistock.domain.model.ActionStatus
 import com.quistock.quistock.domain.model.ActionType
 import com.quistock.quistock.domain.model.AlertProduct
 import com.quistock.quistock.domain.model.AlertProductsResult
@@ -14,6 +15,8 @@ import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.port.InterferenceRepository
 import com.quistock.quistock.domain.port.PriorityAlertsRepository
+import com.quistock.quistock.domain.port.RequestOwnership
+import kotlinx.coroutines.CancellationException
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
@@ -24,6 +27,7 @@ class CreateInterferenceUseCase(
     private val profile: ProfileUseCase,
     private val session: SessionUseCase,
     private val clock: Clock = Clock.system(ZoneId.of("America/Sao_Paulo")),
+    private val ownership: RequestOwnership? = null,
 ) {
     fun today(): LocalDate = LocalDate.now(clock.withZone(ZoneId.of("America/Sao_Paulo")))
 
@@ -110,7 +114,23 @@ class CreateInterferenceUseCase(
         return if (ready == null || ready.profile.storeId != action.storeId || !action.status.canForward) {
             ActionResult.Failed(ActionFailure.FORBIDDEN)
         } else {
-            repository.forward(action, expected)
+            repository.forward(action, expected).also { result ->
+                if (result is ActionResult.Found && result.action.status == ActionStatus.SENT_TO_MANAGER) {
+                    remember(ready.profile.id, result.action.id)
+                }
+            }
+        }
+    }
+
+    /** Alert ownership is best effort: a local storage failure never changes the confirmed forward. */
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun remember(userId: String, actionId: String) {
+        try {
+            ownership?.remember(userId, actionId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            Unit
         }
     }
 }

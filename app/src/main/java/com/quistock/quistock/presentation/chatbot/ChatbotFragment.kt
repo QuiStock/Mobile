@@ -59,10 +59,11 @@ class ChatbotFragment : Fragment() {
             if (message.isEmpty()) {
                 PopupFeedback.showStatus(view, getString(R.string.chatbot_empty_message), isError = true)
             } else {
-                input.text.clear()
-                viewModel.sendMessage(message)
-                view.findViewById<ScrollView>(R.id.scrollMensagens)?.post {
-                    view.findViewById<ScrollView>(R.id.scrollMensagens)?.fullScroll(View.FOCUS_DOWN)
+                if (viewModel.sendMessage(message)) {
+                    input.text.clear()
+                    view.findViewById<ScrollView>(R.id.scrollMensagens)?.post {
+                        view.findViewById<ScrollView>(R.id.scrollMensagens)?.fullScroll(View.FOCUS_DOWN)
+                    }
                 }
             }
         }
@@ -123,33 +124,45 @@ class ChatbotFragment : Fragment() {
                 state == ChatbotUiState.Ending
             input.isEnabled = !busy
             sendButton.isEnabled = !busy
-            when (state) {
-                ChatbotUiState.Answered -> Unit
+            showUiFeedback(view, state)
+        }
+    }
 
-                ChatbotUiState.Rejected -> PopupFeedback.showStatus(
-                    view,
-                    getString(R.string.chatbot_request_rejected),
-                    isError = true,
-                )
+    private fun showUiFeedback(view: View, state: ChatbotUiState) {
+        when (state) {
+            ChatbotUiState.Answered -> Unit
 
-                ChatbotUiState.Error.SEND_UNCERTAIN -> AlertDialog.Builder(requireContext())
-                    .setMessage(R.string.chatbot_retry_may_duplicate)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(R.string.chatbot_retry) { _, _ -> viewModel.retryLastMessage() }
-                    .show()
+            ChatbotUiState.Rejected -> PopupFeedback.showStatus(
+                view,
+                getString(R.string.chatbot_request_rejected),
+                isError = true,
+            )
 
-                ChatbotUiState.Error.NOT_LOGGED_IN -> showError(view, R.string.chatbot_login_required)
+            ChatbotUiState.Error.SEND_UNCERTAIN -> AlertDialog.Builder(requireContext())
+                .setMessage(R.string.chatbot_retry_may_duplicate)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.chatbot_retry) { _, _ -> viewModel.retryLastMessage() }
+                .show()
 
-                ChatbotUiState.Error.REQUEST_FAILED -> showError(view, R.string.chatbot_request_failed)
+            ChatbotUiState.Error.NOT_LOGGED_IN -> showError(view, R.string.chatbot_login_required)
 
-                ChatbotUiState.Error.HISTORY_FAILED -> showError(view, R.string.chatbot_history_failed)
+            ChatbotUiState.Error.PROFILE_LOADING -> showError(view, R.string.profile_loading)
 
-                ChatbotUiState.Error.HISTORY_REFRESH_FAILED -> showError(view, R.string.chatbot_history_refresh_failed)
+            ChatbotUiState.Error.PROFILE_FAILED -> showError(view, R.string.profile_load_failed)
 
-                ChatbotUiState.Error.END_UNCERTAIN -> showError(view, R.string.chatbot_end_uncertain)
+            ChatbotUiState.Error.PROFILE_NO_STORE_EMPLOYEE -> showError(view, R.string.profile_no_store_employee)
 
-                else -> Unit
-            }
+            ChatbotUiState.Error.PROFILE_NO_STORE_MANAGER -> showError(view, R.string.profile_no_store_manager)
+
+            ChatbotUiState.Error.REQUEST_FAILED -> showError(view, R.string.chatbot_request_failed)
+
+            ChatbotUiState.Error.HISTORY_FAILED -> showError(view, R.string.chatbot_history_failed)
+
+            ChatbotUiState.Error.HISTORY_REFRESH_FAILED -> showError(view, R.string.chatbot_history_refresh_failed)
+
+            ChatbotUiState.Error.END_UNCERTAIN -> showError(view, R.string.chatbot_end_uncertain)
+
+            else -> Unit
         }
     }
 

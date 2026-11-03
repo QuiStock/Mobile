@@ -58,6 +58,7 @@ class ChatbotFragmentTests {
         every { viewModel.endedConversations } returns MutableLiveData(emptyList<ChatbotConversation>())
         every { viewModel.sendMessage(any()) } answers {
             messages.value = messages.value.orEmpty() + ChatMessage(firstArg(), true)
+            true
         }
         every { viewModel.newConversation() } answers { messages.value = emptyList() }
         GlobalContext.get().declare<ChatbotViewModel>(instance = viewModel, allowOverride = true)
@@ -82,6 +83,18 @@ class ChatbotFragmentTests {
         onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(allOf(withText(message), withParent(withId(R.id.containerMensagens)))).check(matches(isDisplayed()))
+        verify(exactly = 1) { viewModel.sendMessage(message) }
+    }
+
+    @Test
+    fun blockedSendKeepsDraftInInput() = runInstrumented { _ ->
+        val message = "Ainda carregando perfil"
+        every { viewModel.sendMessage(any()) } returns false
+
+        onView(withId(R.id.etPerguntaChatbot)).perform(replaceText(message), closeSoftKeyboard())
+        onView(withId(R.id.btnEnviarPergunta)).perform(click())
+
+        onView(withId(R.id.etPerguntaChatbot)).check(matches(withText(message)))
         verify(exactly = 1) { viewModel.sendMessage(message) }
     }
 

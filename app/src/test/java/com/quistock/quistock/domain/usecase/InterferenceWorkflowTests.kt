@@ -162,4 +162,34 @@ class InterferenceWorkflowTests {
     fun `today uses Sao Paulo even when injected clock has UTC zone`() {
         assertEquals("2026-10-29", create.today().toString())
     }
+
+    @Test
+    fun `confirmed forward records the request as owned by the employee, other results do not`() = runTest {
+        setup()
+        val owned = mutableListOf<Pair<String, String>>()
+        val tracked = CreateInterferenceUseCase(actions, products, profile, session, clock) { user, id ->
+            owned += user to id
+        }
+        val generated = InterferenceAction("a1", "flow", "product", 17, ActionType.ORDER, ActionStatus.GENERATED, draft)
+        coEvery { actions.forward(generated, expected) } returns
+            ActionResult.Found(generated.copy(status = ActionStatus.SENT_TO_MANAGER))
+        tracked.forward(generated, expected)
+        assertEquals(listOf("fixture" to "a1"), owned)
+
+        coEvery { actions.forward(generated, expected) } returns ActionResult.Failed(ActionFailure.UNCERTAIN)
+        tracked.forward(generated, expected)
+        assertEquals(1, owned.size)
+    }
+
+    @Test
+    fun `ownership storage failure does not change a confirmed forward`() = runTest {
+        setup()
+        val tracked = CreateInterferenceUseCase(actions, products, profile, session, clock) { _, _ ->
+            error("disk full")
+        }
+        val generated = InterferenceAction("a1", "flow", "product", 17, ActionType.ORDER, ActionStatus.GENERATED, draft)
+        val sent = generated.copy(status = ActionStatus.SENT_TO_MANAGER)
+        coEvery { actions.forward(generated, expected) } returns ActionResult.Found(sent)
+        assertEquals(sent, (tracked.forward(generated, expected) as ActionResult.Found).action)
+    }
 }

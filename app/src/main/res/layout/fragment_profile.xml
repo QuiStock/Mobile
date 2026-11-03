@@ -255,6 +255,11 @@
                 android:id="@+id/profile_location"
                 layout="@layout/view_store_location" />
 
+            <!-- SEÇÃO: ALERTAS (visível só com perfil pronto; chaves conforme o cargo) -->
+            <include
+                android:id="@+id/profile_alerts"
+                layout="@layout/view_role_alerts" />
+
             <!-- ROW: AJUDA -->
             <LinearLayout
                 android:id="@+id/profile_help_row"

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notification channels (one per alert type, mutable in system settings). -->
+    <string name="role_alert_channel_expiry">Produtos próximos do vencimento</string>
+    <string name="role_alert_channel_pending">Solicitações aguardando aprovação</string>
+    <string name="role_alert_channel_approved">Solicitações aprovadas</string>
+
+    <!-- Notification content. -->
+    <string name="role_alert_expiry_title">Produto próximo do vencimento</string>
+    <string name="role_alert_expiry_text">%1$s vence nos próximos dias. Avalie uma ação.</string>
+    <plurals name="role_alert_expiry_summary">
+        <item quantity="one">%d produto próximo do vencimento</item>
+        <item quantity="many">%d produtos próximos do vencimento</item>
+        <item quantity="other">%d produtos próximos do vencimento</item>
+    </plurals>
+    <string name="role_alert_pending_title">Solicitação aguardando aprovação</string>
+    <string name="role_alert_pending_order">Pedido de compra de %1$s aguarda sua decisão.</string>
+    <string name="role_alert_pending_promotion">Promoção de %1$s aguarda sua decisão.</string>
+    <plurals name="role_alert_pending_summary">
+        <item quantity="one">%d solicitação aguardando aprovação</item>
+        <item quantity="many">%d solicitações aguardando aprovação</item>
+        <item quantity="other">%d solicitações aguardando aprovação</item>
+    </plurals>
+    <string name="role_alert_approved_title">Solicitação aprovada</string>
+    <string name="role_alert_approved_order">Seu pedido de compra de %1$s foi aprovado.</string>
+    <string name="role_alert_approved_promotion">Sua promoção de %1$s foi aprovada.</string>
+    <plurals name="role_alert_approved_summary">
+        <item quantity="one">%d solicitação sua foi aprovada</item>
+        <item quantity="many">%d solicitações suas foram aprovadas</item>
+        <item quantity="other">%d solicitações suas foram aprovadas</item>
+    </plurals>
+    <string name="role_alert_summary_text">Toque para ver no QuiStock.</string>
+    <string name="role_alert_unknown_product">um produto</string>
+    <string name="role_alert_public_title">Novo alerta do QuiStock</string>
+    <string name="role_alert_public_text">Desbloqueie o aparelho para ver os detalhes.</string>
+
+    <!-- Profile preferences. -->
+    <string name="role_alerts_section">Alertas</string>
+    <string name="role_alerts_expiry">Produtos próximos do vencimento</string>
+    <string name="role_alerts_pending">Solicitações aguardando aprovação</string>
+    <string name="role_alerts_approved">Minhas solicitações aprovadas</string>
+    <string name="role_alerts_permission">Permitir notificações para receber alertas</string>
+</resources>

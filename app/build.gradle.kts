@@ -341,6 +341,9 @@ dependencies {
     // Local persistence
     implementation(libs.androidx.datastore.preferences)
 
+    // Background work (periodic role alerts)
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Coroutines and serialization
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.serialization.json)

@@ -148,4 +148,21 @@ class ManagerInterferencesViewModelTests {
         runCurrent()
         assertTrue(model.state.value.actions.isEmpty())
     }
+
+    @Test
+    fun `alert focus resolves to the request only after a fresh read and only while pending`() = runTest {
+        val model = model()
+        model.focus("pending")
+        assertEquals(null, model.takeFocus())
+        runCurrent()
+        assertEquals(pending, model.takeFocus())
+        assertEquals(null, model.state.value.focusId)
+
+        model.focus("approved")
+        runCurrent()
+        assertEquals(null, model.takeFocus())
+        model.focus("unknown")
+        runCurrent()
+        assertEquals(null, model.takeFocus())
+    }
 }

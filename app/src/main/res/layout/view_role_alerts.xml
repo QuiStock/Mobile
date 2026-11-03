@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="6dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="6dp"
+    android:paddingBottom="8dp"
+    android:visibility="gone">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:accessibilityHeading="true"
+        android:text="@string/role_alerts_section"
+        android:textColor="@color/color_branco"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/role_alerts_permission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:text="@string/role_alerts_permission"
+        android:textColor="@color/color_lavana"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/role_alerts_expiry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/role_alerts_expiry"
+        android:textColor="#BFAFC5"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/role_alerts_pending"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/role_alerts_pending"
+        android:textColor="#BFAFC5"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/role_alerts_approved"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/role_alerts_approved"
+        android:textColor="#BFAFC5"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</LinearLayout>

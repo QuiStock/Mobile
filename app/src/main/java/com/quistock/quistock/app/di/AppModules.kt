@@ -20,6 +20,7 @@ val appInternalModule = module {
         retrofitModule,
         profileEditModule,
         interferenceModule,
+        roleAlertsModule,
     )
 }
 
