@@ -4,10 +4,15 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.quistock.quistock.MainDispatcherRule
 import com.quistock.quistock.domain.model.ChatbotConversationHistory
 import com.quistock.quistock.domain.model.ChatbotHistoryMessage
+import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
+import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.ChatbotConversationStore
+import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import com.quistock.quistock.domain.usecase.SessionLocalAccess
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -36,7 +41,7 @@ class ChatbotConversationTests {
         every { store.current("user-a") } returns "conversation-a"
         coEvery { useCase.history("conversation-a", SessionSnapshot(1, true)) } returns history("conversation-a")
         coEvery { useCase.listEnded(SessionSnapshot(1, true)) } returns emptyList()
-        val viewModel = ChatbotViewModel(useCase, store, session())
+        val viewModel = ChatbotViewModel(useCase, store, session(), readyProfile())
 
         viewModel.load()
         advanceUntilIdle()
@@ -53,7 +58,7 @@ class ChatbotConversationTests {
         val store = mockk<ChatbotConversationStore>()
         every { store.current("user-a") } returns "active-id"
         coEvery { useCase.history("past-id", SessionSnapshot(1, true)) } returns history("past-id")
-        val viewModel = ChatbotViewModel(useCase, store, session())
+        val viewModel = ChatbotViewModel(useCase, store, session(), readyProfile())
 
         viewModel.openHistory("past-id")
         advanceUntilIdle()
@@ -80,5 +85,23 @@ class ChatbotConversationTests {
         every { session.snapshot() } returns SessionSnapshot(1, true)
         every { session.local } returns local
         return session
+    }
+
+    private fun readyProfile() = mockk<ProfileUseCase> {
+        every { state } returns MutableStateFlow(
+            ProfileState.Ready(
+                1,
+                UserProfile(
+                    "user-a",
+                    "Test User",
+                    "test@example.test",
+                    UserRole.EMPLOYEE,
+                    UserStatus.ACTIVE,
+                    null,
+                    1,
+                    "Test Store",
+                ),
+            ),
+        )
     }
 }

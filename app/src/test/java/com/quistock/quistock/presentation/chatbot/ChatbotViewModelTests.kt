@@ -12,11 +12,17 @@ import com.quistock.quistock.domain.model.ChatbotReply
 import com.quistock.quistock.domain.model.ChatbotRequest
 import com.quistock.quistock.domain.model.CreationRisk
 import com.quistock.quistock.domain.model.PriorityAlert
+import com.quistock.quistock.domain.model.ProfileRejection
+import com.quistock.quistock.domain.model.ProfileState
 import com.quistock.quistock.domain.model.SessionBinding
 import com.quistock.quistock.domain.model.SessionSnapshot
 import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.model.StockFlow
+import com.quistock.quistock.domain.model.UserProfile
+import com.quistock.quistock.domain.model.UserRole
+import com.quistock.quistock.domain.model.UserStatus
 import com.quistock.quistock.domain.port.ChatbotConversationStore
+import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SendMessageToChatbotUseCase
 import com.quistock.quistock.domain.usecase.SessionLocalAccess
 import com.quistock.quistock.domain.usecase.SessionUseCase
@@ -63,7 +69,7 @@ class ChatbotViewModelTests {
         every { store.setActive("user-a", "stable-uuid") } returns Unit
         coEvery { send(ChatbotRequest("stable-uuid", "question"), SessionSnapshot(1, true)) } returns
             ChatbotReply("stable-uuid", "confirmed answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, session)
+        val viewModel = ChatbotViewModel(send, store, session, readyProfile())
 
         viewModel.sendMessage("question")
         advanceUntilIdle()
@@ -82,7 +88,7 @@ class ChatbotViewModelTests {
         val send = mockk<SendMessageToChatbotUseCase>()
         val store = mockk<ChatbotConversationStore>()
         val state = MutableStateFlow<SessionState>(SessionState.LoggingOut)
-        val viewModel = ChatbotViewModel(send, store, activeSession(state))
+        val viewModel = ChatbotViewModel(send, store, activeSession(state), readyProfile())
 
         viewModel.load()
 
@@ -93,13 +99,86 @@ class ChatbotViewModelTests {
     }
 
     @Test
+    fun `send distinguishes an absent session from profile loading and failure`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        val absent = ChatbotViewModel(
+            send,
+            store,
+            activeSession(MutableStateFlow(SessionState.SignedOut)),
+            readyProfile(),
+        )
+        val loadingState = MutableStateFlow<ProfileState>(ProfileState.Loading)
+        val profile = mockk<ProfileUseCase> { every { state } returns loadingState }
+        val loading = ChatbotViewModel(send, store, activeSession(), profile)
+        val bindingPending = ChatbotViewModel(send, store, activeSession(binding = null), profile)
+
+        absent.sendMessage("draft") shouldBe false
+        absent.uiState.value shouldBe ChatbotUiState.Error.NOT_LOGGED_IN
+        loading.sendMessage("draft") shouldBe false
+        loading.uiState.value shouldBe ChatbotUiState.Error.PROFILE_LOADING
+        bindingPending.sendMessage("draft") shouldBe false
+        bindingPending.uiState.value shouldBe ChatbotUiState.Error.PROFILE_LOADING
+
+        loadingState.value = ProfileState.Failure()
+        loading.sendMessage("draft") shouldBe false
+        loading.uiState.value shouldBe ChatbotUiState.Error.PROFILE_FAILED
+        loadingState.value = ProfileState.Rejected(ProfileRejection.NO_STORE, UserRole.EMPLOYEE)
+        bindingPending.sendMessage("draft") shouldBe false
+        bindingPending.uiState.value shouldBe ChatbotUiState.Error.PROFILE_NO_STORE_EMPLOYEE
+        coVerify(exactly = 0) { send(any(), any()) }
+        verify(exactly = 0) { store.getOrCreate(any()) }
+    }
+
+    @Test
+    fun `profile becoming ready never sends a held message and preserves FEFO context`() = runTest {
+        val send = mockk<SendMessageToChatbotUseCase>()
+        val store = mockk<ChatbotConversationStore>()
+        val profileState = MutableStateFlow<ProfileState>(ProfileState.Loading)
+        val profile = mockk<ProfileUseCase> { every { state } returns profileState }
+        every { store.current("user-a") } returns null
+        every { store.getOrCreate("user-a") } returns "stable-uuid"
+        every { store.setActive("user-a", "stable-uuid") } returns Unit
+        coEvery { send(any(), any()) } returns ChatbotReply("stable-uuid", "answer", "completed")
+        val viewModel = ChatbotViewModel(send, store, activeSession(), profile)
+        viewModel.offerFefo(
+            PriorityAlert(
+                AlertProduct(
+                    "product-id",
+                    "Leite",
+                    "Laticínios",
+                    BigDecimal.ONE,
+                    2,
+                    StockFlow.MEDIUM,
+                    risks = setOf(CreationRisk.NEAR_EXPIRY),
+                ),
+                AlertRisk.EXPIRY,
+            ),
+        )
+
+        viewModel.sendMessage("draft") shouldBe false
+        profileState.value = ProfileState.Ready(1, testProfile("user-a"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { send(any(), any()) }
+        viewModel.sendMessage("draft") shouldBe true
+        advanceUntilIdle()
+        coVerify(exactly = 1) {
+            send(
+                ChatbotRequest("stable-uuid", "draft", productCard = ChatbotProductCard("Leite", "Laticínios")),
+                SessionSnapshot(1, true),
+            )
+        }
+    }
+
+    @Test
     fun `repeated load is ignored while the first request is active`() = runTest {
         val send = mockk<SendMessageToChatbotUseCase>()
         val store = mockk<ChatbotConversationStore>()
         val state = MutableStateFlow<SessionState>(SessionState.Active)
         every { store.current("user-a") } returns null
         coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers { awaitCancellation() }
-        val viewModel = ChatbotViewModel(send, store, activeSession(state))
+        val viewModel = ChatbotViewModel(send, store, activeSession(state), readyProfile())
 
         viewModel.load()
         viewModel.load()
@@ -119,7 +198,7 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-uuid"
         every { store.setActive("user-a", "stable-uuid") } returns Unit
         coEvery { send(any(), any()) } throws IOException("offline")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
 
         viewModel.sendMessage("question")
         advanceUntilIdle()
@@ -139,7 +218,7 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-uuid"
         every { store.setActive("user-a", "stable-uuid") } returns Unit
         coEvery { send(any(), any()) } returns ChatbotReply("stable-uuid", "Pergunta não aceita.", "rejected")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
 
         viewModel.sendMessage("question")
         advanceUntilIdle()
@@ -158,7 +237,7 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-uuid"
         every { store.setActive("user-a", "stable-uuid") } returns Unit
         coEvery { send(any(), any()) } throws ChatbotHttpException(422)
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
 
         viewModel.sendMessage("invalid question")
         advanceUntilIdle()
@@ -176,7 +255,7 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-uuid"
         every { store.setActive("user-a", "stable-uuid") } returns Unit
         coEvery { send(any(), any()) } returns ChatbotReply("stable-uuid", "answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         val alert = PriorityAlert(
             AlertProduct(
                 id = "product-id",
@@ -265,7 +344,10 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-uuid"
         every { store.setActive("user-a", any()) } returns Unit
         coEvery { send(any(), any()) } coAnswers { awaitCancellation() }
-        val model = ChatbotViewModel(send, store, session)
+        val profileState = MutableStateFlow<ProfileState>(ProfileState.Ready(1, testProfile("user-a")))
+        val profileUseCase = mockk<ProfileUseCase>()
+        every { profileUseCase.state } returns profileState
+        val model = ChatbotViewModel(send, store, session, profileUseCase)
         model.sendMessage("question")
         runCurrent()
         model.uiState.value shouldBe ChatbotUiState.Loading
@@ -288,7 +370,7 @@ class ChatbotViewModelTests {
             ChatbotConversationHistory("old-id", "Ativa", "active", emptyList())
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns
             listOf(ChatbotConversation("old-id", "Encerrada agora", "2026-10-31T10:00:00Z"))
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
 
         advanceUntilIdle()
@@ -313,7 +395,7 @@ class ChatbotViewModelTests {
         coEvery { send.history("old-id", SessionSnapshot(1, true)) } returns
             ChatbotConversationHistory("old-id", "Title", "active", emptyList())
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
 
@@ -339,7 +421,7 @@ class ChatbotViewModelTests {
         coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers {
             if (listCalls++ == 0) emptyList() else listOf(ended)
         }
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
 
@@ -364,7 +446,7 @@ class ChatbotViewModelTests {
         coEvery { send.listEnded(SessionSnapshot(1, true)) } coAnswers {
             if (listCalls++ == 0) emptyList() else throw IOException("offline")
         }
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
 
@@ -386,7 +468,10 @@ class ChatbotViewModelTests {
         every { store.getOrCreate("user-a") } returns "stable-id"
         every { store.setActive("user-a", "stable-id") } returns Unit
         coEvery { send(any(), any()) } coAnswers { awaitCancellation() }
-        val model = ChatbotViewModel(send, store, session)
+        val profileState = MutableStateFlow<ProfileState>(ProfileState.Ready(1, testProfile("user-a")))
+        val profile = mockk<ProfileUseCase>()
+        every { profile.state } returns profileState
+        val model = ChatbotViewModel(send, store, session, profile)
 
         model.sendMessage("in flight")
         runCurrent()
@@ -419,12 +504,16 @@ class ChatbotViewModelTests {
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
         coEvery { send(ChatbotRequest("second-id", "second account"), SessionSnapshot(2, true)) } returns
             ChatbotReply("second-id", "reply", "completed")
-        val model = ChatbotViewModel(send, store, session)
+        val profileState = MutableStateFlow<ProfileState>(ProfileState.Ready(1, testProfile("user-a")))
+        val profile = mockk<ProfileUseCase>()
+        every { profile.state } returns profileState
+        val model = ChatbotViewModel(send, store, session, profile)
         model.load()
         advanceUntilIdle()
 
         binding = binding("user-b")
         generation = 2
+        profileState.value = ProfileState.Ready(2, testProfile("user-b"))
         state.value = SessionState.Active
         model.synchronizeSession()
         model.messages.value shouldBe emptyList()
@@ -441,7 +530,7 @@ class ChatbotViewModelTests {
         val ended = ChatbotConversation("ended-id", "Past", "2026-10-31T10:00:00Z")
         coEvery { send.history("active-id", SessionSnapshot(1, true)) } throws IOException("offline")
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns listOf(ended)
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
 
         viewModel.load()
         advanceUntilIdle()
@@ -456,7 +545,7 @@ class ChatbotViewModelTests {
         val store = mockk<ChatbotConversationStore>()
         every { store.current("user-a") } returns "active-id"
         coEvery { send.history("past-id", SessionSnapshot(1, true)) } throws IOException("offline")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
 
         viewModel.openHistory("past-id")
         advanceUntilIdle()
@@ -481,7 +570,7 @@ class ChatbotViewModelTests {
         coEvery {
             send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
         } returns ChatbotReply("past-id", "answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
 
@@ -511,7 +600,7 @@ class ChatbotViewModelTests {
         coEvery {
             send(ChatbotRequest("past-id", "continue", true), SessionSnapshot(1, true))
         } returns ChatbotReply("past-id", "answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
 
@@ -538,7 +627,7 @@ class ChatbotViewModelTests {
         coEvery { send.listEnded(SessionSnapshot(1, true)) } returns emptyList()
         coEvery { send(ChatbotRequest("new-id", "new conversation"), SessionSnapshot(1, true)) } returns
             ChatbotReply("new-id", "answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, activeSession())
+        val viewModel = ChatbotViewModel(send, store, activeSession(), readyProfile())
         viewModel.load()
         advanceUntilIdle()
         viewModel.offerFefo(
@@ -567,7 +656,7 @@ class ChatbotViewModelTests {
 
     private fun activeSession(
         state: MutableStateFlow<SessionState> = MutableStateFlow(SessionState.Active),
-        binding: SessionBinding = binding("user-a"),
+        binding: SessionBinding? = binding("user-a"),
         generation: Long = 1,
         current: (() -> Pair<SessionBinding, Long>)? = null,
     ): SessionUseCase {
@@ -581,4 +670,19 @@ class ChatbotViewModelTests {
     }
 
     private fun binding(userId: String) = SessionBinding("session-$userId", userId, 1, Long.MAX_VALUE)
+
+    private fun readyProfile() = mockk<ProfileUseCase> {
+        every { state } returns MutableStateFlow(ProfileState.Ready(1, testProfile("user-a")))
+    }
+
+    private fun testProfile(id: String) = UserProfile(
+        id = id,
+        name = "Test User",
+        email = "test@example.test",
+        role = UserRole.EMPLOYEE,
+        status = UserStatus.ACTIVE,
+        photoUrl = null,
+        storeId = 1,
+        storeName = "Test Store",
+    )
 }

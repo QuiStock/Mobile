@@ -17,9 +17,12 @@ Integrar a tela existente ao fluxo autenticado Mobile → Core → IA. A convers
 | AC-03 | Listar conversas encerradas, abrir histórico e encerrar a conversa atual antes de iniciar outra; verificar estado quando o encerramento for incerto. | `ChatbotViewModelTests`; confirmar em aparelho |
 | AC-04 | Abrir Ajuda do FEFO no chatbot com nome e categoria do alerta, sem inventar ID ou data. | `ChatbotViewModelTests`; confirmar navegação no aparelho |
 | AC-05 | Após envio incerto, oferecer reenvio manual com aviso de possível duplicação. Troca de sessão não exibe respostas anteriores. | `ChatbotViewModelTests` |
+| AC-06 | Distinguir sessão ausente, perfil carregando e falha do perfil; bloquear chamadas do chatbot até perfil pronto, preservar rascunho e contexto FEFO quando o envio for recusado localmente, e nunca enviar automaticamente quando o perfil ficar pronto. | `ChatbotViewModelTests`, `ChatbotFragmentTests` |
 
 ## Contratos e limitações
 
 O cliente usa a sessão e o transporte autenticado da Core. A Core encaminha mensagens e operações de histórico/encerramento à IA. Dados do card são contexto, não autorização. A conversa é identificada localmente por conta; a recuperação em outro aparelho está fora do escopo.
 
 Os testes focados do chatbot, Spotless, Detekt, lintDebug e assembleDebug passaram localmente; os testes instrumentados compilaram, mas não foram executados em aparelho. A suíte unitária completa da versão final foi interrompida e o assembleRelease não foi concluído. Validar a integração completa após implantar a Core e registrar o resultado por conta, sem expor credenciais ou dados pessoais.
+
+O envio só é aceito com sessão ativa e perfil Core pronto para a mesma geração e usuário. A tela mantém o texto digitado quando o ViewModel recusa o envio; a transição do perfil para pronto pode carregar o histórico, mas exige novo toque explícito para enviar o rascunho.
