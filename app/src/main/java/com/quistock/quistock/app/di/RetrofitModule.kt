@@ -4,7 +4,7 @@ import android.content.Context
 import com.quistock.quistock.BuildConfig
 import com.quistock.quistock.R
 import com.quistock.quistock.data.preferences.AndroidChatbotConversationStore
-import com.quistock.quistock.data.preferences.DataStoreHomeSummaryCache
+import com.quistock.quistock.data.preferences.SqliteHomeSummaryCache
 import com.quistock.quistock.data.remote.auth.AuthApi
 import com.quistock.quistock.data.remote.auth.AuthCookieCustody
 import com.quistock.quistock.data.remote.auth.AuthCookieStore
@@ -62,7 +62,7 @@ val retrofitModule = module {
             .client(get<OkHttpClient>(named("CoreHttpClient"))).build().create(DashboardApi::class.java)
     }
     single<HomeSummaryRepository> { RetrofitHomeSummaryRepository(get()) }
-    single<HomeSummaryCache> { DataStoreHomeSummaryCache(get()) }
+    single<HomeSummaryCache> { SqliteHomeSummaryCache(get()) }
 
     single<TeamApi> {
         Retrofit.Builder()

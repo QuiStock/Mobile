@@ -258,8 +258,9 @@ the regular `connectedDebugAndroidTest` suite remains selected. See
 Home reads the authenticated Core `dashboard/summary?store_id=` route and displays
 near-expiry, combined stockout/overstock and active-action counts. Existing alerts are
 preserved. Summary cache is isolated by protected local session ID, Core user and SQL
-store, and expires for local access with the refresh cookie. It uses a dedicated DataStore
-key, atomically invalidated with credential replacement/revocation; no SQLite is required.
+store, and expires for local access with the refresh cookie. It is stored as an AES/GCM-encrypted
+row in native SQLite. A process-wide lock coordinates cache reads/writes with encrypted DataStore
+credential replacement/revocation; the legacy DataStore cache value is discarded on first access.
 OfflineReadOnly shows only cached indicators, reconnection and logout. It is never an
 Active authenticated session and cannot call protected APIs. Reconnection is manual.
 Store eligibility errors (`no_active_store` from Auth, `NO_ACTIVE_STORE` from Core)

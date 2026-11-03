@@ -1,6 +1,6 @@
 # Big numbers da Home com dados da API Core
 
-**Status:** Implemented — contracts approved on 2026-10-29; execution evidence in [PR #44](https://github.com/QuiStock/Mobile/pull/44).
+**Status:** Implemented — contracts approved on 2026-10-29; SQLite storage migration tracked separately from [PR #44](https://github.com/QuiStock/Mobile/pull/44).
 **Issue:** [QUIS-126](https://quistock.atlassian.net/browse/QUIS-126)
 **Product decision owner:** solicitante (plano de implementação aprovado em 29/10/2026)
 
@@ -36,12 +36,12 @@ via ambiente está desatualizada para esse cliente. Não reproduzir endereços p
 ## Escopo
 
 **Incluído:** resumo por loja, mapeamento dos três cards no HomeViewModel existente,
-CoreHttpClient existente, estados de carregamento/erro/retry, cache DataStore protegido,
+CoreHttpClient existente, estados de carregamento/erro/retry, cache SQLite protegido,
 modo explícito de consulta offline, vínculo sessão/usuário/loja, validação de elegibilidade,
 DI Koin, documentação e testes. Integração com a navegação central da main preserva
 as abas online e bloqueia qualquer destino protegido no modo offline.
 
-**Excluído:** novos cálculos/endpoint de dashboard, ML, SQLite/Room, reescrita dos alertas,
+**Excluído:** novos cálculos/endpoint de dashboard, ML, Room, reescrita dos alertas,
 novos fluxos de ações, chamadas diretas ao ERP, redesign e mudanças nas regras do website.
 As alterações complementares de elegibilidade estão em [Auth #11](https://github.com/QuiStock/DS_Auth/pull/11)
 e [Core #38](https://github.com/QuiStock/DS_Backend/pull/38). Não há nova tabela/coluna SQL;
@@ -80,9 +80,13 @@ but cannot select offline cache until profile validation. Old server sessions wi
 platform require one new login after Auth deployment.
 
 Cache only the four counts, opaque scope IDs, schema version and successful receipt time.
-Use a dedicated DataStore key coordinated atomically with credential removal and identity
-replacement. This avoids a relational database and prevents a queued stale write from
-repopulating a logged-out or replaced scope. No domain session lock is held during cache I/O.
+Store one AES/GCM-encrypted summary record in Android's native SQLite database, using the
+Android Keystore key already dedicated to Auth cookies. Keep credentials in their separate
+encrypted DataStore. A shared process-wide mutex covers credential validation plus SQLite
+reads/writes and Auth `writeSession`/`revoke`, including key destruction, across instances.
+This prevents a queued stale write from repopulating a logged-out or replaced scope. No domain
+session lock is held during cache I/O. Remove the old DataStore summary value on first SQLite
+access; never migrate its data. Session, user and store IDs stay inside the encrypted record.
 
 A distinct read-only session state permits cold reopening after a transient recovery failure
 only when the protected binding, cache and unexpired refresh record agree. It permits only

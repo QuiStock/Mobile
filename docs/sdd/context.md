@@ -178,9 +178,11 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 PR #44 supersedes earlier global-summary and no-offline-cache assumptions. Core's
 `dashboard/summary?store_id=` supplies the four card metrics; HomeViewModel preserves
 priority alerts while loading summary separately. The encrypted refresh record now owns
-an opaque local session ID and a validated Core user/store binding. A separate summary
-key uses the same DataStore transaction boundary for atomic invalidation on revocation
-or identity replacement; no Room/SQLite dependency is added. No tokens enter summary cache.
+an opaque local session ID and a validated Core user/store binding. The summary uses SQLite
+for one AES/GCM-encrypted row. Credentials remain in encrypted DataStore.
+A shared process-wide lock coordinates credential validation and SQLite access with Auth
+session replacement, revocation and key destruction across instances. The previous DataStore
+summary value is discarded on first SQLite access. No tokens enter the summary cache.
 
 A distinct OfflineReadOnly session state permits only saved Home indicators, manual
 recovery and logout until refresh expiry; it never authorizes Core calls. Missing/expired
