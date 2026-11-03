@@ -34,6 +34,8 @@ internal data class ManagerState(
     val phase: DecisionPhase = DecisionPhase.IDLE,
     val decision: ActionDecision? = null,
     val failure: ActionFailure? = null,
+    /** Request opened from a device alert; resolved against a fresh read. */
+    val focusId: String? = null,
 ) {
     val pending: List<InterferenceAction>
         get() = actions.filter { it.status.canDecide && (filter == null || it.type == filter) }
@@ -88,6 +90,20 @@ class ManagerInterferencesViewModel(
                 products = products.ifEmpty { state.value.products },
             )
         }
+    }
+
+    /** Asks the hub to open [actionId] once the next read completes, if it still awaits a decision. */
+    fun focus(actionId: String) {
+        mutableState.value = state.value.copy(focusId = actionId)
+        refresh()
+    }
+
+    /** Consumes the focus once loaded: the pending action to open, or null when decided or unknown. */
+    internal fun takeFocus(): InterferenceAction? {
+        val current = state.value
+        val id = current.focusId?.takeIf { !current.loading } ?: return null
+        mutableState.value = current.copy(focusId = null)
+        return current.actions.firstOrNull { it.id == id && it.status.canDecide }
     }
 
     internal fun toggleFilter(type: ActionType) {

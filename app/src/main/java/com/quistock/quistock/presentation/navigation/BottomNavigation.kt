@@ -107,6 +107,13 @@ internal class BottomNavigation(
         binding.navHostFragment.isVisible = true
     }
 
+    /** Opens the root tab of an alert's context, unless navigation is blocked or the role lacks the tab. */
+    fun openForAlert(tab: MainTab) {
+        val role = access.ready()?.profile?.role
+        val allowed = role != null && !blocked && !creationBusy && tab in MainTab.forRole(role)
+        if (allowed && MainTab.atRoot(nav.currentDestination?.id) != tab) open(tab)
+    }
+
     private fun navigateBack() {
         if (!canNavigate()) return
         if (nav.currentDestination?.id == R.id.homeFragment) {

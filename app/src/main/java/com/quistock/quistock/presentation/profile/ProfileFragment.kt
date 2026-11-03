@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -13,11 +14,16 @@ import androidx.navigation.fragment.findNavController
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentProfileBinding
 import com.quistock.quistock.domain.model.ProfileState
+import com.quistock.quistock.domain.model.RoleAlertType
 import com.quistock.quistock.domain.port.LocationPromptPreferences
 import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.common.LOCATION_PERMISSIONS
 import com.quistock.quistock.presentation.common.PopupFeedback
 import com.quistock.quistock.presentation.common.openAppSettings
+import com.quistock.quistock.presentation.notifications.needsNotificationPermission
+import com.quistock.quistock.presentation.notifications.notificationPermissionLauncher
+import com.quistock.quistock.presentation.notifications.openNotificationSettings
+import com.quistock.quistock.presentation.notifications.requestNotifications
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -29,6 +35,11 @@ class ProfileFragment : Fragment() {
     private val locationViewModel: StoreLocationViewModel by viewModel()
     private val userLocationViewModel: UserLocationViewModel by viewModel()
     private val locationPrompt: LocationPromptPreferences by inject()
+    private val alertPreferences: AlertPreferencesViewModel by viewModel()
+    private val notificationPermission = notificationPermissionLauncher { granted ->
+        renderAlertPermission()
+        if (granted) sessionViewModel.alerts.refresh()
+    }
     private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         userLocationViewModel.refresh()
     }
@@ -59,6 +70,7 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_profileFragment_to_faqFragment)
         }
         bindLocation(view)
+        bindAlerts()
         binding?.profileSignOutButton?.setOnClickListener {
             if (childFragmentManager.findFragmentByTag(LogoutConfirmationDialog.TAG) == null) {
                 LogoutConfirmationDialog().showNow(childFragmentManager, LogoutConfirmationDialog.TAG)
@@ -92,6 +104,53 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+    private fun bindAlerts() {
+        val views = requireNotNull(binding).profileAlerts
+        val switches = mapOf(
+            RoleAlertType.NEAR_EXPIRY to views.roleAlertsExpiry,
+            RoleAlertType.PENDING_APPROVAL to views.roleAlertsPending,
+            RoleAlertType.REQUEST_APPROVED to views.roleAlertsApproved,
+        )
+        switches.forEach { (type, switch) ->
+            switch.setOnCheckedChangeListener { _, checked ->
+                alertPreferences.set(type, checked)
+            }
+        }
+        views.roleAlertsPermission.setOnClickListener { askNotifications() }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                renderAlertPermission()
+                launch {
+                    sessionViewModel.profile.state.collect { if (it is ProfileState.Ready) alertPreferences.load() }
+                }
+                alertPreferences.state.collect { enabled ->
+                    views.root.isVisible = enabled.isNotEmpty()
+                    switches.forEach { (type, switch) ->
+                        switch.isVisible = type in enabled
+                        switch.isChecked = enabled[type] == true
+                    }
+                }
+            }
+        }
+    }
+
+    private fun renderAlertPermission() {
+        binding?.profileAlerts?.roleAlertsPermission?.isVisible = needsNotificationPermission(requireContext())
+    }
+
+    private fun askNotifications() {
+        val permission = android.Manifest.permission.POST_NOTIFICATIONS
+        if (shouldShowRequestPermissionRationale(permission) || !notificationAskedHere) {
+            notificationAskedHere = true
+            notificationPermission.requestNotifications()
+        } else {
+            // Denied permanently: only the system settings can enable notifications now.
+            openNotificationSettings(requireContext())
+        }
+    }
+
+    private var notificationAskedHere = false
 
     private fun onUserLocationAction() {
         if (userLocationViewModel.state.value != UserLocationState.PermissionNeeded) {
