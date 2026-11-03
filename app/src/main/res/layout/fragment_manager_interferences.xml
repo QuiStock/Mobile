@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.interferences.ManagerInterferencesFragment">
 
     <ScrollView
@@ -52,7 +52,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Loja Av. Paulista"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_text_title"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -60,7 +60,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Milena Souza"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_subtitle"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="38dp"
                 android:text="Interferências"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_text_title"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -108,6 +108,8 @@
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:contentDescription="Promoção"
+                        android:duplicateParentState="true"
+                        android:tint="@color/manager_filter_icon"
                         android:src="@drawable/promo" />
 
                     <TextView
@@ -115,7 +117,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="Promoção"
-                        android:textColor="#D8C9E0"
+                        android:duplicateParentState="true"
+                        android:textColor="@color/manager_filter_text"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -137,6 +140,8 @@
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:contentDescription="Pedido de estoque"
+                        android:duplicateParentState="true"
+                        android:tint="@color/manager_filter_icon"
                         android:src="@drawable/box" />
 
                     <TextView
@@ -144,7 +149,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Pedido de estoque"
-                        android:textColor="#D8C9E0"
+                        android:duplicateParentState="true"
+                        android:textColor="@color/manager_filter_text"
                         android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -158,7 +164,7 @@
                 android:layout_marginTop="20dp"
                 android:accessibilityHeading="true"
                 android:text="@string/manager_pending_title"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="13sp" />
 
             <ScrollView
@@ -193,7 +199,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Pedido de promoção"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/color_text_title"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -201,14 +207,14 @@
                             android:id="@+id/btnAnalisarPromocao"
                             android:layout_width="wrap_content"
                             android:layout_height="26dp"
-                            android:background="@drawable/bg_card_summary"
+                            android:background="@drawable/bg_btn_decision_approve"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
                             android:paddingStart="14dp"
                             android:paddingEnd="14dp"
                             android:text="Analisar"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/white"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -228,7 +234,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Pedido de estoque"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/color_text_title"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -236,14 +242,14 @@
                             android:id="@+id/btnAnalisarEstoque"
                             android:layout_width="wrap_content"
                             android:layout_height="26dp"
-                            android:background="@drawable/bg_card_summary"
+                            android:background="@drawable/bg_btn_decision_approve"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
                             android:paddingStart="14dp"
                             android:paddingEnd="14dp"
                             android:text="Analisar"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/white"
                             android:textSize="11sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -258,7 +264,7 @@
                 android:layout_marginTop="16dp"
                 android:accessibilityHeading="true"
                 android:text="Interferências ativas"
-                android:textColor="#E8D2F0"
+                android:textColor="@color/color_text_subtitle"
                 android:textSize="13sp" />
 
             <ScrollView
@@ -292,7 +298,7 @@
                             android:layout_height="34dp"
                             android:gravity="center"
                             android:text="%"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/color_text_title"
                             android:textSize="25sp"
                             android:textStyle="bold" />
 
@@ -307,7 +313,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Promoção Verão 25%"
-                                android:textColor="#FFFFFF"
+                                android:textColor="@color/color_text_title"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -315,7 +321,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Em vigor: 15:35 AM · Expira em 3 dias"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="9sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -349,7 +355,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Pedido #1014 - Refrigerantes"
-                                android:textColor="#FFFFFF"
+                                android:textColor="@color/color_text_title"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -357,7 +363,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Recebimento pendente · Solicitado: 02:32 AM"
-                                android:textColor="#BFAFC5"
+                                android:textColor="@color/color_text_subtitle"
                                 android:textSize="9sp" />
                         </LinearLayout>
                     </LinearLayout>

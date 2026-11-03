@@ -39,3 +39,30 @@ Adds `ManagerInterferencesFragment` shell, `fragment_manager_interferences.xml` 
 ## Implementation outcome
 
 Added the `ManagerInterferencesFragment` shell, `fragment_manager_interferences.xml` layout, and registered routes in `nav_graph.xml` and `NavGraph.kt`. Fragment business logic is deferred to teammate as requested.
+
+
+## Correção de cores do hub (02/11/2026)
+
+Solicitação: adequar a tela gerencial de Interferências ao tema claro conforme imagem
+fornecida, preservando formato, dimensões, espaçamentos e navegação.
+
+- Fundo, títulos, subtítulos e cartões usam os tokens existentes de cada tema.
+- Filtros selecionados mantêm violeta, com texto e ícone brancos; filtros sem seleção
+  usam texto principal e ícone de destaque do tema.
+- Produto e resumo ficam legíveis nos cartões; Analisar mantém texto branco sobre violeta.
+- Estados de carregamento, vazio e erro continuam usando texto adaptável ao tema.
+- Contratos, regras de decisão, detalhes e disposição da tela ficam fora desta correção.
+
+| ID | Observable given / when / then | Planned test or check |
+| --- | --- | --- |
+| AC-04 | No tema claro, fundo claro e textos escuros aparecem no cabeçalho, seções e cartões. | Inspeção dos recursos e verificação manual no app; contraste é visual. |
+| AC-05 | Ao selecionar e limpar cada filtro, texto e ícone permanecem legíveis em ambos os temas. | Inspeção do seletor e propagação de estado; verificação manual nos dois temas. |
+| AC-06 | A correção preserva dimensões, espaçamentos, hierarquia e navegação. | Comparação do diff XML com a versão anterior. |
+
+Verificação visual em dispositivo pendente. Não há novas regras de negócio ou contratos.
+
+Evidência desta correção: XML validado e comparação automatizada com HEAD confirmou
+hierarquia, dimensões, margens, paddings e tamanhos de texto preservados nos dois layouts.
+`git diff --check` sem erros. Tentativas de `testDebugUnitTest spotlessCheck detekt lintDebug
+assembleRelease` ficaram sem saída e foram interrompidas; nenhum desses checks está
+confirmado nesta rodada. AC-04/05 ainda requerem conferência visual no aparelho.
