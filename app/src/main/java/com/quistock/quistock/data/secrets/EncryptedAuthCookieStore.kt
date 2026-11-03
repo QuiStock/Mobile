@@ -23,34 +23,43 @@ class EncryptedAuthCookieStore(private val context: Context) : AuthCookieStore {
 
     override suspend fun read(): List<RefreshCookieRecord> = readSession().records
 
-    override suspend fun readSession(): RefreshCookieBatch = withContext(Dispatchers.IO) {
-        removeLegacyAuthCredential(context)
-        val saved = dataStore.data.first()[recordKey] ?: return@withContext RefreshCookieBatch(emptyList())
-        decodeAuthRecord(saved)
+    override suspend fun readSession(): RefreshCookieBatch = withAuthPersistenceLock {
+        withContext(Dispatchers.IO) {
+            removeLegacyAuthCredential(context)
+            val saved = dataStore.data.first()[recordKey] ?: return@withContext RefreshCookieBatch(emptyList())
+            decodeAuthRecord(saved)
+        }
     }
 
     override suspend fun write(records: List<RefreshCookieRecord>) = writeSession(RefreshCookieBatch(records))
 
-    override suspend fun writeSession(session: RefreshCookieBatch) = withContext(Dispatchers.IO) {
-        if (session.records.isEmpty()) {
-            revoke()
-        } else {
-            val plaintext = Json.encodeToString(RefreshCookieBatch.serializer(), session).toByteArray(Charsets.UTF_8)
-            val encrypted = Base64.encodeToString(cipher.encrypt(recordKey.name, plaintext), Base64.NO_WRAP)
-            dataStore.edit { saved ->
-                val previous = saved[recordKey]?.let { runCatching { decodeAuthRecord(it) }.getOrNull() }
-                if (previous?.sessionId != session.sessionId || previous?.userId != session.userId ||
-                    previous?.storeId != session.storeId
-                ) {
-                    saved.remove(homeSummaryKey)
+    override suspend fun writeSession(session: RefreshCookieBatch) = withAuthPersistenceLock {
+        withContext(Dispatchers.IO) {
+            if (session.records.isEmpty()) {
+                revokeLocked()
+            } else {
+                val plaintext = Json.encodeToString(RefreshCookieBatch.serializer(), session)
+                    .toByteArray(Charsets.UTF_8)
+                val encrypted = Base64.encodeToString(cipher.encrypt(recordKey.name, plaintext), Base64.NO_WRAP)
+                dataStore.edit { saved ->
+                    val previous = saved[recordKey]?.let { runCatching { decodeAuthRecord(it) }.getOrNull() }
+                    if (previous?.sessionId != session.sessionId || previous?.userId != session.userId ||
+                        previous?.storeId != session.storeId
+                    ) {
+                        saved.remove(homeSummaryKey)
+                    }
+                    saved[recordKey] = encrypted
                 }
-                saved[recordKey] = encrypted
             }
+            Unit
         }
-        Unit
     }
 
-    override suspend fun revoke() = withContext(Dispatchers.IO) {
+    override suspend fun revoke() = withAuthPersistenceLock {
+        withContext(Dispatchers.IO) { revokeLocked() }
+    }
+
+    private suspend fun revokeLocked() {
         // Key destruction precedes disk removal: stale ciphertext cannot restore a revoked credential.
         val current = runCatching {
             revokeCredential(

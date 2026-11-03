@@ -137,21 +137,18 @@ class OrderAndPromotionFragmentTests {
         org.junit.Assert.assertTrue(blankReview.contains("Desconto:"))
 
         val sentOrder = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
-            context,
             "Produto: Arroz\nQuantidade: 20\nData: 2026-11-10",
             "",
         )
         org.junit.Assert.assertTrue(sentOrder.contains("Quantidade"))
 
         val sentPromo = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
-            context,
             "Produto: Arroz\nDesconto: 10%\nInício: 2026-11-10\nFim: 2026-11-20\nStatus: Pendente",
             "",
         )
         org.junit.Assert.assertTrue(sentPromo.contains("Início"))
 
         val sentBlank = com.quistock.quistock.presentation.interferences.CreationCardFormatter.formatSentDetails(
-            context,
             "",
             "Linha sem dois pontos",
         )
@@ -174,8 +171,8 @@ class OrderAndPromotionFragmentTests {
     @Test
     fun promotionHasExplicitDatesAndCancelDoesNotWrite() = runForm(R.id.promotionFragment) { _ ->
         fill(R.id.creationDiscount, "15,25")
-        fill(R.id.creationStart, today())
-        fill(R.id.creationEnd, today())
+        fill(R.id.creationStart, today().toString())
+        fill(R.id.creationEnd, today().toString())
         onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
         onView(withId(R.id.creationDiscount)).check(matches(withText("15,25")))
