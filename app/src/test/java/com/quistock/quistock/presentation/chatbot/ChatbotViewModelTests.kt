@@ -305,12 +305,16 @@ class ChatbotViewModelTests {
                 SessionSnapshot(2, true),
             )
         } returns ChatbotReply("second-id", "answer", "completed")
-        val viewModel = ChatbotViewModel(send, store, session)
+        val profileState = MutableStateFlow<ProfileState>(ProfileState.Ready(1, testProfile("user-a")))
+        val profile = mockk<ProfileUseCase>()
+        every { profile.state } returns profileState
+        val viewModel = ChatbotViewModel(send, store, session, profile)
         viewModel.load()
         advanceUntilIdle()
 
         accountBinding = binding("user-b")
         generation = 2
+        profileState.value = ProfileState.Ready(2, testProfile("user-b"))
         viewModel.offerFefo(
             AlertProduct(
                 id = "product-b",
