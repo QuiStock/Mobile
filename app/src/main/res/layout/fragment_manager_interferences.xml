@@ -109,7 +109,7 @@
                         android:layout_height="56dp"
                         android:contentDescription="Promoção"
                         android:duplicateParentState="true"
-                        android:tint="@color/manager_filter_icon"
+                        app:tint="@color/manager_filter_icon"
                         android:src="@drawable/promo" />
 
                     <TextView
@@ -141,7 +141,7 @@
                         android:layout_height="56dp"
                         android:contentDescription="Pedido de estoque"
                         android:duplicateParentState="true"
-                        android:tint="@color/manager_filter_icon"
+                        app:tint="@color/manager_filter_icon"
                         android:src="@drawable/box" />
 
                     <TextView
