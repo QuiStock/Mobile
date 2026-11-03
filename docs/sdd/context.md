@@ -4,6 +4,16 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Alertas por cargo implementados em 02/11/2026 conforme `specs/role-alerts.md`: sem push/autor no
+  Core (contrato v3.1.0, Core não pode mudar), o app consulta o Core a cada 15 min via WorkManager e
+  publica notificações locais privadas. Vencimento próximo (NEAR_EXPIRY) para EMPLOYEE/MANAGER,
+  solicitação aguardando aprovação para MANAGER e solicitação aprovada para EMPLOYEE, apenas para
+  pedidos encaminhados por este usuário neste aparelho (posse local). Preferências por tipo no Perfil,
+  entrega no máximo uma vez por usuário/aparelho, toque abre o contexto só para o mesmo usuário e cargo.
+  Unitários, Spotless, Detekt, Lint, assembleRelease e compilação androidTest executados com sucesso
+  pelo agente; instrumentados, JaCoCo combinado e checagens manuais no aparelho pendentes.
+
+
 - Localização do usuário no Perfil implementada em 02/11/2026 conforme `specs/user-location.md`:
   pedido de permissão (somente primeiro plano) na primeira abertura do app, posição atual lida
   apenas com o Perfil visível e mantida só em memória, ponto do usuário no mini mapa junto ao pino
