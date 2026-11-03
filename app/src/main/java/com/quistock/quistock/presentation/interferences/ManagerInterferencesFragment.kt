@@ -51,6 +51,7 @@ class ManagerInterferencesFragment : Fragment() {
 
     private fun render(state: ManagerState) {
         val views = binding ?: return
+        if (state.focusId != null && !state.loading) model.takeFocus()?.let(::open)
         renderFilters(views, state.filter)
         val previous = rendered
         val listChanged = previous == null || previous.actions != state.actions || previous.filter != state.filter ||

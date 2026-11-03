@@ -6,6 +6,7 @@ import com.quistock.quistock.data.remote.core.InterferenceApi
 import com.quistock.quistock.data.remote.core.InterferenceWriteAttempt
 import com.quistock.quistock.data.remote.core.RetrofitInterferenceRepository
 import com.quistock.quistock.domain.port.InterferenceRepository
+import com.quistock.quistock.domain.port.RequestOwnership
 import com.quistock.quistock.domain.usecase.CreateInterferenceUseCase
 import com.quistock.quistock.domain.usecase.ManagerDecisionUseCase
 import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
@@ -36,7 +37,9 @@ val interferenceModule = module {
             .build().create(InterferenceApi::class.java)
     }
     single<InterferenceRepository> { RetrofitInterferenceRepository(get()) }
-    factory { CreateInterferenceUseCase(get(), get(), get(), get()) }
+    factory {
+        CreateInterferenceUseCase(get(), get(), get(), get(), ownership = getOrNull<RequestOwnership>())
+    }
     viewModel { CreateInterferenceViewModel(get(), get(), get()) }
     factory { ManagerDecisionUseCase(get(), get(), get(), get()) }
     viewModel { ManagerInterferencesViewModel(get(), get(), get()) }

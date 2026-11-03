@@ -7,7 +7,9 @@ import com.quistock.quistock.domain.model.SessionState
 import com.quistock.quistock.domain.usecase.GetHomeSummaryUseCase
 import com.quistock.quistock.domain.usecase.LoadProfilePhotoUseCase
 import com.quistock.quistock.domain.usecase.ProfileUseCase
+import com.quistock.quistock.domain.usecase.RoleAlertsUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +22,7 @@ class SessionViewModel(
     val profile: ProfileUseCase,
     private val loadPhoto: LoadProfilePhotoUseCase,
     private val summary: GetHomeSummaryUseCase,
+    roleAlerts: RoleAlertsUseCase? = null,
 ) : ViewModel() {
     suspend fun photoBytes(): ByteArray? = loadPhoto()
 
@@ -29,6 +32,7 @@ class SessionViewModel(
     private var retryTimer: Job? = null
     private var logoutJob: Job? = null
     private var offlineExpiry: Job? = null
+    val alerts = SessionAlerts(roleAlerts, viewModelScope)
 
     fun retrySession() {
         if (session.state.value == SessionState.Active && profile.state.value is ProfileState.Failure) {
@@ -112,6 +116,7 @@ class SessionViewModel(
                         }
                     }
                 }
+                if (state.endsAlerts()) alerts.stop()
                 if (state == SessionState.Active) {
                     profile.load()
                 } else if (state !is SessionState.Failure) {
@@ -123,8 +128,36 @@ class SessionViewModel(
             profile.state.collectLatest {
                 updateRetryBlock()
                 if (it is ProfileState.Failure) summary.openOffline()
+                if (it is ProfileState.Ready) alerts.start(it.generation)
             }
         }
+    }
+}
+
+private fun SessionState.endsAlerts(): Boolean = this == SessionState.SignedOut ||
+    this == SessionState.Expired || this == SessionState.LocalFailure || this == SessionState.LoggingOut ||
+    this is SessionState.LoggedOut || this is SessionState.LogoutFailed
+
+/** Alerts run once per session generation, after the profile proves the role and store. */
+class SessionAlerts(private val alerts: RoleAlertsUseCase?, private val scope: CoroutineScope) {
+    private var generation: Long? = null
+
+    fun start(generation: Long) {
+        val alerts = alerts ?: return
+        if (this.generation == generation) return
+        this.generation = generation
+        scope.launch { alerts.start() }
+    }
+
+    /** Runs a check now, e.g. right after the notification permission is granted. */
+    fun refresh() {
+        val alerts = alerts ?: return
+        scope.launch { alerts.check() }
+    }
+
+    fun stop() {
+        generation = null
+        alerts?.stop()
     }
 }
 

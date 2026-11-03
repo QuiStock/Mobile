@@ -25,7 +25,11 @@ import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.presentation.common.FirstLaunchLocationPrompt
 import com.quistock.quistock.presentation.common.ProfileBindingCallbacks
 import com.quistock.quistock.presentation.interferences.CreateInterferenceViewModel
+import com.quistock.quistock.presentation.interferences.ManagerInterferencesViewModel
 import com.quistock.quistock.presentation.navigation.BottomNavigation
+import com.quistock.quistock.presentation.notifications.AlertLauncher
+import com.quistock.quistock.presentation.notifications.AlertTargetIntent
+import com.quistock.quistock.presentation.notifications.NotificationPermissionPrompt
 import com.quistock.quistock.presentation.profile.LogoutProgressDialog
 import com.quistock.quistock.presentation.profile.LogoutRemoteWarningDialog
 import kotlinx.coroutines.flow.combine
@@ -39,6 +43,9 @@ class MainActivity : AppCompatActivity() {
 
     private val sessionViewModel: SessionViewModel by viewModel()
     private val creationModel: CreateInterferenceViewModel by viewModel()
+    private val managerModel: ManagerInterferencesViewModel by viewModel()
+    private lateinit var notificationPrompt: NotificationPermissionPrompt
+    private lateinit var alertLauncher: AlertLauncher
     private lateinit var bottomNavigation: BottomNavigation
     private val logoutBackBlocker = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = Unit
@@ -56,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         )
         val locationPrompt = FirstLaunchLocationPrompt(this, get())
         if (savedInstanceState == null) locationPrompt.askOnFirstLaunch()
+        notificationPrompt = NotificationPermissionPrompt(this, get(), sessionViewModel.alerts::refresh)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
@@ -63,6 +71,17 @@ class MainActivity : AppCompatActivity() {
         )
         setContentView(binding.root)
         bottomNavigation = BottomNavigation(this, binding, sessionViewModel)
+        alertLauncher = AlertLauncher(managerModel::focus) { bottomNavigation.openForAlert(it) }
+        // A restored activity must not replay a tap that was already handled.
+        alertLauncher.receive(AlertTargetIntent.take(intent).takeIf { savedInstanceState == null })
+        addOnNewIntentListener { next ->
+            setIntent(next)
+            alertLauncher.receive(AlertTargetIntent.take(next))
+            val state = sessionViewModel.session.state.value
+            val profile = sessionViewModel.profile.state.value
+            val gate = sessionGate(state, sessionViewModel.recovery.value, profile, null)
+            alertLauncher.open(state, profile, gate.blocked)
+        }
         onBackPressedDispatcher.addCallback(this, logoutBackBlocker)
         onBackPressedDispatcher.addCallback(this, recoveryBack)
         binding.sessionRecoveryRetry.setOnClickListener { sessionViewModel.retrySession() }
@@ -122,6 +141,10 @@ class MainActivity : AppCompatActivity() {
                         val gate = sessionGate(state, recovery, profile, nav.currentDestination?.id)
                         renderGate(state, recovery, gate)
                         navigateSession(nav, state, profile, gate.profilePending)
+                        if (profile is ProfileState.Ready && state == SessionState.Active && !gate.blocked) {
+                            notificationPrompt.askOnce()
+                        }
+                        alertLauncher.open(state, profile, gate.blocked)
                     }
             }
         }
