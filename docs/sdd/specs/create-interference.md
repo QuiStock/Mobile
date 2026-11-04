@@ -1,5 +1,18 @@
 # Criar nova interferência — pedido de compra ou promoção
 
+## Correção do teste de datas da promoção — 04/11/2026
+
+O relatório instrumentado registra ausência do diálogo de revisão em
+`promotionHasExplicitDatesAndCancelDoesNotWrite`. O teste preenchia os campos de
+data com `replaceText`, mas `CreationFields` atualiza o rascunho pelo DatePicker.
+O teste agora seleciona início/fim pelo mesmo seletor do formulário, preservando
+o desconto e as verificações de cancelamento sem geração. O helper não captura
+mais qualquer Throwable para tentar outro root: a falha do seletor deve aparecer
+no ponto real. Nenhum comportamento de produção ou contrato foi alterado.
+
+`git diff --check` passou. Gradle bloqueado antes dos checks por
+`Unable to establish loopback connection`; execução instrumentada pendente.
+
 **Status:** In progress — validações automatizadas aprovadas pelo solicitante; correção de textos aguarda conferência visual
 **Issue:** none
 **Product decision owner:** solicitante

@@ -1,5 +1,19 @@
 # Editar o próprio perfil e adicionar foto
 
+## Isolamento do teste de renderização — 04/11/2026
+
+A rodada local termina durante
+`progressBlocksEditingAndEveryRecoverableErrorHasVisibleFeedback`, com SIGKILL
+do processo e sem stack de exceção no testcase. O log mostra frames muito lentos;
+não estabelece a causa exata do encerramento. Os testes de `EditProfileRenderer`
+agora inflam o layout no main thread com `ContextThemeWrapper` e o tema do app,
+sem iniciar `MainActivity` ou instalar sessão autenticada. Os checks de campos,
+mensagens, etapas, fotos e bloqueio de edição foram preservados. Navegação segue
+coberta pelos testes específicos de perfil.
+
+`git diff --check` passou. A tentativa de compilação/testes Gradle foi bloqueada
+por `Unable to establish loopback connection`; confirmação no aparelho pendente.
+
 **Status:** Implemented — aguardando validações do solicitante  
 **Issue:** none  
 **Product decision owner:** solicitante  

@@ -1,5 +1,24 @@
 # Controle de produtos com dados Core
 
+## Rodada de 04/11/2026 às 15:37
+
+Dos 122 testes, resta neste fluxo uma falha após buscar "leite", não na lista
+inicial: o adapter já tem um item, mas a view ainda está em transição. O helper
+agora exige layout concluído e ausência de animação/pending updates. A jornada
+desabilita o ItemAnimator somente na Activity do teste, pois cobre conteúdo,
+filtro e navegação, não animações de remoção/movimentação. As verificações de
+visibilidade e inclusão/exclusão continuam obrigatórias. Produção inalterada.
+
+## Rodada de 04/11/2026 às 15:13
+
+O teste de lista ainda falha: `scrollTo` solicita o retângulo ao RecyclerView
+interno, sem alcançar o item pelo ScrollView externo. A ação do teste agora
+converte o retângulo do nome para coordenadas da página e rola explicitamente
+o ScrollView, aguardando o main thread antes de verificar visibilidade/clicar.
+As asserções de busca/filtro e destino foram preservadas. Nenhum layout ou
+comportamento de produção foi alterado. `git diff --check` passou; Gradle não
+iniciou os checks por erro de conexão loopback, sem confirmação instrumentada.
+
 **Status:** In progress
 **Issue:** none
 **Product decision owner:** solicitante
@@ -29,6 +48,7 @@ Abrir um item transfere seus dados reais ao detalhe. Se o argumento estiver ause
 | AC-03 | Carga, vazio válido e falha são visivelmente distintos; retry relê a loja atual. | Unitário de estado/retry e check manual de UI. |
 | AC-04 | Detalhe apresenta apenas valores presentes no produto selecionado; falta de produto/valor não inventa dados. | Unitários de navegação e verificação manual. |
 | AC-05 | FEFO navega para o chatbot atual e fornece nome/categoria no contexto sem substituir a conversa. | Unitário do contexto de produto e check manual de navegação. |
+| AC-06 | Controle e detalhe resolvem o ViewModel compartilhado da Activity pelo módulo Koin de produção, sem encerrar o processo. | `AppModulesTest.product control view model resolves from the presentation module` e `ProductControlFragmentTests`. |
 
 ## Technical impact
 
@@ -43,3 +63,24 @@ Abrir um item transfere seus dados reais ao detalhe. Se o argumento estiver ause
 ## Implementation outcome
 
 Preencher no PR com arquivos entregues e checks realmente executados.
+
+### Correção de instrumentação — 04/11/2026
+
+O relatório local registra encerramento do processo em
+`ProductControlFragmentTests.listSearchAndFlowFilterOpenTheSelectedProductDetail`:
+`NoDefinitionFoundException` para `ProductControlViewModel`. O módulo de apresentação
+importava a classe, mas não registrava sua factory. Adicionado `viewModelOf` no módulo
+de produção e teste de regressão que resolve a classe com suas dependências e limpa
+seu `ViewModelStore`. Nenhuma regra de produto ou contrato foi alterado.
+
+Tentativas de executar o teste de regressão foram bloqueadas primeiro por acesso ao
+cache Gradle e, com execução ampliada, por `Unable to establish loopback connection`.
+Não houve execução dos testes nem confirmação de aprovação após a correção.
+
+Na rodada seguinte, o relatório registra 98 testes e cinco falhas, sem repetir a
+ausência do registro Koin. A falha de AC-02 ocorre ao exigir visibilidade de
+`Leite integral` fora do viewport. O teste agora rola até cada item e aguarda a
+aplicação da lista do adapter depois de carregar, buscar e filtrar. Preservadas as
+asserções de inclusão/exclusão e a navegação para o detalhe. `git diff --check`
+passou; a nova execução Gradle (regressão de DI, compilação androidTest e Spotless)
+não iniciou os checks por `Unable to establish loopback connection`.

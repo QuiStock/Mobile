@@ -171,8 +171,9 @@ class OrderAndPromotionFragmentTests {
     @Test
     fun promotionHasExplicitDatesAndCancelDoesNotWrite() = runForm(R.id.promotionFragment) { _ ->
         fill(R.id.creationDiscount, "15,25")
-        fill(R.id.creationStart, today().toString())
-        fill(R.id.creationEnd, today().toString())
+        val date = today()
+        selectDate(R.id.creationStart, date)
+        selectDate(R.id.creationEnd, date)
         onView(withId(R.id.creationSubmit)).perform(scrollTo(), click())
         onView(withText(R.string.creation_cancel)).inRoot(isDialog()).perform(click())
         onView(withId(R.id.creationDiscount)).check(matches(withText("15,25")))
@@ -197,13 +198,8 @@ class OrderAndPromotionFragmentTests {
 
     private fun selectDate(id: Int, date: LocalDate) {
         onView(withId(id)).perform(scrollTo(), click())
-        try {
-            onView(isAssignableFrom(DatePicker::class.java)).inRoot(isDialog()).perform(setDate(date))
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
-        } catch (_: Throwable) {
-            onView(isAssignableFrom(DatePicker::class.java)).perform(setDate(date))
-            onView(withId(android.R.id.button1)).perform(click())
-        }
+        onView(isAssignableFrom(DatePicker::class.java)).inRoot(isDialog()).perform(setDate(date))
+        onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
     }
 
     private fun setDate(date: LocalDate): ViewAction = object : ViewAction {

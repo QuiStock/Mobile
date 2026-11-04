@@ -2,6 +2,8 @@ package com.quistock.quistock.data.geocoding
 
 import android.location.Address
 import android.location.Geocoder
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.every
@@ -30,7 +32,7 @@ class AndroidAddressGeocoderTests {
     @After fun cleanup() = unmockkAll()
 
     @Test fun firstMatchBecomesThePoint() = runBlocking {
-        answer { it.onGeocode(mutableListOf(address(-23.5, -46.6), address(1.0, 1.0))) }
+        answer(listOf(address(-23.5, -46.6), address(1.0, 1.0)))
 
         val point = geocoder.locate(ADDRESS)
 
@@ -39,16 +41,21 @@ class AndroidAddressGeocoderTests {
     }
 
     @Test fun noMatchOrGeocoderErrorGivesNoPoint() = runBlocking {
-        answer { it.onGeocode(mutableListOf()) }
+        answer(emptyList())
         assertNull(geocoder.locate(ADDRESS))
 
-        answer { it.onError("unavailable") }
+        answer(null)
         assertNull(geocoder.locate(ADDRESS))
     }
 
     @Test fun failingLookupGivesNoPoint() = runBlocking {
-        every { anyConstructed<Geocoder>().getFromLocationName(ADDRESS, 1, any<Geocoder.GeocodeListener>()) } throws
-            IllegalArgumentException("bad address")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Api33.fail(ADDRESS)
+        } else {
+            @Suppress("DEPRECATION")
+            every { anyConstructed<Geocoder>().getFromLocationName(ADDRESS, 1) } throws
+                IllegalArgumentException("bad address")
+        }
 
         assertNull(geocoder.locate(ADDRESS))
     }
@@ -59,9 +66,33 @@ class AndroidAddressGeocoderTests {
         assertNull(geocoder.locate(ADDRESS))
     }
 
-    private fun answer(reply: (Geocoder.GeocodeListener) -> Unit) {
-        every { anyConstructed<Geocoder>().getFromLocationName(ADDRESS, 1, any<Geocoder.GeocodeListener>()) } answers {
-            reply(thirdArg())
+    @Suppress("DEPRECATION")
+    private fun answer(addresses: List<Address>?) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Api33.answer(ADDRESS, addresses)
+        } else {
+            every { anyConstructed<Geocoder>().getFromLocationName(ADDRESS, 1) } returns addresses?.toMutableList()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private object Api33 {
+        fun answer(address: String, addresses: List<Address>?) {
+            every {
+                anyConstructed<Geocoder>().getFromLocationName(address, 1, any<Geocoder.GeocodeListener>())
+            } answers {
+                val listener = thirdArg<Geocoder.GeocodeListener>()
+                if (addresses == null) {
+                    listener.onError("unavailable")
+                } else {
+                    listener.onGeocode(addresses.toMutableList())
+                }
+            }
+        }
+
+        fun fail(address: String) {
+            every { anyConstructed<Geocoder>().getFromLocationName(address, 1, any<Geocoder.GeocodeListener>()) } throws
+                IllegalArgumentException("bad address")
         }
     }
 
