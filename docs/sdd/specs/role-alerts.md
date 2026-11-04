@@ -104,6 +104,7 @@ REGIONAL_MANAGER and other roles never reach a Ready profile on mobile and get n
 | RA-10 | Given logout/expiry, then the periodic work is cancelled and notifications are removed. | `RoleAlertsUseCaseTests` (`stop`), manual device check for WorkManager/NotificationManager |
 | RA-11 | Lock screen shows only the generic public version. | Manual device check |
 | RA-12 | Profile shows only the switches applicable to the role, persisted per user. | `RoleAlertsUseCaseTests` (preferences per user/role); visual check manual |
+| RA-13 | Opening Profile and toggling each applicable alert preference does not crash during switch measurement; labels remain visible and no text is drawn inside the switch thumb. | Manual device check on the minified release for EMPLOYEE and MANAGER; required because the reported failure occurs during Android view measurement. |
 
 ## Technical impact
 
@@ -126,6 +127,15 @@ REGIONAL_MANAGER and other roles never reach a Ready profile on mobile and get n
 | Polling period | 15 min (Android minimum) | Agent proposal accepted with "Proposed defaults" |
 
 ## Implementation outcome
+
+Correction on 04/11/2026: the three Profile alert switches explicitly disable internal
+on/off text with `app:showText="false"`. This avoids passing missing internal labels to
+`StaticLayout` during measurement while preserving each external `android:text` label.
+RA-13 device verification remains pending; no new business behavior is introduced.
+Verification on 04/11/2026: `git diff --check` passed. Attempted `spotlessCheck detekt
+lintDebug assembleRelease`, but Gradle failed before running tasks: first a wrapper
+cache access denial, then `Unable to establish loopback connection` with elevated
+execution. No Gradle check or release build is claimed as passed for this correction.
 
 Implemented on 02/11/2026.
 
