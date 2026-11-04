@@ -167,7 +167,7 @@
                         android:paddingBottom="4dp"
                         android:id="@+id/detailFlow"
                         android:text="@string/product_control_unavailable_flow"
-                        android:textColor="#DA4DC8"
+                        android:textColor="@color/color_rosa_tag"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>

@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="@string/role_alerts_expiry"
-        android:textColor="#BFAFC5"
+        android:textColor="@color/color_text_muted"
         android:textSize="12sp"
         android:visibility="gone" />
 
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="@string/role_alerts_pending"
-        android:textColor="#BFAFC5"
+        android:textColor="@color/color_text_muted"
         android:textSize="12sp"
         android:visibility="gone" />
 
@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="@string/role_alerts_approved"
-        android:textColor="#BFAFC5"
+        android:textColor="@color/color_text_muted"
         android:textSize="12sp"
         android:visibility="gone" />
 </LinearLayout>

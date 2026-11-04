@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     android:clipToPadding="false"
     android:fillViewport="true"
     android:paddingBottom="32dp"
@@ -45,7 +45,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Loja Av. Paulista"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Voltar"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -105,7 +105,7 @@
             android:layout_marginStart="27dp"
             android:layout_marginTop="16dp"
             android:text="Detalhes do pedido"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/color_on_surface"
             android:textSize="21sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -158,7 +158,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Leite Integral UHT 1L"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -172,7 +172,7 @@
                     android:paddingEnd="8dp"
                     android:paddingBottom="3dp"
                     android:text="Fluxo Baixo"
-                    android:textColor="#C785E0"
+                    android:textColor="@color/color_flow_low_text"
                     android:textSize="9sp" />
             </LinearLayout>
 
@@ -212,7 +212,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="06/08/2026"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/color_on_surface"
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -251,7 +251,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Quantidade sugerida"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="12sp" />
 
                 <TextView
@@ -259,7 +259,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="50 un"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -275,7 +275,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Data desejada"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="12sp" />
 
                 <TextView
@@ -283,7 +283,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="15 ago."
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -293,7 +293,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="@string/manager_reason_label"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="12sp" />
 
             <TextView
@@ -302,7 +302,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/manager_not_informed"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_muted"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -347,7 +347,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/manager_decision_justification_label"
-                    android:textColor="#C7B7CC"
+                    android:textColor="@color/color_text_label"
                     android:textSize="11sp" />
 
                 <TextView
@@ -355,7 +355,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="13sp" />
 
                 <TextView
@@ -363,7 +363,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/manager_locked_notice"
-                    android:textColor="#BFAFC5"
+                    android:textColor="@color/color_text_muted"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -390,7 +390,7 @@
                 android:stateListAnimator="@animator/press_scale"
                 android:text="@string/manager_reject"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:backgroundTint="@null" />

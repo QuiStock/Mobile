@@ -60,7 +60,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Milena Souza"
-                        android:textColor="#BFAFC5"
+                        android:textColor="@color/color_text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -117,7 +117,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Promoção"
-                        android:textColor="#D8C9E0"
+                        android:textColor="@color/color_text_soft"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -146,7 +146,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Pedido de estoque"
-                        android:textColor="#D8C9E0"
+                        android:textColor="@color/color_text_soft"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -176,7 +176,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:accessibilityLiveRegion="polite"
-                android:textColor="#BFAFC5"
+                android:textColor="@color/color_text_muted"
                 android:visibility="gone" />
 
             <Button

@@ -89,7 +89,7 @@ class ChatbotFragment : Fragment() {
                     TextView(requireContext()).apply {
                         setText(R.string.chatbot_no_history)
                         textSize = HISTORY_TEXT_SIZE_SP
-                        setTextColor(HISTORY_TEXT_COLOR)
+                        setTextColor(context.getColor(R.color.color_chat_history))
                         gravity = android.view.Gravity.CENTER_VERTICAL
                         minHeight = resources.getDimensionPixelSize(R.dimen.chatbot_history_row_min_height)
                     },
@@ -109,7 +109,7 @@ class ChatbotFragment : Fragment() {
     private fun historyRow(conversation: ChatbotConversation, onClick: () -> Unit) = TextView(requireContext()).apply {
         text = conversation.title.ifBlank { conversation.updatedAt }
         textSize = HISTORY_TEXT_SIZE_SP
-        setTextColor(HISTORY_TEXT_COLOR)
+        setTextColor(context.getColor(R.color.color_chat_history))
         gravity = android.view.Gravity.CENTER_VERTICAL
         minHeight = resources.getDimensionPixelSize(R.dimen.chatbot_history_row_min_height)
         setPadding(resources.getDimensionPixelSize(R.dimen.chatbot_history_row_padding), 0, 0, 0)
@@ -204,6 +204,5 @@ class ChatbotFragment : Fragment() {
 
     private companion object {
         const val HISTORY_TEXT_SIZE_SP = 13f
-        const val HISTORY_TEXT_COLOR = 0xFFD2C7D8.toInt()
     }
 }

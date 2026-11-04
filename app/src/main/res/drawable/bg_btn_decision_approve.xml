@@ -4,7 +4,7 @@
         <selector>
             <item android:state_enabled="false">
                 <shape>
-                    <solid android:color="#4D7F3AEF" />
+                    <solid android:color="@color/color_btn_disabled" />
                     <corners android:radius="@dimen/corner_radius_button_primary" />
                 </shape>
             </item>
