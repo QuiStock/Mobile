@@ -314,7 +314,7 @@
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/profile_edit"
-                android:textColor="@color/color_branco"
+                android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
