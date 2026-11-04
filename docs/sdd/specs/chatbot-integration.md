@@ -1,5 +1,26 @@
 # Integração do chatbot com a Core
 
+## Correção de instrumentação no API 37 — 04/11/2026
+
+Na CI do PR #77, run `41903419816`, revisão `93fe353`, foram executados 123 testes
+com uma falha: `ChatbotFragmentTests.emptyMessageShowsValidationError` aguardou a
+Home até timeout. O logcat mostra `GrantPermissionsActivity` e a MainActivity em
+PAUSED durante a espera. O runner concedia localização, mas não POST_NOTIFICATIONS,
+solicitada no primeiro perfil Ready no Android 13+.
+
+O runner passa a conceder notificações somente no API 33+, antes das Activities,
+e verifica a concessão de todas as permissões de setup. Falhas de concessão agora
+interrompem o setup com diagnóstico explícito. O teste continua exigindo Home e
+Chatbot RESUMED, verifica o aviso de mensagem vazia e confirma zero envios ao
+ViewModel. Não houve alteração de timeouts, critérios de prontidão, comportamento
+de produção ou gates. O diálogo real de permissão continua sendo check manual.
+
+Verificação desta correção: `git diff --check` passou. Compilação androidTest e
+Spotless foram tentados, mas o Gradle não iniciou as tasks: acesso negado ao lock
+do wrapper no sandbox e `Unable to establish loopback connection` com execução
+ampliada. A nova execução da CI deve confirmar a aprovação; os sucessos do commit
+anterior não validam esta revisão.
+
 **Status:** Implementado localmente; validação de ponta a ponta pendente.
 **Issue:** não informada.
 **Product decision owner:** solicitante.

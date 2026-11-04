@@ -1,5 +1,15 @@
 # Role-based alerts (device notifications)
 
+## Instrumentation setup correction — 2026-11-04
+
+PR #77 CI run `41903419816` recorded one failure in 123 tests: the first Home
+remained paused behind GrantPermissionsActivity while the chatbot test awaited
+a RESUMED destination. QuiStockTestRunner now pre-grants POST_NOTIFICATIONS on
+API 33+ alongside foreground location and verifies each grant before tests start.
+Notification permission policy in production is unchanged. The real first-use
+system prompt and denial remain manual device checks; feature UI tests start
+with notifications allowed. See chatbot-integration.md for failure evidence.
+
 **Status:** In progress  
 **Issue:** none  
 **Product decision owner:** requester (answers of 02/11/2026)
