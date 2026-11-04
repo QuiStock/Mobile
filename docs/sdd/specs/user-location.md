@@ -1,5 +1,49 @@
 # User location and distance to the store in Profile
 
+## Instrumentation correction — 2026-11-04, 15:37 report
+
+The next report completed with 122 tests and ten failures, without process death.
+Nine failures are now confined to reflection on `LocationManager.isLocationEnabled`
+in provider-test setup. Removing Context mocks alone was insufficient.
+
+A narrow internal `DeviceLocationReader` now wraps the platform manager. The public
+provider constructor still resolves the real service; provider selection, cached
+fixes, the ten-second request timeout, cancellation and permission handling stay
+the same. This boundary is needed because reflecting over the framework manager
+also fails on the device. Tests inject a recording fake instead of mocking any
+framework class; they still exercise the actual provider and assert cache choice,
+fallback, disabled providers, permission denial/revocation and request counts.
+A separate denied-permission test exercises the public platform constructor.
+
+The remaining product test is documented in product-control-live-data.md.
+Compilation, instrumented results and combined coverage after this revision remain
+unconfirmed; no quality gate or coverage exclusion was changed.
+`git diff --check` passed. The attempted unit tests, androidTest compilation,
+Spotless, Detekt and lint stopped before task execution with
+`Unable to establish loopback connection`.
+
+## Instrumentation correction — 2026-11-04, 15:13 report
+
+The Android 12 report has 103 tests and 26 failures. Nine location-provider tests
+fail while MockK reflects over `Context.getSystemService`; subsequent context,
+activity and map mocks repeat the reflection failure. Tests now use real
+`ContextWrapper` implementations for service access, permissions, preferences and
+recorded intents instead of mocking framework Context objects. Provider mocks are
+released after each test, including setup failures.
+
+UL-07 uses an internal constructor accepting the launch action to test the same
+permission/first-launch decisions without mocking ComponentActivity. The public
+constructor still registers RequestMultiplePermissions on the Activity before
+start. UL-08 uses a MapView subclass with no renderer and an explicit lifecycle
+owner; camera, marker and destruction assertions remain. No permission policy,
+location delivery or API contract changed.
+
+`git diff --check` passed. Gradle compilation, unit tests and Spotless could not
+start because of `Unable to establish loopback connection`. Instrumented approval
+is pending. The process termination during ProfileEditNavigationTests has no
+testcase exception stack; the log shows minutes spent starting the Activity after
+the reflection failures, so its exact cause is not established by this report.
+
 **Status:** In progress  
 **Issue:** none  
 **Product decision owner:** open  

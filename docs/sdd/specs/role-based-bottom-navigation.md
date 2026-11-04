@@ -1,5 +1,20 @@
 # Navegação inferior por cargo: repositor e gerente
 
+## Correção dos testes instrumentados — 04/11/2026
+
+O relatório local registra timeout no teste de resseleção de produtos e na espera
+pela Home de `ChatbotFragmentTests.emptyMessageShowsValidationError`. A fixture
+de 20 produtos agora é declarada explicitamente como `PriorityAlertsRepository`,
+para substituir a dependência consumida pelo ViewModel, em vez de registrar o tipo
+anônimo. O helper de navegação também reavalia a prontidão em cada frame enquanto
+registrado: conclusão de lifecycle/animação não garante um novo global layout.
+O callback é removido no fechamento. Mantidas as exigências de destino correto,
+fragmento RESUMED, view visível/layout concluído e skeleton removido, sem aumentar
+timeouts. Os próprios testes preservam as verificações de rolagem e histórico.
+
+Revisão estática e `git diff --check` realizados. Gradle falhou antes dos checks
+com `Unable to establish loopback connection`; aprovação instrumentada pendente.
+
 **Status:** In progress — implementação entregue; execução e validação delegadas ao solicitante
 **Issue:** none  
 **Product decision owner:** solicitante

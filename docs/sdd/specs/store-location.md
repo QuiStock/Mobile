@@ -1,5 +1,19 @@
 # Store location in Profile
 
+## Instrumentation correction — 2026-11-04, 15:13 report
+
+Geocoding tests accessed Geocoder.GeocodeListener on Android 12, where that API
+is unavailable. Fixtures now use the synchronous two-argument lookup below API
+33 and keep listener stubs in a separate API-33-only object. First-result,
+empty/error, thrown exception and missing-geocoder checks remain for each device's
+supported path. MapsLauncher tests use recorded intents from a ContextWrapper;
+map rendering tests use a MapView subclass instead of constructor interception.
+This preserves AC-04/AC-06/AC-07 checks without reflecting over framework classes
+or starting the Maps renderer. No production geocoder or maps behavior changed.
+
+`git diff --check` passed; Gradle checks could not start due to a loopback connection
+error. Device execution is still required to confirm these corrections.
+
 **Status:** In progress  
 **Issue:** none  
 **Product decision owner:** open

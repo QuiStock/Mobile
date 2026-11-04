@@ -1,10 +1,10 @@
 package com.quistock.quistock.presentation.profile
 
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
-import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.quistock.quistock.AuthenticatedSessionRule
+import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentEditProfileBinding
 import com.quistock.quistock.domain.model.ProfileChanges
@@ -12,19 +12,16 @@ import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.UserProfile
 import com.quistock.quistock.domain.model.UserRole
 import com.quistock.quistock.domain.model.UserStatus
-import com.quistock.quistock.presentation.activity.MainActivity
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ProfileEditorRenderingTests {
-    @get:Rule val authenticatedSession = AuthenticatedSessionRule()
     private val user = UserProfile(
         "fixture",
         "Fixture",
@@ -92,12 +89,12 @@ class ProfileEditorRenderingTests {
     }
 
     private fun withEditor(test: suspend (EditProfileRenderer, FragmentEditProfileBinding) -> Unit) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                val binding = FragmentEditProfileBinding.inflate(LayoutInflater.from(activity))
-                val renderer = EditProfileRenderer(binding, uploadAvailable = true) { null }
-                runBlocking { test(renderer, binding) }
-            }
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val context = ContextThemeWrapper(instrumentation.targetContext, R.style.Theme_QuiStock)
+            val binding = FragmentEditProfileBinding.inflate(LayoutInflater.from(context))
+            val renderer = EditProfileRenderer(binding, uploadAvailable = true) { null }
+            runBlocking { test(renderer, binding) }
         }
     }
 }
