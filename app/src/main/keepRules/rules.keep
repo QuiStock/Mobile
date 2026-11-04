@@ -10,3 +10,8 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Room instantiates the internal WorkManager SQLite database via reflection.
+-keep class androidx.work.impl.WorkDatabase_Impl {
+    public <init>();
+}
