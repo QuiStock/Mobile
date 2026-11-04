@@ -30,6 +30,7 @@ O objetivo desta mudança é:
 
 ## Expected behavior
 
+- Sobre roxo sólido o texto é sempre branco, nos dois temas. Nas demais superfícies, usar tokens do tema em vez de cores fixas: `color_branco` é escuro no modo claro apesar do nome, e `white`/`#FFFFFF` não se adaptam.
 - Ao abrir o app pela primeira vez sem preferência salva, o app mantém a identidade padrão noturna suavizada.
 - Em qualquer uma das versões (clara ou escura), o usuário visualiza o botão de alternância de tema no cabeçalho.
 - Ao clicar no botão em modo escuro, o aplicativo alterna instantaneamente para o modo claro.
@@ -46,6 +47,9 @@ O objetivo desta mudança é:
 | AC-04 | O botão de alternância de tema está presente na interface tanto em modo claro quanto em modo escuro. | Verificação de layout e build |
 | AC-05 | No modo escuro, os fundos e textos utilizam tons suavizados de menor contraste em `res/values-night/colors.xml`. | Verificação de recursos XML |
 | AC-06 | Todos os testes unitários do projeto passam sem regressão. | `.\gradlew.bat testDebugUnitTest` |
+| AC-07 | Em qualquer layout no modo claro, nenhum texto fica com contraste menor que 3:1 contra o fundo efetivo (sem branco sobre branco). | `LightModeContrastTests` |
+| AC-08 | Em qualquer layout, texto sobre fundo roxo sólido (`color_violeta`) é branco. | `LightModeContrastTests` |
+| AC-09 | Textos com cor definida por código (mensagem de Funcionários, histórico do Chatbot, subtítulo de Interferências) usam tokens do tema. | Revisão de código; dependem de dados reais e não são inflados pelo teste |
 
 ## Technical impact
 
@@ -85,3 +89,5 @@ O objetivo desta mudança é:
   - Tokens semânticos adicionados: `color_icon` (`#1A1126` claro, `#EDE3F0` escuro), `color_icon_inactive` (`#6C6274` claro, `#AFA0B6` escuro), `color_icon_accent` (`#7F3AEF` claro, `#AF36DF` escuro).
   - Ícones da barra de navegação inferior (`ic_home`, `ic_interferences`, `ic_product_control`, `ic_employee`, `ic_chatbot`) e suas versões ativas (`*_active`) adaptados para utilizar `@color/color_icon_inactive` e `@color/color_limao`.
   - Ícones gerais de interface (`ic_notification`, `ic_menu`, `ic_profile`, `ic_new_chat`, `arrow_right`, `arrow_down`, `arrow_up`, `ic_carrinho`, `ic_transport`, `ic_wing`, `title_login`, `bem_vindo`, `logotipo`) atualizados com `@color/color_icon`, garantindo leitura e contraste em fundos claros.
+- **Revisão de contraste do modo claro (04/11/2026):** auditoria dos layouts encontrou 81 problemas em 15 layouts, incluindo quatro telas com fundo fixo `#11061F` (pedido, promoção e detalhes do gerente). Cores fixas viraram tokens que mantêm no escuro o valor anterior. No escuro, mudam apenas sete itens sobre roxo, que passam a branco (AC-08). No claro, `color_limao` e `color_amarelo_tag` foram escurecidos para legibilidade, e o popup de sucesso ganhou verde mais escuro. Fora do layout inflado, estados dinâmicos (badges, bolhas e histórico do Chatbot) não têm verificação visual no app real.
+- **Logo e big number (04/11/2026):** no modo claro, `logotipo` usa `color_logo` (roxo; no escuro permanece `#F8E9F9`) e o ponto de "Vencimento curto" usa `color_dot_expiry` (`#F3F02E` nos dois temas). Textos e badges amarelos mantêm `color_amarelo_tag` escuro, pois o amarelo vivo é ilegível sobre branco. Verificação: conferência visual de splash e Home renderizadas.
