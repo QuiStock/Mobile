@@ -29,11 +29,21 @@ internal class NavigationReadyIdler(
     private var callback: IdlingResource.ResourceCallback? = null
     private val layout = ViewTreeObserver.OnGlobalLayoutListener { signal() }
     private val navigation = NavController.OnDestinationChangedListener { _, _, _ -> signal() }
+    private var closed = false
+    private val frame = object : Runnable {
+        override fun run() {
+            if (closed) return
+            signal()
+            activity.binding.root.postOnAnimation(this)
+        }
+    }
 
     init {
         host.childFragmentManager.registerFragmentLifecycleCallbacks(this, false)
         host.navController.addOnDestinationChangedListener(navigation)
         activity.binding.root.viewTreeObserver.addOnGlobalLayoutListener(layout)
+        // Lifecycle and animation completion can change readiness without another layout.
+        activity.binding.root.postOnAnimation(frame)
     }
 
     override fun getName(): String = "navigation-resumed-and-laid-out-$destination"
@@ -61,6 +71,8 @@ internal class NavigationReadyIdler(
     }
 
     override fun close() {
+        closed = true
+        activity.binding.root.removeCallbacks(frame)
         host.childFragmentManager.unregisterFragmentLifecycleCallbacks(this)
         host.navController.removeOnDestinationChangedListener(navigation)
         activity.binding.root.viewTreeObserver.removeOnGlobalLayoutListener(layout)

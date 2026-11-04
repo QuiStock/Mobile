@@ -15,6 +15,7 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     viewModelOf(::HomeViewModel)
+    viewModelOf(::ProductControlViewModel)
     viewModelOf(::StoreLocationViewModel)
     viewModelOf(::UserLocationViewModel)
     viewModel { ChatbotViewModel(get(), get(), get(), get()) }

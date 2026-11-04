@@ -102,6 +102,7 @@ class ChatbotFragmentTests {
     fun emptyMessageShowsValidationError() = runInstrumented { _ ->
         onView(withId(R.id.btnEnviarPergunta)).perform(click())
         onView(withId(R.id.statusPopupMessage)).check(matches(withText(R.string.chatbot_empty_message)))
+        verify(exactly = 0) { viewModel.sendMessage(any()) }
     }
 
     @Test

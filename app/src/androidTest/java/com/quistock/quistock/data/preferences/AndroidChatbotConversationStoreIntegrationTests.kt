@@ -1,6 +1,7 @@
 package com.quistock.quistock.data.preferences
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -70,11 +71,14 @@ class AndroidChatbotConversationStoreIntegrationTests {
     fun failedPreferenceCommitsAreReported() {
         val preferences = mockk<SharedPreferences>()
         val editor = mockk<SharedPreferences.Editor>(relaxed = true)
-        val failingContext = mockk<Context>()
-        every { failingContext.applicationContext } returns failingContext
-        every {
-            failingContext.getSharedPreferences("chatbot_conversations", Context.MODE_PRIVATE)
-        } returns preferences
+        val failingContext = object : ContextWrapper(context) {
+            override fun getApplicationContext(): Context = this
+            override fun getSharedPreferences(name: String, mode: Int): SharedPreferences {
+                assertEquals("chatbot_conversations", name)
+                assertEquals(Context.MODE_PRIVATE, mode)
+                return preferences
+            }
+        }
         every { preferences.edit() } returns editor
         every { preferences.getString(any(), null) } returns null
         every { editor.putString(any(), any()) } returns editor

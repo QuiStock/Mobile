@@ -125,7 +125,7 @@ class BottomNavigationTests {
     }
 
     @Test fun reselectionScrollsProductsToTopWithoutAddingAVisit() {
-        GlobalContext.get().declare(
+        GlobalContext.get().declare<PriorityAlertsRepository>(
             object : PriorityAlertsRepository {
                 override suspend fun read(storeId: Long, storeCode: String?) = AlertProductsResult.Success(
                     (1..20).map { index ->

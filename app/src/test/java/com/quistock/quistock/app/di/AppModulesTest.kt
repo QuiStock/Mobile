@@ -16,6 +16,34 @@ import org.koin.dsl.module
 import org.koin.test.verify.verify
 
 class AppModulesTest {
+    @get:org.junit.Rule val mainDispatcherRule = com.quistock.quistock.MainDispatcherRule()
+
+    @Test
+    fun `product control view model resolves from the presentation module`() {
+        val session = SessionUseCase(mockk(relaxed = true))
+        val profile = com.quistock.quistock.domain.usecase.ProfileUseCase(mockk(), session)
+        val application = koinApplication {
+            modules(
+                presentationModule,
+                module {
+                    single { session }
+                    single { profile }
+                    single<com.quistock.quistock.domain.port.PriorityAlertsRepository> { mockk() }
+                },
+            )
+        }
+        val store = androidx.lifecycle.ViewModelStore()
+        try {
+            store.put(
+                "products",
+                application.koin.get<com.quistock.quistock.presentation.control.ProductControlViewModel>(),
+            )
+        } finally {
+            store.clear()
+            application.close()
+        }
+    }
+
     @OptIn(KoinExperimentalAPI::class)
     @Test
     fun `internal dependency graph should be valid`() {

@@ -37,16 +37,23 @@ fun openAppSettings(context: Context): Boolean = try {
  * Shows the system location permission request the first time the app is opened. Create it in
  * `onCreate` (launchers must be registered before the activity starts) and call [askOnFirstLaunch].
  */
-class FirstLaunchLocationPrompt(
-    private val activity: ComponentActivity,
+class FirstLaunchLocationPrompt internal constructor(
+    private val context: Context,
     private val preferences: LocationPromptPreferences,
+    private val launch: (Array<String>) -> Unit,
 ) {
     // The answer is read where the location is used (Profile), so the result needs no handling here.
-    private val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
+    constructor(activity: ComponentActivity, preferences: LocationPromptPreferences) : this(
+        activity,
+        preferences,
+        activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}.let { launcher ->
+            { permissions: Array<String> -> launcher.launch(permissions) }
+        },
+    )
 
     fun askOnFirstLaunch() {
         if (preferences.wasAsked()) return
         preferences.markAsked()
-        if (!hasLocationPermission(activity)) launcher.launch(LOCATION_PERMISSIONS)
+        if (!hasLocationPermission(context)) launch(LOCATION_PERMISSIONS)
     }
 }
