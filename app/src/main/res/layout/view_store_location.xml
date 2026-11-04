@@ -134,7 +134,7 @@
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             android:text="@string/location_open"
-            android:textColor="@color/color_branco"
+            android:textColor="@color/white"
             android:textSize="15sp"
             android:textStyle="bold"
             android:visibility="gone" />
