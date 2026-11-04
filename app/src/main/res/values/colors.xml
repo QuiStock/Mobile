@@ -3,12 +3,12 @@
     <!-- Paleta Principal QuiStock (Modo Claro) -->
     <color name="color_branco">#1A1126</color>
     <color name="color_lavana">#AF36DF</color>
-    <color name="color_limao">#72A138</color>
+    <color name="color_limao">#5D862B</color>
     <color name="color_violeta">#7F3AEF</color>
     <color name="color_petroleo">#F9F7FA</color>
 
     <!-- Cores Adicionais -->
-    <color name="color_amarelo_tag">#C79500</color>
+    <color name="color_amarelo_tag">#8A6A00</color>
     <color name="color_rosa_tag">#C2185B</color>
     <color name="color_petrolhinho">#FFFFFF</color>
 
@@ -26,6 +26,22 @@
     <color name="color_icon">#1A1126</color>
     <color name="color_icon_inactive">#6C6274</color>
     <color name="color_icon_accent">#7F3AEF</color>
+
+    <!-- Textos e Superfícies Adaptados ao Tema -->
+    <color name="color_on_surface">#1A1126</color>
+    <color name="color_text_muted">#6C6274</color>
+    <color name="color_text_soft">#6C6274</color>
+    <color name="color_text_label">#6C6274</color>
+    <color name="color_chat_history">#6C6274</color>
+    <color name="color_action_soft">#8E24AA</color>
+    <color name="color_flow_low_text">#8B3FA8</color>
+    <color name="color_error_text">#B3261E</color>
+    <color name="color_sheet_background">#FFFFFF</color>
+    <color name="color_location_preview_start">#E3DCE7</color>
+    <color name="color_location_skeleton">#EAE4EE</color>
+    <color name="color_btn_disabled">#9C7BE0</color>
+    <color name="color_hint_soft">#6C6274</color>
+    <color name="color_popup_success">#5D862B</color>
 
     <!-- Skeleton Loading Screen -->
     <color name="skeleton_screen">#F9F7FA</color>

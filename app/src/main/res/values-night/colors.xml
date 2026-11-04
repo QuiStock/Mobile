@@ -27,6 +27,22 @@
     <color name="color_icon_inactive">#8F7898</color>
     <color name="color_icon_accent">#AF36DF</color>
 
+    <!-- Textos e Superfícies Adaptados ao Tema -->
+    <color name="color_on_surface">#FFFFFF</color>
+    <color name="color_text_muted">#BFAFC5</color>
+    <color name="color_text_soft">#D8C9E0</color>
+    <color name="color_text_label">#C7B7CC</color>
+    <color name="color_chat_history">#D2C7D8</color>
+    <color name="color_action_soft">#E8A8F4</color>
+    <color name="color_flow_low_text">#C785E0</color>
+    <color name="color_error_text">#F07FE0</color>
+    <color name="color_sheet_background">#170625</color>
+    <color name="color_location_preview_start">#3A1B63</color>
+    <color name="color_location_skeleton">#26F8E9F9</color>
+    <color name="color_btn_disabled">#4D7F3AEF</color>
+    <color name="color_hint_soft">#9C8AA6</color>
+    <color name="color_popup_success">#89B751</color>
+
     <!-- Skeleton Loading Screen -->
     <color name="skeleton_screen">#11061F</color>
     <color name="skeleton_placeholder">#210E3E</color>

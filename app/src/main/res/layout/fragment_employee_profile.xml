@@ -45,7 +45,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Loja Av. Paulista"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Voltar"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="13sp" />
         </LinearLayout>
 
@@ -109,7 +109,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Bruno Alves"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/color_on_surface"
             android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -148,7 +148,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Bruno Almeida Alves"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -167,7 +167,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="bruno.alves@quistock.com"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -204,7 +204,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Estoquista"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -223,7 +223,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="06/08/2026"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>

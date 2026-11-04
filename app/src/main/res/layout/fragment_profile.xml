@@ -328,7 +328,7 @@
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/profile_sign_out"
-                android:textColor="#E8A8F4"
+                android:textColor="@color/color_action_soft"
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>

@@ -102,7 +102,7 @@ class EmployeeFragment : Fragment() {
         list.addView(
             TextView(requireContext()).apply {
                 text = message
-                setTextColor(android.graphics.Color.WHITE)
+                setTextColor(context.getColor(R.color.color_on_surface))
                 if (retry && !model.state.value.busy) setOnClickListener { model.load() }
             },
         )

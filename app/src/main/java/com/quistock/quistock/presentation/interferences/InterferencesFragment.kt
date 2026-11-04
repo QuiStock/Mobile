@@ -166,7 +166,7 @@ private object InterferenceActionRows {
         addView(
             TextView(context).apply {
                 text = CreationActionPresentation.actionSubtitle(context, action)
-                setTextColor(ACTION_SUBTITLE_COLOR)
+                setTextColor(context.getColor(R.color.color_text_muted))
                 textSize = ACTION_SUBTITLE_TEXT_SIZE
                 maxLines = 1
                 ellipsize = android.text.TextUtils.TruncateAt.END
@@ -196,5 +196,4 @@ private object InterferenceActionRows {
     private const val ACTION_SUBTITLE_TEXT_SIZE = 10f
     private const val SUBTITLE_TOP_MARGIN = 3
     private const val CARD_BOTTOM_MARGIN = 8
-    private const val ACTION_SUBTITLE_COLOR = 0xFFBFAFC5.toInt()
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#11061F"
+    android:background="@color/color_petroleo"
     tools:context=".presentation.promotion.PromotionFragment">
 
     <ScrollView
@@ -32,13 +32,13 @@
                 android:orientation="horizontal">
                 <ImageView android:tag="current_profile_photo" android:layout_width="40dp" android:layout_height="40dp" android:contentDescription="Perfil" android:src="@drawable/ic_profile" />
                 <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:tag="current_profile_store" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Loja Av. Paulista" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+                    <TextView android:tag="current_profile_store" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Loja Av. Paulista" android:textColor="@color/color_on_surface" android:textSize="14sp" android:textStyle="bold" />
                     <TextView android:tag="current_profile_header_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Milena Souza" android:textColor="@color/color_text_subtitle" android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView android:id="@+id/btnAlertBack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:gravity="center_vertical" android:layout_marginTop="30dp" android:text="‹  Voltar" android:textColor="#FFFFFF" android:textSize="14sp" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_marginTop="13dp" android:text="Criar promoção" android:textColor="#FFFFFF" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:id="@+id/btnAlertBack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:gravity="center_vertical" android:layout_marginTop="30dp" android:text="‹  Voltar" android:textColor="@color/color_on_surface" android:textSize="14sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_marginTop="13dp" android:text="Criar promoção" android:textColor="@color/color_on_surface" android:textSize="20sp" android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -53,26 +53,26 @@
                 android:paddingBottom="9dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:id="@+id/alertProductName" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="2" android:ellipsize="end" android:text="Leite Integral UHT 1L" android:textColor="#FFFFFF" android:textSize="12sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/alertProductName" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="2" android:ellipsize="end" android:text="Leite Integral UHT 1L" android:textColor="@color/color_on_surface" android:textSize="12sp" android:textStyle="bold" />
                         <TextView android:id="@+id/alertProductQuantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laticínios · 25 un" android:textColor="@color/color_text_subtitle" android:textSize="9sp" />
                     </LinearLayout>
-                    <TextView android:id="@+id/alertProductFlow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_flow_low" android:paddingStart="9dp" android:paddingTop="3dp" android:paddingEnd="9dp" android:paddingBottom="3dp" android:text="Fluxo Baixo" android:textColor="#DA4DC8" android:textSize="8sp" />
+                    <TextView android:id="@+id/alertProductFlow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_flow_low" android:paddingStart="9dp" android:paddingTop="3dp" android:paddingEnd="9dp" android:paddingBottom="3dp" android:text="Fluxo Baixo" android:textColor="@color/color_rosa_tag" android:textSize="8sp" />
                 </LinearLayout>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Validade" android:textColor="@color/color_text_subtitle" android:textSize="8sp" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <TextView android:id="@+id/alertProductExpiry" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="06/08/2026" android:textColor="#FFFFFF" android:textSize="9sp" />
+                    <TextView android:id="@+id/alertProductExpiry" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="06/08/2026" android:textColor="@color/color_on_surface" android:textSize="9sp" />
                     <TextView android:id="@+id/alertProductExpiryExtra" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vence em 2 dias" android:textColor="#A544FF" android:textSize="8sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="22dp" android:text="Desconto" android:textColor="#FFFFFF" android:textSize="12sp" />
-            <EditText android:id="@+id/etPromotionDiscount" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input_outline" android:hint="Ex: 15%" android:inputType="numberDecimal" android:paddingStart="12dp" android:paddingEnd="12dp" android:textColor="#FFFFFF" android:textColorHint="#806B88" android:textSize="12sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="22dp" android:text="Desconto" android:textColor="@color/color_on_surface" android:textSize="12sp" />
+            <EditText android:id="@+id/etPromotionDiscount" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input_outline" android:hint="Ex: 15%" android:inputType="numberDecimal" android:paddingStart="12dp" android:paddingEnd="12dp" android:textColor="@color/color_on_surface" android:textColorHint="#806B88" android:textSize="12sp" />
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="10dp" android:text="Duração" android:textColor="#FFFFFF" android:textSize="12sp" />
-            <EditText android:id="@+id/etPromotionDuration" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input_outline" android:hint="Ex: 3 dias" android:inputType="number" android:paddingStart="12dp" android:paddingEnd="12dp" android:textColor="#FFFFFF" android:textColorHint="#806B88" android:textSize="12sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="10dp" android:text="Duração" android:textColor="@color/color_on_surface" android:textSize="12sp" />
+            <EditText android:id="@+id/etPromotionDuration" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input_outline" android:hint="Ex: 3 dias" android:inputType="number" android:paddingStart="12dp" android:paddingEnd="12dp" android:textColor="@color/color_on_surface" android:textColorHint="#806B88" android:textSize="12sp" />
 
-            <TextView android:id="@+id/tvPrecoAtual" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="Preço atual: R$ 4,99" android:textColor="#FFFFFF" android:textSize="11sp" />
-            <TextView android:id="@+id/tvPrecoPromocional" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Preço após promoção: R$ 4,24" android:textColor="#FFFFFF" android:textSize="11sp" />
+            <TextView android:id="@+id/tvPrecoAtual" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="Preço atual: R$ 4,99" android:textColor="@color/color_on_surface" android:textSize="11sp" />
+            <TextView android:id="@+id/tvPrecoPromocional" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Preço após promoção: R$ 4,24" android:textColor="@color/color_on_surface" android:textSize="11sp" />
 
             <Button android:id="@+id/btnSubmitPromotion" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginStart="10dp" android:layout_marginTop="36dp" android:layout_marginEnd="10dp" android:background="@drawable/bg_login_button" android:text="Enviar para aprovação" android:textAllCaps="false" android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" />
         </LinearLayout>

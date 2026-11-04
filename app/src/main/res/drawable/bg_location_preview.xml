@@ -3,6 +3,6 @@
     <gradient
         android:angle="135"
         android:endColor="@color/color_petroleo"
-        android:startColor="#3A1B63" />
+        android:startColor="@color/color_location_preview_start" />
     <corners android:radius="14dp" />
 </shape>

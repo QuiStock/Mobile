@@ -13,7 +13,7 @@
         android:contentDescription="Fechar"
         android:gravity="end"
         android:text="×"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/color_on_surface"
         android:textSize="20sp" />
     <ImageView
         android:layout_width="160dp"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Sem conexão com a Internet!"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/color_on_surface"
         android:textSize="16sp"
         android:textStyle="bold" />
     <TextView
@@ -36,7 +36,7 @@
         android:paddingTop="8dp"
         android:paddingBottom="18dp"
         android:text="Verifique sua rede Wi-Fi ou dados móveis e tente novamente."
-        android:textColor="#FFFFFF"
+        android:textColor="@color/color_on_surface"
         android:textSize="12sp" />
     <Button
         android:id="@+id/retryNoConnection"
