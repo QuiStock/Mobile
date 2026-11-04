@@ -6,8 +6,11 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.quistock.quistock.data.remote.internal.chatbot.ChatbotApi
 import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.Logger
+import com.quistock.quistock.domain.port.PriorityAlertsRepository
 import com.quistock.quistock.domain.usecase.LoginUseCase
+import com.quistock.quistock.domain.usecase.ProfileUseCase
 import com.quistock.quistock.domain.usecase.SessionUseCase
+import com.quistock.quistock.presentation.control.ProductControlViewModel
 import io.mockk.mockk
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -67,6 +70,25 @@ class AppModulesTest {
                 application.koin.get<AuthRepository>() is
                     com.quistock.quistock.data.remote.auth.RetrofitAuthRepository,
             )
+        } finally {
+            application.close()
+        }
+    }
+
+    @Test
+    fun `product control view model is registered for tab navigation`() {
+        val application = koinApplication {
+            modules(
+                presentationModule,
+                module {
+                    single<PriorityAlertsRepository> { mockk() }
+                    single<ProfileUseCase> { mockk() }
+                    single<SessionUseCase> { mockk() }
+                },
+            )
+        }
+        try {
+            application.koin.get<ProductControlViewModel>()
         } finally {
             application.close()
         }

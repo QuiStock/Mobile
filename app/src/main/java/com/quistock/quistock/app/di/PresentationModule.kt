@@ -22,4 +22,5 @@ val presentationModule = module {
     viewModel { SessionViewModel(get(), get(), get(), get(), getOrNull()) }
     viewModelOf(::TeamViewModel)
     viewModelOf(::AlertPreferencesViewModel)
+    viewModelOf(::ProductControlViewModel)
 }
