@@ -1,44 +1,42 @@
 package com.quistock.quistock
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
-import android.view.View
-import androidx.test.core.app.ApplicationProvider
+import android.os.ParcelFileDescriptor
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.ExternalResource
 
 /**
  * Keep the device autofill service (for example, an account saved in Google Password Manager)
  * from filling form fields or opening its overlay, which steals window focus from Espresso.
- * The exclusion is applied as each activity is created, before its window gains focus, so it
- * also covers `scenario.recreate()`.
+ *
+ * Marking the views as not important for autofill is not enough: recent Android versions may still
+ * request a fill for password and email fields. The service is therefore switched off for the
+ * duration of each test and the device's original choice is restored afterwards.
  */
 class AutofillExclusionRule : ExternalResource() {
-    private val application = ApplicationProvider.getApplicationContext<Application>()
-
-    private val callbacks = object : Application.ActivityLifecycleCallbacks {
-        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-            activity.window.decorView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-        }
-
-        override fun onActivityStarted(activity: Activity) = Unit
-
-        override fun onActivityResumed(activity: Activity) = Unit
-
-        override fun onActivityPaused(activity: Activity) = Unit
-
-        override fun onActivityStopped(activity: Activity) = Unit
-
-        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
-
-        override fun onActivityDestroyed(activity: Activity) = Unit
-    }
+    private var originalService: String? = null
 
     override fun before() {
-        application.registerActivityLifecycleCallbacks(callbacks)
+        val current = shell("settings get secure $AUTOFILL_SERVICE_SETTING").trim()
+        if (current.isNotEmpty() && current != NO_SERVICE) {
+            originalService = current
+            shell("settings put secure $AUTOFILL_SERVICE_SETTING $NO_SERVICE")
+        }
     }
 
     override fun after() {
-        application.unregisterActivityLifecycleCallbacks(callbacks)
+        originalService?.let { shell("settings put secure $AUTOFILL_SERVICE_SETTING $it") }
+        originalService = null
+    }
+
+    private fun shell(command: String): String {
+        val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        return ParcelFileDescriptor.AutoCloseInputStream(uiAutomation.executeShellCommand(command))
+            .bufferedReader()
+            .use { it.readText() }
+    }
+
+    private companion object {
+        const val AUTOFILL_SERVICE_SETTING = "autofill_service"
+        const val NO_SERVICE = "null"
     }
 }
