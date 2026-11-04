@@ -41,6 +41,8 @@
     <color name="color_location_skeleton">#26F8E9F9</color>
     <color name="color_btn_disabled">#4D7F3AEF</color>
     <color name="color_hint_soft">#9C8AA6</color>
+    <color name="color_logo">#F8E9F9</color>
+    <color name="color_dot_expiry">#F3F02E</color>
     <color name="color_popup_success">#89B751</color>
 
     <!-- Skeleton Loading Screen -->
