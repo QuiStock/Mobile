@@ -36,6 +36,7 @@ internal class BottomNavigation(
             memory,
             access,
             ::openNotifications,
+            ::openForAlert,
         ) { transitioning = false }
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callbacks, true)
         host.childFragmentManager.primaryNavigationFragment?.let { fragment ->
