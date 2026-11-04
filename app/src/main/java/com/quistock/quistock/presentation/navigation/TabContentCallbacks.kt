@@ -13,6 +13,7 @@ internal class TabContentCallbacks(
     private val memory: TabMemory,
     private val access: NavigationAccess,
     private val notifications: () -> Unit,
+    private val openTab: (MainTab) -> Unit,
     private val resumed: () -> Unit,
 ) : FragmentManager.FragmentLifecycleCallbacks() {
     private val generations = java.util.WeakHashMap<Fragment, Long>()
@@ -20,6 +21,7 @@ internal class TabContentCallbacks(
     override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
         hideLegacyBars(v)
         bindNotifications(v)
+        bindNotificationActions(v)
         if (MainTab.atRoot(destination(f)) == null) return
         TabContent.disableDiskState(v)
         f.viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
@@ -77,6 +79,17 @@ internal class TabContentCallbacks(
     private fun bindNotifications(root: View) {
         TabContent.descendants(root).filter { it.contentDescription == "Notificações" }.forEach { view ->
             view.setOnClickListener { if (view.isAttachedToWindow) notifications() }
+        }
+    }
+
+    private fun bindNotificationActions(root: View) {
+        listOf(
+            R.id.notifications_analyze_stock_button,
+            R.id.notifications_analyze_promotion_button,
+        ).forEach { id ->
+            root.findViewById<View>(id)?.let { view ->
+                view.setOnClickListener { if (view.isAttachedToWindow) openTab(MainTab.INTERFERENCES) }
+            }
         }
     }
 }

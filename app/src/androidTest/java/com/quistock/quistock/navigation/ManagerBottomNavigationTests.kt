@@ -49,6 +49,26 @@ class ManagerBottomNavigationTests {
         }
     }
 
+    @Test fun analyzingPromotionOpensManagerInterferences() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            onView(withId(R.id.btnNotificacoes)).perform(click())
+            awaitNavigationReady(scenario, R.id.notificationsFragment)
+            onView(withId(R.id.notifications_analyze_promotion_button)).perform(click())
+            awaitNavigationReady(scenario, R.id.managerInterferencesFragment)
+        }
+    }
+
+    @Test fun analyzingStockRiskOpensManagerInterferences() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            onView(withId(R.id.btnNotificacoes)).perform(click())
+            awaitNavigationReady(scenario, R.id.notificationsFragment)
+            onView(withId(R.id.notifications_analyze_stock_button)).perform(click())
+            awaitNavigationReady(scenario, R.id.managerInterferencesFragment)
+        }
+    }
+
     @Test fun managerAnalysisAndEmployeeRegistrationHideTheBar() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             awaitNavigationReady(scenario, R.id.homeFragment)

@@ -70,4 +70,38 @@ class NavigationSessionTests {
             onView(withId(R.id.main_bottom_navigation)).check(matches(withEffectiveVisibility(GONE)))
         }
     }
+
+    @Test fun notificationsBackReturnsToTheTabThatOpenedThem() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            onView(withId(R.id.navigation_chatbot)).perform(click())
+            awaitNavigationReady(scenario, R.id.chatbotFragment)
+            onView(withId(R.id.btnNotificacoesChatbot)).perform(click())
+            awaitNavigationReady(scenario, R.id.notificationsFragment)
+            onView(withId(R.id.notifications_back_control)).perform(click())
+            awaitNavigationReady(scenario, R.id.chatbotFragment)
+        }
+    }
+
+    @Test fun analyzingStockRiskOpensEmployeeInterferences() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            onView(withId(R.id.navigation_chatbot)).perform(click())
+            awaitNavigationReady(scenario, R.id.chatbotFragment)
+            onView(withId(R.id.btnNotificacoesChatbot)).perform(click())
+            awaitNavigationReady(scenario, R.id.notificationsFragment)
+            onView(withId(R.id.notifications_analyze_stock_button)).perform(click())
+            awaitNavigationReady(scenario, R.id.interferencesFragment)
+        }
+    }
+
+    @Test fun analyzingPromotionOpensEmployeeInterferences() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitNavigationReady(scenario, R.id.homeFragment)
+            onView(withId(R.id.btnNotificacoes)).perform(click())
+            awaitNavigationReady(scenario, R.id.notificationsFragment)
+            onView(withId(R.id.notifications_analyze_promotion_button)).perform(click())
+            awaitNavigationReady(scenario, R.id.interferencesFragment)
+        }
+    }
 }
