@@ -5,7 +5,9 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -79,7 +81,23 @@ class AndroidDeviceLocationProviderTests {
         val point = provider.current()
 
         assertEquals(5.0, point?.latitude)
-        assertEquals(listOf(LocationManager.FUSED_PROVIDER), requested)
+        assertEquals(LocationManager.FUSED_PROVIDER, requested.first())
+    }
+
+    @Test fun providerWithoutAnAnswerFallsBackToAnotherProvider() = runBlocking {
+        manager.fixes[LocationManager.FUSED_PROVIDER] = null
+        manager.fixes[LocationManager.GPS_PROVIDER] = null
+        manager.fixes[LocationManager.NETWORK_PROVIDER] = fix(9.0, 10.0, System.currentTimeMillis())
+
+        assertEquals(9.0, provider.current()?.latitude)
+    }
+
+    @Test fun providerStillWaitingDoesNotDelayAnotherProvidersAnswer() = runBlocking {
+        manager.waiting += LocationManager.FUSED_PROVIDER
+        manager.waiting += LocationManager.GPS_PROVIDER
+        manager.fixes[LocationManager.NETWORK_PROVIDER] = fix(11.0, 12.0, System.currentTimeMillis())
+
+        assertEquals(11.0, withTimeout(2_000) { provider.current() }?.latitude)
     }
 
     @Test fun staleCachedFixIsTheFallbackWhenNoNewFixArrives() = runBlocking {
@@ -137,6 +155,8 @@ class AndroidDeviceLocationProviderTests {
         val cachedReads = mutableListOf<String>()
         val requested = mutableListOf<String>()
         var newFix: Location? = null
+        val fixes = mutableMapOf<String, Location?>()
+        val waiting = mutableSetOf<String>()
         var readFailure: Exception? = null
 
         override fun isLocationEnabled(): Boolean {
@@ -154,7 +174,8 @@ class AndroidDeviceLocationProviderTests {
 
         override suspend fun request(provider: String): Location? {
             requested += provider
-            return newFix
+            if (provider in waiting) awaitCancellation()
+            return if (provider in fixes) fixes[provider] else newFix
         }
     }
 

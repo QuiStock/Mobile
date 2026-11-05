@@ -30,8 +30,9 @@ without leaving the Profile screen.
 - Store address from Core `GET branches` (`address`, `city`, `state`, `latitude`, `longitude`),
   selected by the profile `storeId`.
 - Button that opens the location in the installed maps app; browser fallback.
-- Static-like map preview (lite `MapView`, dark purple style). Centered on the stored coordinates, or on the
-  address found by the device `Geocoder` when coordinates are null (preview only).
+- Interactive map (full `MapView` since 2026-11-05, see [user-location.md](user-location.md); dark purple style).
+  Centered on the stored coordinates, or on the address found by the device `Geocoder` when coordinates are
+  null (map position only).
 
 **Out of scope:**
 - Device GPS, location permission, background tracking, route calculation inside the app.

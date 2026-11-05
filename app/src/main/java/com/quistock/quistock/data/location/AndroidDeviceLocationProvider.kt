@@ -13,6 +13,10 @@ import androidx.core.location.LocationManagerCompat
 import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.port.DeviceLocationProvider
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
@@ -50,10 +54,16 @@ class AndroidDeviceLocationProvider internal constructor(
         val providers = enabledProviders(manager)
         val lastKnown = providers.mapNotNull { manager.lastKnown(it) }.maxByOrNull { it.time }
         val fresh = lastKnown?.takeIf { System.currentTimeMillis() - it.time <= FRESH_MILLIS }
-        return fresh ?: providers.firstOrNull()?.let {
-            withTimeoutOrNull(TIMEOUT_MILLIS) { manager.request(it) }
-        } ?: lastKnown
+        return fresh ?: firstFix(manager, providers) ?: lastKnown
     }
+
+    /** Asks every provider at once: one can answer null or wait for a satellite while another has a position. */
+    private suspend fun firstFix(manager: DeviceLocationReader, providers: List<String>): Location? =
+        withTimeoutOrNull(TIMEOUT_MILLIS) {
+            channelFlow { providers.forEach { provider -> launch { send(manager.request(provider)) } } }
+                .filterNotNull()
+                .firstOrNull()
+        }
 
     /** Fastest first: the fused provider when present, then network, then GPS (only with precise access). */
     private fun enabledProviders(manager: DeviceLocationReader): List<String> = buildList {

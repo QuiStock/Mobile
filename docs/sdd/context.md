@@ -4,6 +4,12 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Mapa do Perfil corrigido em 05/11/2026 conforme `specs/user-location.md`: `MapView` completo e
+  interativo com pino da loja e ponto do usuário; o modo lite recusava o enquadramento dos dois pontos.
+  Leitura da posição ao retomar a tela, consultando todos os provedores ao mesmo tempo. Unitários, Spotless,
+  Detekt, Lint, assembleRelease e parte dos instrumentados executados com sucesso no Samsung SM-A546E;
+  conferência visual com internet, suíte instrumentada completa e JaCoCo combinado pendentes.
+
 - Ordenação do controle de funcionários implementada em 05/11/2026 conforme
   `specs/employees-sort-filter.md`: "Mais recentes"/"Mais antigos" usam o `id` numérico como
   indicador da ordem de cadastro, porque `GET /team-members` não expõe data e o Core não pode mudar.
