@@ -81,7 +81,8 @@
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp">
+                android:layout_height="50dp"
+                android:layout_marginBottom="36dp">
 
                 <EditText
                     android:id="@+id/senha_login"
@@ -108,17 +109,6 @@
                     android:src="@drawable/ic_visibility"
                     app:tint="@color/color_text_subtitle" />
             </FrameLayout>
-
-            <TextView
-                android:id="@+id/forgotPasswordLogin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="36dp"
-                android:text="@string/login_forgot_password"
-                android:textColor="@color/color_text_title"
-                android:textSize="13sp" />
 
             <Button
                 android:id="@+id/bt_entrar_login"

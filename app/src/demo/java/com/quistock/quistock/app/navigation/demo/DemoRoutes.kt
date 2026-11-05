@@ -71,7 +71,7 @@ internal object DemoRoutes {
     )
 
     val unavailableControls = listOf(
-        R.id.forgotPasswordLogin, R.id.profile_account_row, R.id.profile_store_row,
+        R.id.profile_account_row, R.id.profile_store_row,
         R.id.profile_change_photo_button, R.id.contact_send_button,
         R.id.btnReprovarPedido, R.id.btnReprovarPromocao, R.id.btnRecomendacaoFefo,
         R.id.notifications_analyze_stock_button, R.id.notifications_analyze_promotion_button,

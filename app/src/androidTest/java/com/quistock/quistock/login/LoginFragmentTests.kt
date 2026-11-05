@@ -12,6 +12,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
@@ -41,6 +42,7 @@ import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
 import org.junit.After
@@ -231,6 +233,12 @@ class LoginFragmentTests {
         onLoadingSpinner().check(matches(not(isDisplayed())))
         onErrorMessageView().check(matches(withText(R.string.erro_login_erro_inesperado)))
         onErrorMessageView().check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun passwordRecoveryIsNotOffered() = runInstrumented {
+        onSubmitButtonView().check(matches(isDisplayed()))
+        onView(withText(containsString("Esqueceu"))).check(doesNotExist())
     }
 
     @Test
