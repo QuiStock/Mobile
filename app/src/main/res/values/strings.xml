@@ -11,7 +11,6 @@
     <string name="bt_entrar">Entrar</string>
     <string name="login_button">Fazer Login</string>
     <string name="login_email_hint">Ex: seunome@gmail.com</string>
-    <string name="login_forgot_password">Esqueceu a senha? <u>Clique aqui.</u></string>
     <string name="login_password_hint">Digite uma senha segura</string>
     <string name="login_password_label">Senha</string>
     <string name="show_password">Mostrar senha</string>
