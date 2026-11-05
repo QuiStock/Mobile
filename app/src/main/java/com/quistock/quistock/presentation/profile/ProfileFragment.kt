@@ -19,6 +19,7 @@ import com.quistock.quistock.domain.port.LocationPromptPreferences
 import com.quistock.quistock.presentation.activity.SessionViewModel
 import com.quistock.quistock.presentation.common.LOCATION_PERMISSIONS
 import com.quistock.quistock.presentation.common.PopupFeedback
+import com.quistock.quistock.presentation.common.ThemeManager
 import com.quistock.quistock.presentation.common.openAppSettings
 import com.quistock.quistock.presentation.notifications.needsNotificationPermission
 import com.quistock.quistock.presentation.notifications.notificationPermissionLauncher
@@ -60,6 +61,7 @@ class ProfileFragment : Fragment() {
                 }
             }
 
+        binding?.btnThemeToggle?.setOnClickListener { ThemeManager.toggleTheme(requireContext()) }
         binding?.profileEditButton?.setOnClickListener {
             findNavController().navigate(R.id.editProfileFragment)
         }
