@@ -1,9 +1,11 @@
 package com.quistock.quistock.login
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
@@ -21,6 +23,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.quistock.quistock.AutofillExclusionRule
 import com.quistock.quistock.ProfileTestDependencies
 import com.quistock.quistock.R
+import com.quistock.quistock.ThemePreferenceRule
 import com.quistock.quistock.app.navigation.NavGraph
 import com.quistock.quistock.domain.model.AuthResult
 import com.quistock.quistock.domain.model.LoginError
@@ -28,6 +31,7 @@ import com.quistock.quistock.domain.port.AuthRepository
 import com.quistock.quistock.domain.port.StoredSession
 import com.quistock.quistock.domain.usecase.SessionUseCase
 import com.quistock.quistock.presentation.activity.MainActivity
+import com.quistock.quistock.presentation.common.ThemeManager
 import com.quistock.quistock.presentation.login.LoginUiState
 import com.quistock.quistock.presentation.login.LoginViewModel
 import io.mockk.coEvery
@@ -49,6 +53,8 @@ import org.koin.core.context.GlobalContext
 @RunWith(AndroidJUnit4::class)
 class LoginFragmentTests {
     @get:Rule val autofillExclusion = AutofillExclusionRule()
+
+    @get:Rule val themePreference = ThemePreferenceRule()
 
     private lateinit var viewModel: LoginViewModel
     private lateinit var uiState: MutableLiveData<LoginUiState>
@@ -225,6 +231,20 @@ class LoginFragmentTests {
         onLoadingSpinner().check(matches(not(isDisplayed())))
         onErrorMessageView().check(matches(withText(R.string.erro_login_erro_inesperado)))
         onErrorMessageView().check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun themeToggleSwitchesThemeAndBack() = runInstrumented {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val initial = ThemeManager.isDarkMode(context)
+
+        onView(withId(R.id.btnThemeToggle)).perform(click())
+        assertThat(ThemeManager.isDarkMode(context), `is`(!initial))
+        onSubmitButtonView().check(matches(isDisplayed()))
+
+        onView(withId(R.id.btnThemeToggle)).perform(click())
+        assertThat(ThemeManager.isDarkMode(context), `is`(initial))
+        onSubmitButtonView().check(matches(isDisplayed()))
     }
 
     private fun runInstrumented(test: (NavController) -> Unit) {
