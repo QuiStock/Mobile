@@ -140,4 +140,9 @@
     <string name="logout_remote_warning_message">Você saiu deste aparelho, mas não foi possível confirmar o encerramento no servidor.</string>
     <string name="logout_understood">Entendi</string>
     <string name="loading_text">carregando...</string>
+    <string name="employee_sort_placeholder">Filtrar por data</string>
+    <string name="employee_sort_newest">Mais recentes</string>
+    <string name="employee_sort_oldest">Mais antigos</string>
+    <string name="employee_sort_alphabetical">Ordem alfabética (A-Z)</string>
+    <string name="employee_sort_clear">Remover filtro</string>
 </resources>
