@@ -2,6 +2,7 @@ package com.quistock.quistock.presentation.profile
 
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import androidx.core.view.isVisible
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -10,7 +11,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.ViewStoreLocationBinding
 import com.quistock.quistock.domain.model.GeoPoint
@@ -49,7 +49,7 @@ class StoreLocationSectionTests {
     @Before fun clearPreviousMockInteractions() {
         clearMocks(map, answers = false)
         clearStaticMockk(BitmapDescriptorFactory::class, CameraUpdateFactory::class, answers = false)
-        mapClick.clear()
+        cameraMove.clear()
     }
 
     @Test fun loadingShowsTheSkeletonAndCannotBeOpened() = withSection { _, binding ->
@@ -172,17 +172,48 @@ class StoreLocationSectionTests {
                 binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
                 section.renderUser(UserLocationState.Located(nearUser))
                 binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
-                mapClick.captured.onMapClick(LatLng(0.0, 0.0))
                 assertTrue(binding.locationMap.isVisible)
-                assertEquals(listOf(store), opened)
                 verify(exactly = 1) { CameraUpdateFactory.newLatLngBounds(any(), MAP_WIDTH, MAP_HEIGHT, any()) }
                 verify(exactly = 2) { CameraUpdateFactory.newLatLngZoom(any(), any()) }
+
+                // Interactive: gestures on, and a tap on the map stays in the app.
+                verify { map.uiSettings.setAllGesturesEnabled(true) }
+                verify(exactly = 0) { map.setOnMapClickListener(any()) }
+                assertTrue(opened.isEmpty())
+
+                // A new read keeps the view the user chose, and both markers stay drawn.
+                cameraMove.captured.onCameraMoveStarted(GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE)
+                clearMocks(map, answers = false)
+                section.renderUser(UserLocationState.Located(farUser))
+                binding.locationMap.layout(0, 0, MAP_WIDTH, MAP_HEIGHT)
+                verify(exactly = 2) { map.addMarker(any()) }
+                verify(exactly = 0) { map.moveCamera(any()) }
             } finally {
                 owner.registry.handleLifecycleEvent(androidx.lifecycle.Lifecycle.Event.ON_PAUSE)
                 owner.registry.handleLifecycleEvent(androidx.lifecycle.Lifecycle.Event.ON_STOP)
                 owner.registry.handleLifecycleEvent(androidx.lifecycle.Lifecycle.Event.ON_DESTROY)
             }
             assertEquals(1, (binding.locationMap as TestMapView).destroyCalls)
+        }
+    }
+
+    @Test fun touchesOnTheMapAreKeptFromTheScrollingScreen() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val requests = mutableListOf<Boolean>()
+            val parent = object : android.widget.FrameLayout(context) {
+                override fun requestDisallowInterceptTouchEvent(disallow: Boolean) {
+                    requests += disallow
+                }
+            }
+            val frame = MapTouchFrameLayout(context)
+            parent.addView(frame)
+            listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL).forEach { action ->
+                val event = MotionEvent.obtain(0L, 0L, action, 0f, 0f, 0)
+                frame.dispatchTouchEvent(event)
+                event.recycle()
+            }
+            assertEquals(listOf(true, false, false), requests)
         }
     }
 
@@ -237,7 +268,7 @@ class StoreLocationSectionTests {
 
     companion object {
         private val map = mockk<GoogleMap>(relaxed = true)
-        private val mapClick = slot<GoogleMap.OnMapClickListener>()
+        private val cameraMove = slot<GoogleMap.OnCameraMoveStartedListener>()
         const val MAP_WIDTH = 500
         const val MAP_HEIGHT = 300
 
@@ -250,7 +281,7 @@ class StoreLocationSectionTests {
             every { BitmapDescriptorFactory.fromBitmap(any()) } returns mockk(relaxed = true)
             every { CameraUpdateFactory.newLatLngZoom(any(), any()) } returns mockk()
             every { CameraUpdateFactory.newLatLngBounds(any(), any(), any(), any()) } returns mockk()
-            every { map.setOnMapClickListener(capture(mapClick)) } just runs
+            every { map.setOnCameraMoveStartedListener(capture(cameraMove)) } just runs
         }
 
         @JvmStatic

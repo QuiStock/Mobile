@@ -5,6 +5,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.doOnLayout
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -17,18 +18,25 @@ import com.quistock.quistock.domain.model.GeoPoint
 import com.quistock.quistock.domain.model.StoreLocation
 import com.quistock.quistock.domain.model.distanceMetersTo
 
-/** Draws the store pin and, when known, the user's dot on the lite preview map, framing both. */
+/** Draws the store pin and, when known, the user's dot on the interactive map, framing both. */
 internal class StoreMapPreview(private val mapView: MapView) {
     private var userIcon: BitmapDescriptor? = null
+    private var framed: Pair<LatLng, Boolean>? = null
+    private var movedByUser = false
 
-    fun show(store: StoreLocation, storePoint: GeoPoint, user: GeoPoint?, onClick: () -> Unit) {
+    fun show(store: StoreLocation, storePoint: GeoPoint, user: GeoPoint?) {
         // Bounds need the map size, which is only known once the (previously gone) view is laid out.
         mapView.doOnLayout {
             mapView.getMapAsync { map ->
                 val context = mapView.context
-                map.uiSettings.setAllGesturesEnabled(false)
+                map.uiSettings.setAllGesturesEnabled(true)
+                map.uiSettings.isZoomControlsEnabled = true
                 map.uiSettings.isMapToolbarEnabled = false
                 map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark_purple))
+                map.setOnCameraMoveStartedListener { reason ->
+                    // Gestures, zoom buttons and marker taps; only the app's own camera moves are excluded.
+                    if (reason != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION) movedByUser = true
+                }
                 map.clear()
                 map.addMarker(
                     MarkerOptions()
@@ -45,10 +53,17 @@ internal class StoreMapPreview(private val mapView: MapView) {
                             .icon(userIcon()),
                     )
                 }
-                map.moveCamera(camera(storePoint, user))
-                map.setOnMapClickListener { onClick() }
+                frame(map, storePoint, user)
             }
         }
+    }
+
+    /** Frames new content, but a later position read does not undo where the user panned or zoomed. */
+    private fun frame(map: GoogleMap, store: GeoPoint, user: GeoPoint?) {
+        val content = store.toLatLng() to (user != null)
+        if (content != framed) movedByUser = false
+        if (!movedByUser) map.moveCamera(camera(store, user))
+        framed = content
     }
 
     private fun camera(store: GeoPoint, user: GeoPoint?): CameraUpdate {
@@ -73,7 +88,7 @@ internal class StoreMapPreview(private val mapView: MapView) {
     private companion object {
         const val MAP_ZOOM = 16f
         const val CENTER = 0.5f
-        const val BOUNDS_PADDING_DP = 28
+        const val BOUNDS_PADDING_DP = 56
         const val MIN_BOUNDS_METERS = 150.0
     }
 }

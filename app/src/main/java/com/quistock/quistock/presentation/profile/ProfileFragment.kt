@@ -100,10 +100,13 @@ class ProfileFragment : Fragment() {
                     }
                 }
                 launch { locationViewModel.state.collect { section.render(it) } }
-                // Also re-reads permission after returning from the system settings.
-                userLocationViewModel.refresh()
                 launch { userLocationViewModel.state.collect { section.renderUser(it) } }
             }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Android answers location reads with nothing until the app is in the foreground, so read on
+            // resume. This also re-reads permission after returning from the system settings.
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) { userLocationViewModel.refresh() }
         }
     }
 

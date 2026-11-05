@@ -44,10 +44,10 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <FrameLayout
+        <com.quistock.quistock.presentation.profile.MapTouchFrameLayout
             android:id="@+id/location_preview"
             android:layout_width="match_parent"
-            android:layout_height="132dp"
+            android:layout_height="220dp"
             android:background="@drawable/bg_location_preview"
             android:clipToOutline="true"
             android:contentDescription="@string/location_preview_description">
@@ -65,8 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:importantForAccessibility="no"
-                android:visibility="gone"
-                app:liteMode="true" />
+                android:visibility="gone" />
 
             <View
                 android:id="@+id/location_skeleton"
@@ -75,7 +74,7 @@
                 android:background="@drawable/bg_location_skeleton"
                 android:contentDescription="@string/location_loading_description"
                 android:visibility="gone" />
-        </FrameLayout>
+        </com.quistock.quistock.presentation.profile.MapTouchFrameLayout>
 
         <TextView
             android:id="@+id/location_street"

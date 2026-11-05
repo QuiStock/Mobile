@@ -16,7 +16,7 @@ import com.quistock.quistock.domain.model.distanceMetersTo
 
 /**
  * Renders [StoreLocationState] and [UserLocationState] into the Profile "Localização" card and owns the
- * preview map lifecycle. [onUserLocationAction] runs when the user taps the permission or retry line.
+ * interactive map lifecycle. [onUserLocationAction] runs when the user taps the permission or retry line.
  */
 class StoreLocationSection(
     private val binding: ViewStoreLocationBinding,
@@ -79,7 +79,7 @@ class StoreLocationSection(
         val storePoint = store?.mapPoint
         val point = (state as? UserLocationState.Located)?.point
         if (store != null && storePoint != null && point !== previous) {
-            preview.show(store, storePoint, point) { onOpen(store) }
+            preview.show(store, storePoint, point)
         }
         renderDistance()
     }
@@ -155,7 +155,7 @@ class StoreLocationSection(
             binding.locationMap.isVisible = true
             binding.locationPinPlaceholder.isVisible = false
             lifecycle?.addObserver(mapObserver)
-            preview.show(store, point, (user as? UserLocationState.Located)?.point) { onOpen(store) }
+            preview.show(store, point, (user as? UserLocationState.Located)?.point)
         }
     }
 

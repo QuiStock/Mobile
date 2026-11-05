@@ -1,5 +1,52 @@
 # User location and distance to the store in Profile
 
+## Interactive map and location correction — 2026-11-05
+
+Requested: the user's location was not shown on the Profile map even with permission
+granted, and the map must become interactive and show both the store and the user.
+
+Causes found on a Samsung SM-A546E (Android 16):
+
+- The lite `MapView` rejects the camera used to frame both points. The SDK logs
+  `newLatLngBounds with size is not supported in Lite Mode`, so the position was read and the
+  distance shown, but the map did not frame the user's dot.
+- A location read made while the app was not in the foreground returned null in about 12 ms,
+  with no error. Profile read on start, before resume, so returning from the system settings
+  could show "Não foi possível obter sua localização".
+- Only the first enabled provider was asked. If it answered null or waited for a satellite
+  (GPS gave no fix in 15 s on the test device), the others were not asked.
+
+Behavior now:
+
+- The map is a full `MapView`, 220dp tall: drag, pinch, rotate and tilt gestures plus zoom buttons. Gestures on
+  the map do not scroll Profile. A tap on the map no longer opens the maps app; the button and
+  the card's area outside the map still do.
+- Store pin and user dot are framed together. A later position read updates the markers but
+  keeps the view the user chose by panning or zooming; new content (store point changed or
+  first user position) frames again.
+- The position is read on resume. Without a recent cached fix, all enabled providers are asked
+  at once within the same 10 s limit, and the first position wins. The stale cached position
+  remains the fallback.
+
+| ID | Observable given / when / then | Test or check |
+| --- | --- | --- |
+| UL-11 | Given a store point and a user position, when the map is shown, then both markers are drawn and framed with gestures enabled. | `StoreLocationSectionTests`; real map on device: camera framed and gestures on. Markers and tiles on screen: **manual check pending, device had no internet** |
+| UL-12 | Given a drag on the map, then Profile does not scroll. | `StoreLocationSectionTests`; real `input swipe` on device kept `scrollY` unchanged |
+| UL-13 | Given the user moved the map, when a new position arrives, then markers update and the camera stays. A tap on the map does not open the maps app. | `StoreLocationSectionTests` |
+| UL-14 | Given one provider answers null or keeps waiting, when another has a position, then that position is returned. | `AndroidDeviceLocationProviderTests` |
+| UL-15 | Given permission granted in the system settings, when returning to Profile, then the position is read. | Manual check pending; the foreground dependency was measured on device |
+
+Results: `spotlessCheck`, `testDebugUnitTest` (470 tests, 0 failures), `detekt`, `lintDebug` and
+`assembleRelease` passed. `connectedDebugAndroidTest` on the device, limited to
+`AndroidDeviceLocationProviderTests`, `StoreLocationSectionTests`, `ProfileLogoutTests` and
+`ProfileThemeToggleTests`: 25 tests, 0 failures. The full instrumented suite and combined coverage
+were not run. With the device offline, the map drew neither tiles nor markers, so the visual
+result with internet is still unconfirmed.
+
+Decision: the 220dp height and zoom buttons were chosen by the implementer because 132dp is too
+small to interact with; product can revisit them. The real Core store, whose coordinates may be
+null (see below), was not exercised: the device run used a fixture store with coordinates.
+
 ## Instrumentation correction — 2026-11-04, 15:37 report
 
 The next report completed with 122 tests and ten failures, without process death.
@@ -60,7 +107,7 @@ their store and how far away it is.
 - System location permission request the first time the app is opened (foreground only; precise or
   approximate, the user chooses on Android 12+).
 - One current position of the device when Profile is shown (each time the screen starts).
-- A "you are here" dot on the existing mini map next to the store pin, with the camera framing both.
+- A "you are here" dot on the Profile map next to the store pin, with the camera framing both.
 - A distance line under the address: "Você está a 2,3 km da loja".
 
 **Out of scope:**
