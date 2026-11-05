@@ -129,6 +129,7 @@
             android:layout_weight="1"
             android:background="@drawable/bg_card_summary"
             android:clickable="true"
+            android:clipToPadding="false"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -140,15 +141,28 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Filtrar por data"
+                android:text="@string/employee_sort_placeholder"
                 android:textColor="@color/color_text_title"
                 android:textSize="13sp" />
 
             <ImageView
+                android:id="@+id/ivSetaFiltroFuncionario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="Abrir filtro de data"
                 android:src="@drawable/arrow_down"
+                app:tint="@color/color_icon" />
+
+            <ImageButton
+                android:id="@+id/btnLimparFiltroFuncionario"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="-10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/employee_sort_clear"
+                android:scaleType="center"
+                android:src="@drawable/ic_close"
+                android:visibility="gone"
                 app:tint="@color/color_icon" />
         </LinearLayout>
     </LinearLayout>

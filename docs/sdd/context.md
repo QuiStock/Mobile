@@ -4,6 +4,11 @@ Updated on 2026-10-20 from repository files. This document guides discovery; con
 
 ## Known state
 
+- Ordenação do controle de funcionários implementada em 05/11/2026 conforme
+  `specs/employees-sort-filter.md`: "Mais recentes"/"Mais antigos" usam o `id` numérico como
+  indicador da ordem de cadastro, porque `GET /team-members` não expõe data e o Core não pode mudar.
+  Um "X" no campo remove a seleção. Conferência visual e Core real pendentes.
+
 - Alertas por cargo implementados em 02/11/2026 conforme `specs/role-alerts.md`: sem push/autor no
   Core (contrato v3.1.0, Core não pode mudar), o app consulta o Core a cada 15 min via WorkManager e
   publica notificações locais privadas. Vencimento próximo (NEAR_EXPIRY) para EMPLOYEE/MANAGER,

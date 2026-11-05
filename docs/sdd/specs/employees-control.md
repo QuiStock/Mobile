@@ -34,7 +34,7 @@ Adds the Employees fragment shell and its layouts, then uses the existing `emplo
 | Item | Status | Source or decision owner |
 | --- | --- | --- |
 | Employee detail destination and click behavior | Open | Employee feature owner |
-| Search, date filter, and registration behavior | Open | Employee feature owner |
+| Search, date filter, and registration behavior | Sort and clear behavior defined in `employees-sort-filter.md`; the rest remains open | Employee feature owner |
 | Bottom navigation selection by account role | Open | Login/navigation feature owner |
 
 ## Implementation outcome
