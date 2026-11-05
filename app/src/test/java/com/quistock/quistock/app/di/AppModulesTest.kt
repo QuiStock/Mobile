@@ -91,6 +91,11 @@ class AppModulesTest {
             application.koin.get<LoginUseCase>()
             application.koin.get<SessionUseCase>()
             application.koin.get<okhttp3.OkHttpClient>(org.koin.core.qualifier.named("CoreHttpClient"))
+            val chatbotClient = application.koin.get<okhttp3.OkHttpClient>(
+                org.koin.core.qualifier.named("ChatbotCoreHttpClient"),
+            )
+            org.junit.Assert.assertEquals(65_000L, chatbotClient.readTimeoutMillis.toLong())
+            org.junit.Assert.assertFalse(chatbotClient.retryOnConnectionFailure)
             org.junit.Assert.assertTrue(
                 application.koin.get<AuthRepository>() is
                     com.quistock.quistock.data.remote.auth.RetrofitAuthRepository,

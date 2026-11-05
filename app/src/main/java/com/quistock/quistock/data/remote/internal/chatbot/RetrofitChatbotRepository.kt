@@ -46,14 +46,14 @@ class RetrofitChatbotRepository(private val api: ChatbotApi, private val json: J
 
     override suspend fun listEnded(expected: SessionSnapshot): List<ChatbotConversation> = api.listEnded(expected)
         .bodyOrThrow<ChatbotConversationListDTO>().conversations.map {
-            ChatbotConversation(it.conversationId, it.title, it.updatedAt)
+            ChatbotConversation(it.conversationId, it.title.orEmpty(), it.updatedAt)
         }
 
     override suspend fun history(conversationId: String, expected: SessionSnapshot): ChatbotConversationHistory {
         val result = api.history(conversationId, expected).bodyOrThrow<ChatbotConversationHistoryDTO>()
         return ChatbotConversationHistory(
             result.conversationId,
-            result.title,
+            result.title.orEmpty(),
             result.status,
             result.messages.map { ChatbotHistoryMessage(it.messageId, it.role, it.content, it.createdAt) },
         )

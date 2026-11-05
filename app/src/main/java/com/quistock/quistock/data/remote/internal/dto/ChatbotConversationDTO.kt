@@ -31,14 +31,14 @@ data class ChatbotConversationListDTO(@SerialName("conversations") val conversat
 @Serializable
 data class ChatbotConversationDTO(
     @SerialName("conversation_id") val conversationId: String,
-    @SerialName("title") val title: String,
+    @SerialName("title") val title: String? = null,
     @SerialName("updated_at") val updatedAt: String,
 )
 
 @Serializable
 data class ChatbotConversationHistoryDTO(
     @SerialName("conversation_id") val conversationId: String,
-    @SerialName("title") val title: String,
+    @SerialName("title") val title: String? = null,
     @SerialName("status") val status: String,
     @SerialName("messages") val messages: List<ChatbotHistoryMessageDTO>,
 )
