@@ -129,14 +129,46 @@ class RetrofitChatbotRepositoryIntegrationTests {
             ),
         )
 
-        repository.listEnded(SessionSnapshot(2, true)).single().id shouldBe "ended-id"
-        repository.history("ended-id", SessionSnapshot(2, true)).messages.single().content shouldBe "Ajuda"
+        val ended = repository.listEnded(SessionSnapshot(2, true)).single()
+        ended.id shouldBe "ended-id"
+        ended.title shouldBe "Estoque"
+        val history = repository.history("ended-id", SessionSnapshot(2, true))
+        history.title shouldBe "Estoque"
+        history.messages.single().content shouldBe "Ajuda"
         repository.end("ended-id", SessionSnapshot(2, true))
         server.takeRequest().path shouldBe "/api/chat/conversations"
         server.takeRequest().path shouldBe "/api/chat/conversations/ended-id/messages"
         val end = server.takeRequest()
         end.method shouldBe "POST"
         end.path shouldBe "/api/chat/conversations/ended-id/end"
+    }
+
+    @Test
+    fun `conversation list and active history tolerate null titles`() = runTest {
+        server.enqueue(
+            response(
+                """
+                {"conversations":[{"conversation_id":"ended-id","title":null,"updated_at":"2026-11-05T10:00:00Z"}]}
+                """.trimIndent(),
+            ),
+        )
+        server.enqueue(
+            response(
+                """
+                {"conversation_id":"active-id","title":null,"status":"active","messages":[{"message_id":"m1","role":"user","content":"Ajuda","created_at":"2026-11-05T10:00:00Z"}]}
+                """.trimIndent(),
+            ),
+        )
+
+        val ended = repository.listEnded(SessionSnapshot(2, true)).single()
+        val history = repository.history("active-id", SessionSnapshot(2, true))
+
+        ended.id shouldBe "ended-id"
+        ended.title shouldBe ""
+        history.conversationId shouldBe "active-id"
+        history.title shouldBe ""
+        history.status shouldBe "active"
+        history.messages.single().content shouldBe "Ajuda"
     }
 
     private fun response(body: String, code: Int = 200) = MockResponse()

@@ -51,6 +51,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.util.concurrent.TimeUnit
 
 val retrofitSdkModule = module {
     single { createJson() }
@@ -138,6 +139,7 @@ val retrofitModule = module {
             get(),
             get(),
             replayWrites = false,
+            readTimeoutSeconds = CHATBOT_READ_TIMEOUT_SECONDS,
         )
     }
 }
@@ -153,6 +155,7 @@ internal fun createCoreHttpClient(
     custody: AuthCookieCustody,
     logger: Logger? = null,
     replayWrites: Boolean = true,
+    readTimeoutSeconds: Long = DEFAULT_CORE_READ_TIMEOUT_SECONDS,
 ): OkHttpClient = OkHttpClient.Builder()
     .cookieJar(CookieJar.NO_COOKIES)
     .addInterceptor { chain ->
@@ -169,9 +172,13 @@ internal fun createCoreHttpClient(
         chain.request().tag(ProfileWriteAttempt::class.java)?.send(chain) ?: chain.proceed(chain.request())
     }
     .retryOnConnectionFailure(false)
+    .readTimeout(readTimeoutSeconds, TimeUnit.SECONDS)
     .followRedirects(false)
     .followSslRedirects(false)
     .build()
+
+private const val DEFAULT_CORE_READ_TIMEOUT_SECONDS = 10L
+private const val CHATBOT_READ_TIMEOUT_SECONDS = 65L
 
 internal fun createAuthApi(baseUrl: HttpUrl, jar: CookieJar, client: OkHttpClient = OkHttpClient()): AuthApi =
     Retrofit.Builder()
