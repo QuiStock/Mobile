@@ -41,6 +41,17 @@
     <string name="profile_account">Minha conta</string>
     <string name="profile_account_description">Dados pessoais e acesso</string>
     <string name="profile_store">Minha loja</string>
+    <string name="profile_details_name">Nome</string>
+    <string name="profile_details_email">E-mail</string>
+    <string name="profile_details_role">Cargo</string>
+    <string name="profile_details_status">Situação</string>
+    <string name="profile_details_status_active">Ativo</string>
+    <string name="profile_details_status_inactive">Inativo</string>
+    <string name="profile_details_store_name">Loja</string>
+    <string name="profile_details_store_code">Código da loja</string>
+    <string name="profile_details_region">Região</string>
+    <string name="profile_details_unavailable">Não informado</string>
+    <string name="profile_details_close">Fechar</string>
     <string name="profile_help">Ajuda</string>
     <string name="profile_help_description">Dúvidas sobre o QuiStock</string>
     <string name="profile_edit">Editar perfil</string>
