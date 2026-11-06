@@ -285,6 +285,9 @@ android {
             }
             optimization {
                 enable = true
+                keepRules {
+                    files.add(file("proguard-rules.pro"))
+                }
             }
         }
 
