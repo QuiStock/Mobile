@@ -2,6 +2,7 @@
 <resources>
     <string name="product_control_search">Pesquisar pelo nome</string>
     <string name="product_control_filter">Filtrar por fluxo</string>
+    <string name="product_control_filter_clear">Remover filtro</string>
     <string name="product_control_all_flows">Todos os fluxos</string>
     <string name="product_control_high">Fluxo Alto</string>
     <string name="product_control_medium">Fluxo Médio</string>
