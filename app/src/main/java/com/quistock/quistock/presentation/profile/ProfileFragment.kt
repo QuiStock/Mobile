@@ -71,6 +71,12 @@ class ProfileFragment : Fragment() {
         binding?.profileHelpRow?.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_faqFragment)
         }
+        binding?.profileAccountRow?.setOnClickListener {
+            readyProfile()?.let { ProfileDetailsDialog.showAccount(requireContext(), it) }
+        }
+        binding?.profileStoreRow?.setOnClickListener {
+            readyProfile()?.let { ProfileDetailsDialog.showStore(requireContext(), it) }
+        }
         bindLocation(view)
         bindAlerts()
         binding?.profileSignOutButton?.setOnClickListener {
@@ -79,6 +85,8 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+    private fun readyProfile() = (sessionViewModel.profile.state.value as? ProfileState.Ready)?.profile
 
     private fun bindLocation(view: View) {
         val section = StoreLocationSection(
