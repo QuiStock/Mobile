@@ -138,10 +138,22 @@
                         android:textColor="@color/color_text_title"
                         android:textSize="13sp" />
                     <ImageView
+                        android:id="@+id/ivSetaFiltroFluxo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="Abrir filtros de fluxo"
                         android:src="@drawable/arrow_down"
+                        app:tint="@color/color_icon" />
+                    <ImageButton
+                        android:id="@+id/btnLimparFiltroFluxo"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="-10dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/product_control_filter_clear"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_close"
+                        android:visibility="gone"
                         app:tint="@color/color_icon" />
                 </LinearLayout>
             </LinearLayout>

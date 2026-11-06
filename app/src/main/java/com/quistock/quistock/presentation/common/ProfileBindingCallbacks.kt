@@ -79,6 +79,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
         }
         when (view) {
             is ImageView -> {
+                view.scaleType = ImageView.ScaleType.FIT_CENTER
                 view.setImageResource(R.drawable.ic_profile)
                 view.contentDescription = ready?.profile?.name ?: view.context.getString(R.string.profile_title)
             }
@@ -136,7 +137,7 @@ class ProfileBindingCallbacks(private val model: SessionViewModel) : FragmentMan
         try {
             val bitmap = model.photoBytes()?.let { decodePhoto(it) }
             if (bitmap != null && isCurrentProfile(ready)) {
-                images.forEach { it.setImageBitmap(bitmap) }
+                images.forEach { CircularPhoto.apply(it, bitmap) }
             }
         } catch (error: CancellationException) {
             throw error

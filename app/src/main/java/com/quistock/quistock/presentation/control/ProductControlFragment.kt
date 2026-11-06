@@ -65,12 +65,18 @@ class ProductControlFragment : Fragment() {
                 val selected = filters.firstOrNull { getString(it.first) == item.title }?.second
                     ?: return@setOnMenuItemClickListener false
                 viewModel.setFilter(selected)
-                views.tvFiltroFluxo.text = item.title
+                renderFilter(views)
                 render(viewModel.state.value, adapter)
                 true
             }
             popup.show()
         }
+        views.btnLimparFiltroFluxo.setOnClickListener {
+            viewModel.setFilter(ProductFlowFilter.ALL)
+            renderFilter(views)
+            render(viewModel.state.value, adapter)
+        }
+        renderFilter(views)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collect { render(it, adapter) }
@@ -89,6 +95,20 @@ class ProductControlFragment : Fragment() {
         binding?.rvProducts?.adapter = null
         binding = null
         super.onDestroyView()
+    }
+
+    private fun renderFilter(views: FragmentProductControlBinding) {
+        val label = when (viewModel.filter.value) {
+            ProductFlowFilter.ALL -> R.string.product_control_filter
+            ProductFlowFilter.HIGH -> R.string.product_control_high
+            ProductFlowFilter.MEDIUM -> R.string.product_control_medium
+            ProductFlowFilter.LOW -> R.string.product_control_low
+            ProductFlowFilter.UNAVAILABLE -> R.string.product_control_unavailable_flow
+        }
+        val active = viewModel.filter.value != ProductFlowFilter.ALL
+        views.tvFiltroFluxo.setText(label)
+        views.ivSetaFiltroFluxo.isVisible = !active
+        views.btnLimparFiltroFluxo.isVisible = active
     }
 
     private fun render(state: ProductControlState, adapter: ProductControlAdapter) {

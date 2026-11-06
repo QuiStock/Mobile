@@ -1,12 +1,14 @@
 package com.quistock.quistock.presentation.profile
 
 import android.graphics.BitmapFactory
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.quistock.quistock.R
 import com.quistock.quistock.databinding.FragmentEditProfileBinding
 import com.quistock.quistock.domain.model.ProfileNameError
 import com.quistock.quistock.domain.model.SessionException
 import com.quistock.quistock.domain.model.profileNameError
+import com.quistock.quistock.presentation.common.CircularPhoto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -104,9 +106,10 @@ internal class EditProfileRenderer(
             }
             displayed = bytes
             if (bitmap == null) {
+                binding.profileEditPhoto.scaleType = ImageView.ScaleType.FIT_CENTER
                 binding.profileEditPhoto.setImageResource(R.drawable.ic_profile)
             } else {
-                binding.profileEditPhoto.setImageBitmap(bitmap)
+                CircularPhoto.apply(binding.profileEditPhoto, bitmap)
             }
         }
     }
