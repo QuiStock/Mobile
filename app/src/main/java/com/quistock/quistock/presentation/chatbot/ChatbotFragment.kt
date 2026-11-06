@@ -35,12 +35,13 @@ class ChatbotFragment : Fragment() {
         val input = view.findViewById<EditText>(R.id.etPerguntaChatbot).apply { isSaveEnabled = false }
         val welcomeLayout = view.findViewById<View>(R.id.layoutWelcomeChatbot)
         val containerMensagens = view.findViewById<LinearLayout>(R.id.containerMensagens)
+        val typing = TypingIndicatorView(requireContext())
 
         bindMenu(view, menuOverlay)
         bindInput(view, input)
-        observeMessages(viewLifecycleOwner, containerMensagens, welcomeLayout)
+        observeMessages(viewLifecycleOwner, containerMensagens, welcomeLayout, typing)
         observeEndedConversations(viewLifecycleOwner, view.findViewById(R.id.recentConversations), menuOverlay)
-        observeUiState(view, input, view.findViewById(R.id.btnEnviarPergunta))
+        observeUiState(view, input, view.findViewById(R.id.btnEnviarPergunta), typing, containerMensagens)
     }
 
     private fun bindMenu(view: View, overlay: View) {
@@ -69,7 +70,12 @@ class ChatbotFragment : Fragment() {
         }
     }
 
-    private fun observeMessages(owner: LifecycleOwner, container: LinearLayout, welcomeLayout: View?) {
+    private fun observeMessages(
+        owner: LifecycleOwner,
+        container: LinearLayout,
+        welcomeLayout: View?,
+        typing: TypingIndicatorView,
+    ) {
         viewModel.messages.observe(owner) { conversation ->
             container.removeAllViews()
             if (conversation.isNullOrEmpty()) {
@@ -78,6 +84,7 @@ class ChatbotFragment : Fragment() {
                 welcomeLayout?.visibility = View.GONE
                 conversation.forEach { addMessage(container, it.text, it.isUser) }
             }
+            typing.update(container, container.parent as? ScrollView, viewModel.uiState.value == ChatbotUiState.Loading)
         }
     }
 
@@ -118,12 +125,19 @@ class ChatbotFragment : Fragment() {
         setOnClickListener { onClick() }
     }
 
-    private fun observeUiState(view: View, input: EditText, sendButton: View) {
+    private fun observeUiState(
+        view: View,
+        input: EditText,
+        sendButton: View,
+        typing: TypingIndicatorView,
+        messages: LinearLayout,
+    ) {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             val busy = state == ChatbotUiState.Loading || state == ChatbotUiState.LoadingConversation ||
                 state == ChatbotUiState.Ending
             input.isEnabled = !busy
             sendButton.isEnabled = !busy
+            typing.update(messages, messages.parent as? ScrollView, state == ChatbotUiState.Loading)
             showUiFeedback(view, state)
         }
     }

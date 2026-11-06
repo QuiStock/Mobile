@@ -144,5 +144,6 @@
     <string name="employee_sort_newest">Mais recentes</string>
     <string name="employee_sort_oldest">Mais antigos</string>
     <string name="employee_sort_alphabetical">Ordem alfabética (A-Z)</string>
+    <string name="chatbot_typing">Assistente digitando</string>
     <string name="employee_sort_clear">Remover filtro</string>
 </resources>
